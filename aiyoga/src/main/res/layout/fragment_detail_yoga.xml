@@ -1,0 +1,224 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#F9F9F9">
+
+    <androidx.appcompat.widget.AppCompatImageView
+            android:id="@+id/iv_back"
+            android:layout_width="@dimen/_30sdp"
+            android:layout_height="@dimen/_30sdp"
+            android:layout_marginStart="@dimen/_15sdp"
+            android:layout_marginTop="@dimen/_30sdp"
+            android:background="@drawable/shape_circle"
+            android:padding="@dimen/_4sdp"
+            android:src="@drawable/ic_back"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+    <androidx.appcompat.widget.AppCompatImageView
+            android:id="@+id/iv_favorite"
+            android:layout_width="@dimen/_30sdp"
+            android:layout_height="@dimen/_30sdp"
+            android:layout_marginEnd="@dimen/_15sdp"
+            android:background="@drawable/shape_circle"
+            android:padding="@dimen/_5sdp"
+            android:src="@drawable/ic_un_heart"
+            app:layout_constraintBottom_toBottomOf="@id/iv_back"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@id/iv_back"
+ />
+
+    <androidx.appcompat.widget.AppCompatImageView
+            android:id="@+id/iv_help"
+            android:layout_width="@dimen/_30sdp"
+            android:layout_height="@dimen/_30sdp"
+            android:layout_marginEnd="@dimen/_8sdp"
+            android:background="@drawable/shape_circle"
+            android:padding="@dimen/_6sdp"
+            android:src="@drawable/ic_help"
+            app:layout_constraintBottom_toBottomOf="@id/iv_back"
+            app:layout_constraintEnd_toStartOf="@id/iv_favorite"
+            app:layout_constraintTop_toTopOf="@id/iv_back" />
+
+
+    <androidx.core.widget.NestedScrollView
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            app:layout_constraintBottom_toTopOf="@id/btn_start_practice"
+            app:layout_constraintTop_toBottomOf="@id/iv_back">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingBottom="@dimen/_20sdp">
+
+            <androidx.cardview.widget.CardView
+                    android:id="@+id/card_image"
+                    android:layout_width="0dp"
+                    android:layout_height="@dimen/_180sdp"
+                    android:layout_margin="@dimen/_12sdp"
+                    app:cardCornerRadius="@dimen/_16sdp"
+                    app:cardElevation="0dp"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent">
+
+                <FrameLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:background="#F2F2F2">
+
+                    <ImageView
+                            android:id="@+id/img_yoga_pose"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:padding="@dimen/_20sdp"
+                            android:scaleType="fitCenter"
+   />
+
+                    <ImageView
+                            android:id="@+id/iv_camera_capture"
+                            android:layout_width="@dimen/_32sdp"
+                            android:layout_height="@dimen/_32sdp"
+                            android:layout_gravity="bottom|end"
+                            android:layout_margin="@dimen/_12sdp"
+                            android:background="@drawable/shape_circle_gray"
+                            android:padding="@dimen/_6sdp"
+                            android:src="@drawable/ic_camera"
+                            android:elevation="@dimen/_2sdp"/>
+                </FrameLayout>
+            </androidx.cardview.widget.CardView>
+
+            <TextView
+                    android:id="@+id/tv_pose_name"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/_16sdp"
+                    android:layout_marginTop="16dp"
+                    android:text="Center Splits Pose"
+                    android:textColor="@color/primary"
+                    android:textSize="@dimen/_22sdp"
+                    android:textStyle="bold"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/card_image" />
+
+            <TextView
+                    android:id="@+id/tv_sanskrit_name"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/_4sdp"
+                    android:fontStyle="italic"
+                    android:text="Samakonasana"
+                    android:textColor="#8E8E93"
+                    android:textSize="@dimen/_15sdp"
+                    app:layout_constraintStart_toStartOf="@id/tv_pose_name"
+                    app:layout_constraintTop_toBottomOf="@id/tv_pose_name" />
+
+            <ImageView
+                    android:id="@+id/ic_level"
+                    android:layout_width="@dimen/_14sdp"
+                    android:layout_height="@dimen/_14sdp"
+                    android:layout_marginTop="@dimen/_15sdp"
+                    android:background="@drawable/ic_level"
+                    app:layout_constraintStart_toStartOf="@id/tv_sanskrit_name"
+                    app:layout_constraintTop_toBottomOf="@id/tv_sanskrit_name"
+                    app:tint="@color/primary"/>
+
+            <TextView
+                    android:id="@+id/tv_level_label"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/_5sdp"
+                    android:layout_marginTop="@dimen/_12sdp"
+                    android:text="Level: "
+                    android:textColor="@color/black"
+                    android:textSize="@dimen/_14sdp"
+                    app:layout_constraintStart_toEndOf="@id/ic_level"
+                    app:layout_constraintTop_toBottomOf="@id/tv_sanskrit_name" />
+
+            <TextView
+                    android:id="@+id/tv_level_value"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Advanced"
+                    android:textColor="#8E8E93"
+                    android:textSize="@dimen/_14sdp"
+                    app:layout_constraintBaseline_toBaselineOf="@id/tv_level_label"
+                    app:layout_constraintStart_toEndOf="@id/tv_level_label" />
+
+            <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/rv_category"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginHorizontal="@dimen/_16sdp"
+                    android:layout_marginTop="@dimen/_8sdp"
+                    android:clipToPadding="false"
+                    android:orientation="horizontal"
+                    android:paddingHorizontal="@dimen/_8sdp"
+                    android:paddingVertical="@dimen/_4sdp"
+                    app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/tv_level_label"
+                    tools:listitem="@layout/item_category" />
+
+            <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/rv_yoga_content"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:clipToPadding="false"
+                    android:nestedScrollingEnabled="false"
+                    app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+                    android:orientation="vertical"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    tools:listitem="@layout/item_step"
+                    app:layout_constraintTop_toBottomOf="@id/rv_category"
+                    tools:itemCount="3"
+                    app:layout_constraintHorizontal_bias="0.0" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </androidx.core.widget.NestedScrollView>
+
+    <androidx.appcompat.widget.LinearLayoutCompat
+            android:id="@+id/btn_start_practice"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/_24sdp"
+            android:background="@drawable/bg_new"
+            android:clipChildren="false"
+            android:clipToPadding="false"
+            android:elevation="@dimen/_4sdp"
+            android:gravity="center"
+            android:orientation="horizontal"
+            android:paddingHorizontal="@dimen/_24sdp"
+            android:paddingVertical="@dimen/_12sdp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent">
+
+        <androidx.appcompat.widget.AppCompatTextView
+                android:id="@+id/tv_start_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/font_bold"
+                android:text="Start AI Yoga Practice"
+                android:textColor="@color/white"
+                android:textSize="@dimen/_14sdp"
+                android:textStyle="bold" />
+
+        <androidx.appcompat.widget.AppCompatImageView
+                android:id="@+id/iv_start_icon"
+                android:layout_width="@dimen/_20sdp"
+                android:layout_height="@dimen/_20sdp"
+                android:layout_marginStart="@dimen/_8sdp"
+                android:layout_marginVertical="@dimen/_2sdp"
+                android:src="@drawable/ic_pratice"
+                app:tint="@color/white" />
+
+    </androidx.appcompat.widget.LinearLayoutCompat>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

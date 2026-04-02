@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="NONE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="6066cfd5-de32-49a5-b03b-2a00de5729fb" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/../app/src/main/java/com/app/oil_painting/local/AppSharePref.kt" beforeDir="false" afterPath="$PROJECT_DIR$/../app/src/main/java/com/app/oil_painting/local/AppSharePref.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../app/src/main/java/com/app/oil_painting/ui/draw/DrawViewModel.kt" beforeDir="false" afterPath="$PROJECT_DIR$/../app/src/main/java/com/app/oil_painting/ui/draw/DrawViewModel.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../app/src/main/java/com/app/oil_painting/ui/view/SVGColoringVideoReplayView.kt" beforeDir="false" afterPath="$PROJECT_DIR$/../app/src/main/java/com/app/oil_painting/ui/view/SVGColoringVideoReplayView.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../app/src/main/java/com/app/oil_painting/ui/view/SVGColoringView.kt" beforeDir="false" afterPath="$PROJECT_DIR$/../app/src/main/java/com/app/oil_painting/ui/view/SVGColoringView.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../app/src/main/java/com/app/oil_painting/utils/AppConstants.kt" beforeDir="false" afterPath="$PROJECT_DIR$/../app/src/main/java/com/app/oil_painting/utils/AppConstants.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../app/src/main/res/values-fr/strings.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../app/src/main/res/values-fr/strings.xml" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="ClangdSettings">
+    <option name="formatViaClangd" value="false" />
+  </component>
+  <component name="ProjectColorInfo"><![CDATA[{
+  "associatedIndex": 8
+}]]></component>
+  <component name="ProjectId" id="32PLGuTPXnHxKy4WEp7S7ehOwyf" />
+  <component name="ProjectViewState">
+    <option name="autoscrollFromSource" value="true" />
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.cidr.known.project.marker": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "RunOnceActivity.readMode.enableVisualFormatting": "true",
+    "android.gradle.sync.needed": "true",
+    "cf.first.check.clang-format": "false",
+    "cidr.known.project.marker": "true"
+  }
+}]]></component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="6066cfd5-de32-49a5-b03b-2a00de5729fb" name="Changes" comment="" />
+      <created>1757317168932</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1757317168932</updated>
+    </task>
+    <servers />
+  </component>
+</project>

@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <ImageView
+        android:id="@+id/machine"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:src="@drawable/machine"
+        app:layout_constraintDimensionRatio="1582:1772"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintWidth_percent="0.8" />
+
+    <com.example.slotmachinegame.imageviewscrolling.ImageViewScrolling
+        android:id="@+id/slot1"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toBottomOf="@id/machine"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.3"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@id/machine"
+        app:layout_constraintVertical_bias="0.24"
+        app:layout_constraintWidth_percent="0.12" />
+
+    <com.example.slotmachinegame.imageviewscrolling.ImageViewScrolling
+        android:id="@+id/slot2"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toBottomOf="@id/machine"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@id/machine"
+        app:layout_constraintVertical_bias="0.24"
+        app:layout_constraintWidth_percent="0.12" />
+
+    <com.example.slotmachinegame.imageviewscrolling.ImageViewScrolling
+        android:id="@+id/slot3"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toBottomOf="@id/machine"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.70"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@id/machine"
+        app:layout_constraintVertical_bias="0.24"
+        app:layout_constraintWidth_percent="0.12" />
+
+    <ImageView
+        android:id="@+id/btn_slot_machine"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:src="@drawable/turn_off"
+        tools:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintDimensionRatio="294:530"
+        app:layout_constraintEnd_toEndOf="@id/machine"
+        app:layout_constraintStart_toEndOf="@id/machine"
+        app:layout_constraintTop_toTopOf="@id/machine"
+        app:layout_constraintVertical_bias="0.1"
+        app:layout_constraintWidth_percent="0.12" />
+
+    <ImageView
+        android:id="@+id/btn_slot_machine_2"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:src="@drawable/turn_on"
+        tools:visibility="visible"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintDimensionRatio="294:530"
+        app:layout_constraintEnd_toEndOf="@id/machine"
+        app:layout_constraintStart_toEndOf="@id/machine"
+        app:layout_constraintTop_toTopOf="@id/machine"
+        app:layout_constraintVertical_bias="0.4"
+        app:layout_constraintWidth_percent="0.12" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

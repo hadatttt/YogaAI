@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- Base -->
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+    <color name="maincolor">#004BFE</color>
+    <color name="red">#FF1100</color>
+
+    <!-- 🌸 Primary Purple (dịu mắt) -->
+    <color name="purple_200">#D1C4E9</color>
+    <color name="purple_300">#B39DDB</color>
+    <color name="purple_500">#7E57C2</color>
+    <color name="purple_700">#5E35B1</color>
+    <color name="purple_900">#4527A0</color>
+
+    <!-- 🌸 Accent -->
+    <color name="accent_soft">#EDE7F6</color>
+    <color name="accent_highlight">#CE93D8</color>
+
+    <!-- 🌿 Background -->
+    <color name="bg_main">#F9F9FB</color>
+    <color name="bg_card">#FFFFFF</color>
+    <color name="bg_soft">#F3F0FA</color>
+
+    <!-- ✍️ Text -->
+    <color name="text_primary">#2E2E2E</color>
+    <color name="text_secondary">#8E8E93</color>
+    <color name="text_hint">#B0B0C3</color>
+
+    <!-- 🌿 Status colors (giữ nguyên + bổ sung nhẹ) -->
+    <color name="status_pending">#FFA500</color>
+    <color name="status_confirmed">#4CAF50</color>
+    <color name="status_processing">#2196F3</color>
+    <color name="status_shipped">#9C27B0</color>
+    <color name="status_delivered">#4CAF50</color>
+    <color name="status_cancelled">#F44336</color>
+
+    <!-- 🌿 Soft status (dùng background badge đẹp hơn) -->
+    <color name="status_pending_bg">#FFF3E0</color>
+    <color name="status_success_bg">#E8F5E9</color>
+    <color name="status_error_bg">#FFEBEE</color>
+
+    <!-- 🌟 Extra (dùng cho AI/yoga app) -->
+    <color name="green_soft">#A5D6A7</color>
+    <color name="green_main">#4CAF50</color>
+    <color name="blue_soft">#BBDEFB</color>
+
+    <!-- fallback primary -->
+    <color name="primary">#FF956FF9</color>
+
+</resources>

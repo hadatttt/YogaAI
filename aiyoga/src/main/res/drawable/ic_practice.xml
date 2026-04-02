@@ -1,0 +1,39 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+        android:width="120dp"
+        android:height="120dp"
+        android:viewportWidth="100"
+        android:viewportHeight="100">
+
+    <!-- Head -->
+    <path
+            android:fillColor="#000000"
+            android:pathData="M50,15
+                          a5,5 0 1,1 0,10
+                          a5,5 0 1,1 0,-10"/>
+
+    <!-- Body -->
+    <path
+            android:strokeColor="#000000"
+            android:strokeWidth="3"
+            android:fillColor="@android:color/transparent"
+            android:pathData="M50,25 L50,60"/>
+
+    <!-- Arms (dang ngang) -->
+    <path
+            android:strokeColor="#000000"
+            android:strokeWidth="3"
+            android:pathData="M30,40 L70,40"/>
+
+    <!-- Leg đứng -->
+    <path
+            android:strokeColor="#000000"
+            android:strokeWidth="3"
+            android:pathData="M50,60 L50,85"/>
+
+    <!-- Leg giơ ngang 90 độ -->
+    <path
+            android:strokeColor="#000000"
+            android:strokeWidth="3"
+            android:pathData="M50,60 L80,60"/>
+
+</vector>

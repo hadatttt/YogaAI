@@ -1,0 +1,124 @@
+plugins {
+    alias(libs.plugins.android.application)
+    alias(libs.plugins.kotlin.android)
+}
+
+apply(plugin = "com.google.gms.google-services")
+
+android {
+    namespace = "com.hadat.aiyoga"
+    compileSdk = 36
+
+    defaultConfig {
+        applicationId = "com.hadat.aiyoga"
+        minSdk = 24
+        targetSdk = 36
+        versionCode = 1
+        versionName = "1.0"
+
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    buildTypes {
+        release {
+            isMinifyEnabled = false
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
+        }
+    }
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_11
+        targetCompatibility = JavaVersion.VERSION_11
+    }
+    kotlinOptions {
+        jvmTarget = "11"
+    }
+    buildFeatures {
+        viewBinding = true
+        buildConfig = true
+    }
+    androidResources {
+        noCompress.add("tflite")
+    }
+
+    // THÊM ĐOẠN NÀY: Để đảm bảo thư viện gốc (.so) của GPU không bị mất
+    packaging {
+        resources {
+            pickFirsts.add("lib/**/libtensorflowlite_gpu_jni.so")
+            pickFirsts.add("lib/**/libtensorflowlite_jni.so")
+        }
+    }
+}
+
+dependencies {
+    implementation(project(":base"))
+    implementation(project(":dailycheckin"))
+    implementation(project(":slotmachinegame"))
+    implementation("com.airbnb.android:lottie:6.0.0")
+
+    // Android Core
+    api(libs.androidx.core.ktx)
+    api(libs.androidx.appcompat)
+    api(libs.material)
+    api(libs.androidx.lifecycle.viewmodel.ktx)
+
+    // Google Services
+    implementation("com.google.android.gms:play-services-auth:20.7.0")
+    implementation("com.google.android.gms:play-services-maps:18.1.0")
+    implementation("com.google.android.gms:play-services-location:21.0.1")
+    implementation(libs.play.services.vision)
+
+    // Retrofit
+    implementation("com.squareup.retrofit2:retrofit:2.9.0")
+    implementation("com.squareup.retrofit2:converter-gson:2.9.0")
+    implementation("com.squareup.retrofit2:converter-scalars:2.9.0")
+
+    // Navigation & Permissions
+    api(libs.androidx.navigation.fragment.ktx)
+    api(libs.androidx.navigation.ui.ktx)
+    api(libs.permissionx)
+
+    // UI Helpers
+    implementation(libs.androidx.compose.animation.graphics)
+    implementation(libs.androidx.core.animation)
+    implementation("com.github.bumptech.glide:glide:4.16.0")
+
+    // Auth & Social
+    implementation("com.facebook.android:facebook-login:16.2.0")
+
+    // Firebase
+    implementation(platform("com.google.firebase:firebase-bom:32.3.1"))
+    implementation("com.google.firebase:firebase-messaging-ktx")
+
+    // Utils
+    implementation("androidx.work:work-runtime-ktx:2.8.1")
+    implementation("com.squareup.okhttp3:okhttp:4.12.0")
+    implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
+
+    // CameraX
+    val cameraxVersion = "1.3.1"
+    implementation("androidx.camera:camera-core:$cameraxVersion")
+    implementation("androidx.camera:camera-camera2:$cameraxVersion")
+    implementation("androidx.camera:camera-lifecycle:$cameraxVersion")
+    implementation("androidx.camera:camera-view:$cameraxVersion")
+
+    // =============================================================
+    // TENSORFLOW LITE & AI (ĐÃ DỌN DẸP VÀ ĐỒNG BỘ PHIÊN BẢN)
+    // =============================================================
+    // Dùng phiên bản 2.14.0 cho tất cả các thành phần TFLite
+    val tfliteVersion = "2.14.0"
+    implementation("org.tensorflow:tensorflow-lite:$tfliteVersion")
+    implementation("org.tensorflow:tensorflow-lite-gpu:$tfliteVersion") // Quan trọng nhất để sửa lỗi class
+    implementation("org.tensorflow:tensorflow-lite-support:0.4.4")
+    implementation("org.tensorflow:tensorflow-lite-metadata:0.4.4")
+
+    // MediaPipe (Dùng để lấy Pose Landmarks)
+    implementation("com.google.mediapipe:tasks-vision:0.10.14")
+
+    // Testing
+    testImplementation("junit:junit:4.13.2")
+    androidTestImplementation("androidx.test.ext:junit:1.1.5")
+    androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
+}
