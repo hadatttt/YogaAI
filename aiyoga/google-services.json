@@ -1,13 +1,13 @@
 {
   "project_info": {
-    "project_number": "418401276041",
-    "project_id": "fitme-282da",
-    "storage_bucket": "fitme-282da.firebasestorage.app"
+    "project_number": "425633611370",
+    "project_id": "yoga-ai-cf586",
+    "storage_bucket": "yoga-ai-cf586.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:418401276041:android:da1592147fc2d7f036b658",
+        "mobilesdk_app_id": "1:425633611370:android:abcca6dc06fc35b2aed413",
         "android_client_info": {
           "package_name": "com.hadat.aiyoga"
         }
@@ -15,7 +15,7 @@
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyCFH-88RkUmc2ngZh_4nDImWmrZrVNhFds"
+          "current_key": "AIzaSyCwKoTK8NUtt6T1a1KyCEa4VnVE80YFVmo"
         }
       ],
       "services": {

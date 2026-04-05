@@ -18,55 +18,68 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginHorizontal="@dimen/_20sdp"
+            android:paddingVertical="@dimen/_10sdp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="@id/gl_top">
-        <ImageView
+            app:layout_constraintTop_toTopOf="parent">
+
+        <com.google.android.material.imageview.ShapeableImageView
                 android:id="@+id/img_avatar"
-                android:layout_width="@dimen/_42sdp"
-                android:layout_height="@dimen/_42sdp"
-                android:layout_margin="@dimen/_2sdp"
-                android:background="@drawable/shape_circle"
-                android:elevation="@dimen/_4sdp"
+                android:layout_width="@dimen/_45sdp"
+                android:layout_height="@dimen/_45sdp"
                 android:padding="2dp"
                 android:scaleType="centerCrop"
+                android:src="@drawable/ic_learn_yoga"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:shapeAppearanceOverlay="@style/CircleImage"
+                app:strokeColor="#F0F0F0"
+                app:strokeWidth="1dp" />
+
+        <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/_12sdp"
+                android:orientation="vertical"
+                app:layout_constraintBottom_toBottomOf="@id/img_avatar"
+                app:layout_constraintEnd_toStartOf="@id/btn_notification"
+                app:layout_constraintStart_toEndOf="@id/img_avatar"
+                app:layout_constraintTop_toTopOf="@id/img_avatar">
+
+            <TextView
+                    android:id="@+id/tv_greeting"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/font_regular"
+                    android:text="Good Morning 👋"
+                    android:textColor="#9E9E9E"
+                    android:textSize="@dimen/_11sdp"
+                    android:letterSpacing="0.02" />
+
+            <TextView
+                    android:id="@+id/tv_username"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/font_bold"
+                    android:text="Dat Ha"
+                    android:textColor="@color/primary"
+                    android:textSize="@dimen/_18sdp"
+                    android:includeFontPadding="false" />
+        </LinearLayout>
+
+        <androidx.appcompat.widget.AppCompatImageButton
+                android:id="@+id/btn_notification"
+                android:layout_width="@dimen/_36sdp"
+                android:layout_height="@dimen/_36sdp"
+                android:background="@drawable/shape_round_rect_light"
+                android:src="@drawable/ic_learn_yoga"
+                android:padding="@dimen/_8sdp"
+                app:tint="#2D3142"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
 
-        <TextView
-                android:id="@+id/tv_greeting"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="@dimen/_10sdp"
-                android:fontFamily="sans-serif-medium"
-                android:text="Good Morning 👋"
-                android:textColor="#8E8E93"
-                android:textSize="@dimen/_12sdp"
-                app:layout_constraintStart_toEndOf="@id/img_avatar"
-                app:layout_constraintTop_toTopOf="@id/img_avatar" />
-
-        <TextView
-                android:id="@+id/tv_username"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Dat Ha"
-                android:textColor="@color/primary"
-                android:textSize="@dimen/_18sdp"
-                android:textStyle="bold"
-                app:layout_constraintStart_toStartOf="@id/tv_greeting"
-                app:layout_constraintTop_toBottomOf="@id/tv_greeting" />
-
-        <TextView
-                android:id="@+id/tv_date"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:fontFamily="sans-serif-light"
-                android:text="Mon, 19 Mar"
-                android:textColor="#B0B0C3"
-                android:textSize="@dimen/_11sdp"
-                app:layout_constraintBottom_toBottomOf="@id/tv_username"
-                app:layout_constraintEnd_toEndOf="parent" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 
     <TextView
@@ -75,10 +88,11 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="@dimen/_20sdp"
             android:layout_marginTop="@dimen/_24sdp"
-            android:text="Popular Categories"
+            android:text="Pose Categories"
             android:textColor="@color/primary"
             android:textSize="@dimen/_18sdp"
             android:textStyle="bold"
+            android:fontFamily="@font/font_bold"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/layout_header" />
 
@@ -118,34 +132,35 @@
             android:layout_height="wrap_content"
             android:layout_marginBottom="@dimen/_24sdp"
             android:background="@drawable/bg_new"
-            android:elevation="@dimen/_10sdp"
+            android:elevation="@dimen/_8sdp"
             android:gravity="center"
             android:orientation="horizontal"
-            android:paddingHorizontal="@dimen/_28sdp"
-            android:paddingVertical="@dimen/_14sdp"
+            android:paddingHorizontal="@dimen/_24sdp"
+            android:paddingVertical="@dimen/_12sdp"
             android:stateListAnimator="@animator/button_press_alpha"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent">
+
+        <androidx.appcompat.widget.AppCompatImageView
+                android:id="@+id/iv_add_project"
+                android:layout_width="@dimen/_22sdp"
+                android:layout_height="@dimen/_22sdp"
+                android:layout_marginEnd="@dimen/_10sdp"
+                android:src="@drawable/ic_learn_yoga"
+            />
 
         <androidx.appcompat.widget.AppCompatTextView
                 android:id="@+id/tv_new_project"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:fontFamily="@font/font_bold"
-                android:letterSpacing="0.05"
-                android:text="Start AI Yoga"
+                android:letterSpacing="0.03"
+                android:text="START LEARNING"
+                android:textAllCaps="true"
                 android:textColor="@color/white"
-                android:textSize="@dimen/_15sdp"
-                android:textStyle="bold" />
+                android:textSize="@dimen/_14sdp" />
 
-        <androidx.appcompat.widget.AppCompatImageView
-                android:id="@+id/iv_add_project"
-                android:layout_width="@dimen/_20sdp"
-                android:layout_height="@dimen/_20sdp"
-                android:layout_marginStart="@dimen/_8sdp"
-                android:src="@drawable/ic_practice"
-                app:tint="@color/white" />
     </androidx.appcompat.widget.LinearLayoutCompat>
 
     <LinearLayout
@@ -158,7 +173,9 @@
             android:orientation="vertical"
             android:clipChildren="false"
             android:clipToPadding="false"
-            app:layout_constraintBottom_toTopOf="@id/btn_new_project"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintVertical_bias="0.8"
             app:layout_constraintEnd_toEndOf="parent">
 
         <androidx.appcompat.widget.AppCompatImageView
@@ -167,9 +184,6 @@
                 android:layout_height="@dimen/_38sdp"
                 android:src="@drawable/chatbot"
                 android:scaleType="fitCenter"
-                android:elevation="@dimen/_8sdp"
-                android:clickable="true"
-                android:focusable="true"
                 android:foreground="?attr/selectableItemBackgroundBorderless" />
 
         <TextView

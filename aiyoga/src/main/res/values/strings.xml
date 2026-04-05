@@ -1,6 +1,5 @@
 <resources>
     <string name="app_name">Yoga Ai</string>
-    <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="notification_permission_title">Notification</string>
     <string name="notification_permission_message">Allow the app to send notifications so you don\'t miss new updates!</string>
@@ -22,4 +21,11 @@
     <string name="title_cancel">Cancel</string>
     <string name="text_day">Day %d</string>
     <string name="spin_left">Spin Left %d</string>
+    <string name="find_your_inner_peace">Find your inner peace</string>
+    <string name="get_started">Get Started</string>
+    <string name="choose_your_login_method">Choose your login method</string>
+    <string name="continue_with_google">Continue with Google</string>
+    <string name="continue_with_facebook">Continue with Facebook</string>
+    <string name="by_continuing_you_agree_to_our_nterms_of_service_and_privacy_policy">By continuing, you agree to our\nTerms of Service and Privacy Policy</string>
+    <string name="health_is_wealth_peace_of_mind_is_happiness">Health is wealth, peace of mind is happiness</string>
 </resources>
