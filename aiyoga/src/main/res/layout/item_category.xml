@@ -10,5 +10,4 @@
         android:fontFamily="@font/font_bold"
         android:background="@drawable/ic_category"
         android:textColor="@color/white"
-        android:drawableStart="@color/white"
-        android:drawablePadding="8dp" />
+ />

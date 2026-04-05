@@ -8,5 +8,26 @@
             android:id="@+id/yogaFragment"
             android:name="com.hadat.aiyoga.yogamain.YogaFragment"
             android:label="YogaFragment" />
+    <fragment
+            android:id="@+id/loginFragment"
+            android:name="com.hadat.aiyoga.login.LoginFragment"
+            android:label="LoginFragment" />
+    <fragment
+            android:id="@+id/homeFragment"
+            android:name="com.hadat.aiyoga.home.HomeFragment"
+            android:label="HomeFragment" />
+    <fragment
+            android:id="@+id/detailYogaFragment"
+            android:name="com.hadat.aiyoga.detailyoga.DetailYogaFragment"
+            android:label="DetailYogaFragment" >
+        <argument
+                android:name="yogaPoseItem"
+                app:argType="com.hadat.aiyoga.yogamain.YogaPoseModel"
+                app:nullable="false"/>
+    </fragment>
+    <fragment
+            android:id="@+id/yogaSkeletonFragment"
+            android:name="com.hadat.aiyoga.yogaskeleton.YogaSkeletonFragment"
+            android:label="YogaSkeletonFragment" />
 
 </navigation>

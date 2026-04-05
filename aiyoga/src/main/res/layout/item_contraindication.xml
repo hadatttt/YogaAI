@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="@dimen/_20sdp"
+        android:layout_marginBottom="@dimen/_12sdp"
+        android:orientation="horizontal">
+
+    <ImageView
+            android:id="@+id/iv_warning"
+            android:layout_width="@dimen/_18sdp"
+            android:layout_height="@dimen/_18sdp"
+            android:layout_marginTop="@dimen/_2sdp"
+            android:src="@drawable/ic_warning"
+            app:tint="#FFBF00" />
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/_12sdp"
+        android:orientation="vertical">
+
+    <TextView
+            android:id="@+id/tv_contra_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Cảnh báo chấn thương"
+            android:textColor="#FFBF00"
+            android:textSize="@dimen/_14sp"
+            android:fontFamily="@font/font_bold" />
+        <TextView
+        android:id="@+id/tv_contra_desc"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/_2sdp"
+        android:text="Tránh tập nếu bạn đang bị đau hoặc có chấn thương vùng cổ."
+        android:textColor="#666666"
+        android:textSize="@dimen/_12sp"
+        android:fontFamily="sans-serif" />
+</LinearLayout>
+</LinearLayout>
