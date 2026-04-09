@@ -90,12 +90,13 @@ dependencies {
     // Auth & Social
     implementation("com.facebook.android:facebook-login:16.2.0")
 
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.7.3")
     // Firebase
     implementation(platform("com.google.firebase:firebase-bom:32.3.1"))
     implementation("com.google.firebase:firebase-messaging-ktx")
     implementation("com.google.firebase:firebase-auth-ktx")
     implementation("com.google.firebase:firebase-config-ktx")
-
+    implementation("com.google.firebase:firebase-firestore-ktx")
 
     // Utils
     implementation("androidx.work:work-runtime-ktx:2.8.1")

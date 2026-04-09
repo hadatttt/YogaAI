@@ -33,7 +33,6 @@ class SingleYogaFragment : BaseFragment<FragmentSingleYogaBinding, SingleYogaVie
 
     private val args by navArgs<SingleYogaFragmentArgs>()
 
-    // Giống Google: 1 executor cho camera, helper khởi tạo trên backgroundExecutor
     private lateinit var backgroundExecutor: ExecutorService
 
     private lateinit var poseLandmarkerHelper: PoseLandmarkerHelper

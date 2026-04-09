@@ -6,6 +6,9 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.hadat.aiyoga.R
 import com.hadat.aiyoga.databinding.FragmentHomeBinding
 import com.hadat.aiyoga.utils.ViewUtils
+import com.hadat.aiyoga.utils.ViewUtils.getGreeting
+import com.hadat.aiyoga.utils.ViewUtils.removeVietnameseAccents
+import com.hadat.aiyoga.utils.loadImageFromNetwork
 import hoang.dqm.codebase.base.activity.BaseFragment
 import hoang.dqm.codebase.base.activity.navigate
 import hoang.dqm.codebase.utils.setDraggableWithClick
@@ -17,6 +20,13 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
     private val yogaPoseAdapter by lazy { YogaPoseAdapter() }
 
     override fun initView() {
+        binding.tvGreeting.text = getGreeting(requireContext())
+        viewModel.userData.observe(viewLifecycleOwner) { user ->
+            user?.let {
+                binding.tvUsername.text = it.displayName.removeVietnameseAccents()
+                binding.imgAvatar.loadImageFromNetwork(it.photoUrl)
+            }
+        }
         binding.rvTemplates.apply {
             layoutManager = GridLayoutManager(context, 2)
             adapter = yogaPoseAdapter.apply {
