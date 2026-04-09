@@ -41,7 +41,6 @@ android {
 
 dependencies {
     implementation(libs.androidx.lifecycle.viewmodel.ktx)
-    implementation("com.hbb20:ccp:2.7.3")
     // Navigation
     api(libs.androidx.navigation.fragment.ktx)
     api(libs.androidx.navigation.ui.ktx)
@@ -53,7 +52,6 @@ dependencies {
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
-    api(libs.androidx.media3.exoplayer.v131)
     // Utils
     api(libs.permissionx)
 

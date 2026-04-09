@@ -16,13 +16,16 @@ android {
         targetSdk = 36
         versionCode = 1
         versionName = "1.0"
+        ndk {
+            abiFilters.add("arm64-v8a")
+        }
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
     buildTypes {
         release {
-            isMinifyEnabled = false
+            isMinifyEnabled = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
@@ -43,11 +46,12 @@ android {
     }
     androidResources {
         noCompress.add("tflite")
+        noCompress.add("task")
     }
 
     packaging {
         resources {
-            pickFirsts.add("lib/**/libtensorflowlite_gpu_jni.so")
+            excludes.add("lib/**/libtensorflowlite_gpu_jni.so")
             pickFirsts.add("lib/**/libtensorflowlite_jni.so")
         }
     }
@@ -69,7 +73,6 @@ dependencies {
     implementation("com.google.android.gms:play-services-auth:20.7.0")
     implementation("com.google.android.gms:play-services-maps:18.1.0")
     implementation("com.google.android.gms:play-services-location:21.0.1")
-    implementation(libs.play.services.vision)
 
     // Retrofit
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
@@ -82,8 +85,6 @@ dependencies {
     api(libs.permissionx)
 
     // UI Helpers
-    implementation(libs.androidx.compose.animation.graphics)
-    implementation(libs.androidx.core.animation)
     implementation("com.github.bumptech.glide:glide:4.16.0")
 
     // Auth & Social
@@ -108,13 +109,8 @@ dependencies {
     implementation("androidx.camera:camera-lifecycle:$cameraxVersion")
     implementation("androidx.camera:camera-view:$cameraxVersion")
 
-    // =============================================================
-    // TENSORFLOW LITE & AI (ĐÃ DỌN DẸP VÀ ĐỒNG BỘ PHIÊN BẢN)
-    // =============================================================
-    // Dùng phiên bản 2.14.0 cho tất cả các thành phần TFLite
     val tfliteVersion = "2.14.0"
     implementation("org.tensorflow:tensorflow-lite:$tfliteVersion")
-    implementation("org.tensorflow:tensorflow-lite-gpu:$tfliteVersion") // Quan trọng nhất để sửa lỗi class
     implementation("org.tensorflow:tensorflow-lite-support:0.4.4")
     implementation("org.tensorflow:tensorflow-lite-metadata:0.4.4")
 

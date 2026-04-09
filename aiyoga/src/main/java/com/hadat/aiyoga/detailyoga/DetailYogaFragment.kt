@@ -1,5 +1,6 @@
 package com.hadat.aiyoga.detailyoga
 
+import android.os.Bundle
 import android.view.View
 import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -9,6 +10,7 @@ import com.hadat.aiyoga.utils.ViewUtils
 import com.hadat.aiyoga.utils.loadImageFromNetwork
 import com.hadat.aiyoga.yogautils.YogaDataUtils
 import hoang.dqm.codebase.base.activity.BaseFragment
+import hoang.dqm.codebase.base.activity.navigate
 import hoang.dqm.codebase.base.activity.popBackStack
 import hoang.dqm.codebase.utils.singleClick
 import kotlin.getValue
@@ -103,6 +105,10 @@ class DetailYogaFragment : BaseFragment<FragmentDetailYogaBinding, DetailYogaVie
             updateContentByCategoryId(category.id)
         }
         binding.layoutNext.singleClick {
+            val bundle = Bundle().apply {
+                putParcelable("yogaPoseItem", args.yogaPoseItem)
+            }
+            navigate(R.id.singleYogaFragment, bundle)
         }
     }
 }
