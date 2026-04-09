@@ -78,7 +78,7 @@ class YogaFragment : BaseFragment<FragmentYogaBinding, YogaViewModel>() {
         classifierExecutor.execute {
             try {
                 val classifierFile = File(requireContext().filesDir, "yoga_model.tflite")
-                val taskFile = File(requireContext().filesDir, "pose_landmarker_lite.task")
+                val taskFile = File(requireContext().filesDir, "pose_landmarker_heavy.task")
 
                 if (classifierFile.exists() && taskFile.exists()) {
                     setupClassifier(classifierFile)
@@ -122,7 +122,11 @@ class YogaFragment : BaseFragment<FragmentYogaBinding, YogaViewModel>() {
             .setResultListener { result, _ ->
                 activity?.runOnUiThread {
                     if (isAdded && !isFragmentDestroyed) {
-                        binding.overlayView.setResults(result, binding.viewFinder.height, binding.viewFinder.width)
+//                        binding.overlayView.setResults(
+//                            result,
+//                            result.inputImageHeight(),
+//                            result.inputImageWidth()
+//                        )
 
                         val currentTime = System.currentTimeMillis()
                         val currentId = viewModel.detectedPoseId.value ?: -1

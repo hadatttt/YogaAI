@@ -11,17 +11,13 @@
             android:id="@+id/viewFinder"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:background="@color/white" />
+            app:scaleType="fillStart" />
 
-    <com.hadat.aiyoga.yogautils.OverlayView
+    <com.hadat.aiyoga.utils.OverlayView
             android:id="@+id/overlayView"
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            android:visibility="visible"
-            app:layout_constraintBottom_toBottomOf="@id/viewFinder"
-            app:layout_constraintEnd_toEndOf="@id/viewFinder"
-            app:layout_constraintStart_toStartOf="@id/viewFinder"
-            app:layout_constraintTop_toTopOf="@id/viewFinder" />
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:visibility="visible" />
 
     <androidx.appcompat.widget.AppCompatImageView
             android:id="@+id/iv_back"
@@ -30,12 +26,11 @@
             android:layout_marginStart="@dimen/_15sdp"
             android:layout_marginTop="@dimen/_30sdp"
             android:background="@drawable/shape_circle"
-            android:padding="@dimen/_4sdp"
+            android:elevation="4dp"
+            android:padding="@dimen/_6sdp"
             android:src="@drawable/ic_back"
-            android:elevation="2dp"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
- />
+            app:layout_constraintTop_toTopOf="parent" />
 
     <com.google.android.material.card.MaterialCardView
             android:id="@+id/layout_time_top"
@@ -44,7 +39,7 @@
             android:layout_marginTop="@dimen/_30sdp"
             app:cardBackgroundColor="@color/primary"
             app:cardCornerRadius="@dimen/_15sdp"
-            app:cardElevation="0dp"
+            app:cardElevation="4dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent">
@@ -54,14 +49,13 @@
                 android:layout_height="wrap_content"
                 android:gravity="center"
                 android:orientation="horizontal"
-                android:paddingHorizontal="@dimen/_15sdp"
-                android:paddingVertical="@dimen/_5sdp">
+                android:paddingHorizontal="@dimen/_12sdp"
+                android:paddingVertical="@dimen/_4sdp">
 
             <com.airbnb.lottie.LottieAnimationView
                     android:id="@+id/lottie_status"
-                    android:layout_width="@dimen/_25sdp"
-                    android:layout_height="@dimen/_25sdp"
-
+                    android:layout_width="@dimen/_28sdp"
+                    android:layout_height="@dimen/_28sdp"
                     app:lottie_autoPlay="true"
                     app:lottie_loop="true"
                     app:lottie_rawRes="@raw/time" />
@@ -70,26 +64,40 @@
                     android:id="@+id/tv_timer"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="@dimen/_5sdp"
+                    android:layout_marginStart="@dimen/_4sdp"
                     android:text="00:00"
                     android:textColor="@color/white"
-                    android:textSize="@dimen/_18ssp"
+                    android:textSize="@dimen/_16ssp"
                     android:textStyle="bold" />
         </LinearLayout>
     </com.google.android.material.card.MaterialCardView>
 
-    <com.google.android.material.card.MaterialCardView
-            android:id="@+id/card_preview"
-            android:layout_width="@dimen/_80sdp"
-            android:layout_height="@dimen/_100sdp"
+    <androidx.appcompat.widget.AppCompatImageView
+            android:id="@+id/iv_flip"
+            android:layout_width="@dimen/_30sdp"
+            android:layout_height="@dimen/_30sdp"
             android:layout_marginTop="@dimen/_30sdp"
             android:layout_marginEnd="@dimen/_15sdp"
-            app:cardCornerRadius="@dimen/_12sdp"
-            app:cardElevation="@dimen/_4sdp"
+            android:background="@drawable/shape_circle"
+            android:elevation="4dp"
+            android:padding="@dimen/_6sdp"
+            android:src="@drawable/ic_flip"
+            android:tint="@color/primary"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+    <com.google.android.material.card.MaterialCardView
+            android:id="@+id/card_preview"
+            android:layout_width="@dimen/_70sdp"
+            android:layout_height="@dimen/_70sdp"
+            android:layout_marginStart="@dimen/_15sdp"
+            android:layout_marginTop="@dimen/_10sdp"
+            app:cardCornerRadius="@dimen/_10sdp"
+            app:cardElevation="@dimen/_4dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/iv_back"
             app:strokeColor="#FF956FF9"
-            app:strokeWidth="2dp">
+            app:strokeWidth="1.5dp">
 
         <ImageView
                 android:id="@+id/iv_yoga_sample"
@@ -100,27 +108,27 @@
 
     <com.google.android.material.card.MaterialCardView
             android:id="@+id/card_guide"
-            android:layout_width="0dp"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginHorizontal="@dimen/_20sdp"
-            android:layout_marginBottom="@dimen/_15sdp"
+            android:layout_marginHorizontal="@dimen/_25sdp"
+            android:layout_marginBottom="@dimen/_20sdp"
             app:cardCornerRadius="@dimen/_20sdp"
-            app:cardElevation="@dimen/_4sdp"
+            app:cardElevation="@dimen/_2sdp"
             app:layout_constraintBottom_toTopOf="@+id/ll_controls"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:strokeColor="#FF956FF9"
-            app:strokeWidth="1.5dp">
+            app:strokeWidth="1dp">
 
         <TextView
                 android:id="@+id/tv_guide"
-                android:layout_width="match_parent"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:fontFamily="sans-serif-medium"
                 android:gravity="center"
-                android:letterSpacing="0.02"
-                android:paddingHorizontal="@dimen/_20sdp"
-                android:paddingVertical="@dimen/_10sdp"
+                android:letterSpacing="0.01"
+                android:paddingHorizontal="@dimen/_15sdp"
+                android:paddingVertical="@dimen/_12sdp"
                 android:text="Hãy đứng lùi lại để thấy toàn thân"
                 android:textColor="@color/primary"
                 android:textSize="@dimen/_12ssp" />
@@ -130,58 +138,54 @@
             android:id="@+id/ll_controls"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="@dimen/_20sdp"
+            android:layout_marginBottom="@dimen/_25sdp"
             android:gravity="center"
             android:orientation="horizontal"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent">
+            app:layout_constraintBottom_toBottomOf="parent">
 
         <androidx.appcompat.widget.AppCompatImageView
-                android:id="@+id/iv_flip"
+                android:id="@+id/iv_photo"
                 android:layout_width="@dimen/_40sdp"
                 android:layout_height="@dimen/_40sdp"
                 android:background="@drawable/shape_circle"
                 android:backgroundTint="#E4E3F3"
                 android:padding="@dimen/_10sdp"
-                android:src="@drawable/ic_flip"
                 android:scaleType="centerInside"
-                android:tint="@color/primary"
-        />
+                android:src="@drawable/ic_camera"
+                android:tint="@color/primary" />
 
         <FrameLayout
                 android:id="@+id/container_action"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginHorizontal="@dimen/_30sdp">
+                android:layout_marginHorizontal="@dimen/_25sdp">
 
             <ProgressBar
                     android:id="@+id/progress_around"
                     style="?android:attr/progressBarStyleHorizontal"
-                    android:layout_width="@dimen/_90sdp"
-                    android:layout_height="@dimen/_90sdp"
+                    android:layout_width="@dimen/_85sdp"
+                    android:layout_height="@dimen/_85sdp"
                     android:layout_gravity="center"
                     android:indeterminate="false"
                     android:max="1000"
-                    android:progress="1000"
+                    android:progress="0"
                     android:progressDrawable="@drawable/circular_progress_bar" />
 
             <com.google.android.material.card.MaterialCardView
                     android:id="@+id/layout_action"
-                    android:layout_width="@dimen/_70sdp"
-                    android:layout_height="@dimen/_70sdp"
+                    android:layout_width="@dimen/_65sdp"
+                    android:layout_height="@dimen/_65sdp"
                     android:layout_gravity="center"
                     app:cardBackgroundColor="#E4E3F3"
                     app:cardCornerRadius="@dimen/_35sdp"
-                    app:cardElevation="0dp">
+                    app:cardElevation="2dp">
 
                 <ImageView
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
-                        android:padding="@dimen/_20sdp"
+                        android:padding="@dimen/_18sdp"
                         android:src="@drawable/ic_pause"
                         app:tint="#FF956FF9" />
-
             </com.google.android.material.card.MaterialCardView>
         </FrameLayout>
 
@@ -192,10 +196,27 @@
                 android:background="@drawable/shape_circle"
                 android:backgroundTint="#E4E3F3"
                 android:padding="@dimen/_10sdp"
-                android:src="@drawable/ic_mute"
-                android:tint="@color/primary"
- />
-
+                android:src="@drawable/ic_volume"
+                android:tint="@color/primary" />
     </LinearLayout>
+
+    <View
+            android:id="@+id/view_flash"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="#FFFFFF"
+            android:alpha="0"
+            android:visibility="gone"/>
+
+    <ImageView
+            android:id="@+id/iv_capture_preview"
+            android:layout_width="120dp"
+            android:layout_height="160dp"
+            android:scaleType="centerCrop"
+            android:visibility="gone"
+            android:elevation="10dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_margin="20dp"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

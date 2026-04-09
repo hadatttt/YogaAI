@@ -70,7 +70,13 @@ class MainActivity : AppCompatActivity() {
         }
 
         navController.addOnDestinationChangedListener { _, destination, _ ->
-            if (destination.id == R.id.loginFragment || destination.id == R.id.yogaFragment) {
+            val fragmentsToHideNavigation = setOf(
+                R.id.loginFragment,
+                R.id.yogaFragment,
+                R.id.singleYogaFragment
+            )
+
+            if (fragmentsToHideNavigation.contains(destination.id)) {
                 bottomNavigation.visibility = View.GONE
             } else {
                 bottomNavigation.visibility = View.VISIBLE
