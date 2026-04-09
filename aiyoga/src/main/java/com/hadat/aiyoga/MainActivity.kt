@@ -56,8 +56,8 @@ class MainActivity : AppCompatActivity() {
             CurvedBottomNavigation.Model(PRACTICE_ITEM, "Practice", R.drawable.ic_pratice),
             CurvedBottomNavigation.Model(HISTORY_ITEM, "History", R.drawable.ic_history),
             CurvedBottomNavigation.Model(HOME_ITEM, "Home", R.drawable.ic_home),
-            CurvedBottomNavigation.Model(PROFILE_ITEM, "Profile", R.drawable.ic_benefit),
-            CurvedBottomNavigation.Model(SOCIAL_ITEM, "Social", R.drawable.ic_benefit)
+            CurvedBottomNavigation.Model(PROFILE_ITEM, "Profile", R.drawable.ic_my_profile),
+            CurvedBottomNavigation.Model(SOCIAL_ITEM, "Social", R.drawable.ic_social)
         )
 
         bottomNavigation.apply {
@@ -75,13 +75,6 @@ class MainActivity : AppCompatActivity() {
             } else {
                 bottomNavigation.visibility = View.VISIBLE
             }
-        }
-    }
-    override fun onBackPressed() {
-        if (navController.currentDestination?.id == HOME_ITEM) {
-            super.onBackPressed()
-        } else {
-            navController.popBackStack(HOME_ITEM, false)
         }
     }
 }

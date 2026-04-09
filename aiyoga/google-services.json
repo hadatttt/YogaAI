@@ -12,7 +12,20 @@
           "package_name": "com.hadat.aiyoga"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "425633611370-tvn8guok34lbpc48j3kkopbce2sjjv36.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.hadat.aiyoga",
+            "certificate_hash": "26c6b0de0e3d3480b5d673461ed3b15236a4f7a8"
+          }
+        },
+        {
+          "client_id": "425633611370-5n8a0hc5r8o65q8uv9933kbe83dsgo2q.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyCwKoTK8NUtt6T1a1KyCEa4VnVE80YFVmo"
@@ -20,7 +33,12 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "425633611370-5n8a0hc5r8o65q8uv9933kbe83dsgo2q.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }

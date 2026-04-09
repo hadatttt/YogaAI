@@ -29,5 +29,14 @@
             android:id="@+id/yogaSkeletonFragment"
             android:name="com.hadat.aiyoga.yogaskeleton.YogaSkeletonFragment"
             android:label="YogaSkeletonFragment" />
+    <fragment
+            android:id="@+id/singleYogaFragment"
+            android:name="com.hadat.aiyoga.singleyoga.SingleYogaFragment"
+            android:label="SingleYogaFragment" >
+        <argument
+                android:name="yogaPoseItem"
+                app:argType="com.hadat.aiyoga.yogamain.YogaPoseModel"
+                app:nullable="false"/>
+    </fragment>
 
 </navigation>
