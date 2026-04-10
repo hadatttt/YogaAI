@@ -7,8 +7,8 @@ import com.google.firebase.auth.AuthCredential
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.hadat.aiyoga.service.AppPreferences
-import com.hadat.firestore.model.User
-import com.hadat.firestore.repository.UserRepository
+import com.hadat.aiyoga.firestore.model.User
+import com.hadat.aiyoga.firestore.repository.UserRepository
 import hoang.dqm.codebase.base.viewmodel.BaseViewModel
 import kotlinx.coroutines.launch
 class LoginViewModel : BaseViewModel() {

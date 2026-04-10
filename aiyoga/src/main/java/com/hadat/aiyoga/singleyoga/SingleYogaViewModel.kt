@@ -83,7 +83,6 @@ class SingleYogaViewModel : BaseViewModel() {
         exerciseTimer = Timer()
         exerciseTimer?.scheduleAtFixedRate(object : TimerTask() {
             override fun run() {
-                // CHỈ ĐẾM TIẾP NẾU TƯ THẾ ĐANG CHUẨN
                 if (isCurrentlyCorrect) {
                     totalSecondsAccumulated++
                     updateTimerUI()

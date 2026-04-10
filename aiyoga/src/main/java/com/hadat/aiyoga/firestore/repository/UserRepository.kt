@@ -1,7 +1,7 @@
-package com.hadat.firestore.repository
+package com.hadat.aiyoga.firestore.repository
 
 import com.google.firebase.firestore.FirebaseFirestore
-import com.hadat.firestore.model.User
+import com.hadat.aiyoga.firestore.model.User
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
