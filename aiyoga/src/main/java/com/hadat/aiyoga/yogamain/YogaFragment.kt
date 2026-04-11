@@ -17,7 +17,7 @@ import com.google.mediapipe.tasks.vision.poselandmarker.PoseLandmarker
 import com.hadat.aiyoga.databinding.FragmentYogaBinding
 import com.hadat.aiyoga.utils.ModelDownloader
 import com.hadat.aiyoga.utils.loadImageFromNetwork
-import com.hadat.aiyoga.yogautils.YogaCoachUtils
+import com.hadat.aiyoga.utils.yogautils.YogaCoachUtils
 import hoang.dqm.codebase.base.activity.BaseFragment
 import hoang.dqm.codebase.base.activity.popBackStack
 import hoang.dqm.codebase.utils.singleClick

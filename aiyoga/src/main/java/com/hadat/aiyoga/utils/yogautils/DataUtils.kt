@@ -1,4 +1,4 @@
-package com.hadat.aiyoga.yogautils
+package com.hadat.aiyoga.utils.yogautils
 
 import android.annotation.SuppressLint
 import android.util.Log

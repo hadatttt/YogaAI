@@ -38,6 +38,18 @@ class ChoosePoseFragment : BaseFragment<FragmentChoosePosesBinding, ChoosePoseVi
             layoutManager = LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
             adapter = selectedAdapter
         }
+        viewModel.selectedPoses.observe(viewLifecycleOwner) { list ->
+            selectedAdapter.setList(list)
+            binding.tvSelectedTitle.text = "Selected Poses (${list.size})"
+
+            val isEnable = list.isNotEmpty()
+
+            binding.btnCreate.isEnabled = isEnable
+            binding.btnCreate.isSelected = isEnable
+        }
+        viewModel.fetchData()
+        viewModel.categoryList.observe(viewLifecycleOwner) { categoryAdapter.setList(it) }
+        viewModel.yogaPoseList.observe(viewLifecycleOwner) { allPoseAdapter.setList(it) }
     }
 
     override fun initListener() {
@@ -74,19 +86,6 @@ class ChoosePoseFragment : BaseFragment<FragmentChoosePosesBinding, ChoosePoseVi
         navigate(R.id.detailYogaFragment, bundle)
     }
     override fun initData() {
-        viewModel.selectedPoses.observe(viewLifecycleOwner) { list ->
-            selectedAdapter.setList(list)
-            binding.tvSelectedTitle.text = "Selected Poses (${list.size})"
-
-            val isEnable = list.isNotEmpty()
-
-            binding.btnCreate.isEnabled = isEnable
-            binding.btnCreate.isSelected = isEnable
-        }
-        viewModel.resetSelected()
-        viewModel.fetchData()
-        viewModel.categoryList.observe(viewLifecycleOwner) { categoryAdapter.setList(it) }
-        viewModel.yogaPoseList.observe(viewLifecycleOwner) { allPoseAdapter.setList(it) }
 
     }
 }

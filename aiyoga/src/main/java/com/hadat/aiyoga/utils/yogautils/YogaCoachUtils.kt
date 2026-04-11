@@ -1,4 +1,4 @@
-package com.hadat.aiyoga.yogautils
+package com.hadat.aiyoga.utils.yogautils
 
 import android.content.Context
 import android.util.Log
@@ -224,5 +224,61 @@ object YogaCoachUtils {
         } else {
             false to (worst?.second ?: "Giữ vững! ($percent%)")
         }
+    }
+
+    fun checkPoseAccuracy(landmarks: List<NormalizedLandmark>, poseId: Int): Boolean {
+        if (landmarks.isEmpty()) return false
+
+        val rawRef = referenceData?.get(poseId) ?: return false
+
+        val u = mapOf(
+            "knee_L" to calculateAngleVector(landmarks[L_HIP], landmarks[L_KNEE], landmarks[L_ANKLE]),
+            "knee_R" to calculateAngleVector(landmarks[R_HIP], landmarks[R_KNEE], landmarks[R_ANKLE]),
+            "hip_L" to calculateAngleVector(landmarks[L_SHOULDER], landmarks[L_HIP], landmarks[L_KNEE]),
+            "hip_R" to calculateAngleVector(landmarks[R_SHOULDER], landmarks[R_HIP], landmarks[R_KNEE]),
+            "arm_body_L" to calculateAngleVector(landmarks[L_ELBOW], landmarks[L_SHOULDER], landmarks[L_HIP]),
+            "arm_body_R" to calculateAngleVector(landmarks[R_ELBOW], landmarks[R_SHOULDER], landmarks[R_HIP]),
+            "elbow_L" to calculateAngleVector(landmarks[L_SHOULDER], landmarks[L_ELBOW], landmarks[L_WRIST]),
+            "elbow_R" to calculateAngleVector(landmarks[R_SHOULDER], landmarks[R_ELBOW], landmarks[R_WRIST])
+        )
+
+        val swapRef = mapOf(
+            "knee_L" to (rawRef["knee_R"] ?: 0.0),
+            "knee_R" to (rawRef["knee_L"] ?: 0.0),
+            "hip_L" to (rawRef["hip_R"] ?: 0.0),
+            "hip_R" to (rawRef["hip_L"] ?: 0.0),
+            "arm_body_L" to (rawRef["arm_body_R"] ?: 0.0),
+            "arm_body_R" to (rawRef["arm_body_L"] ?: 0.0),
+            "elbow_L" to (rawRef["elbow_R"] ?: 0.0),
+            "elbow_R" to (rawRef["elbow_L"] ?: 0.0)
+        )
+
+        fun calcTotalDiff(refMap: Map<String, Double>): Double {
+            return u.entries.sumOf { (k, v) -> angleDiff(v, refMap[k] ?: 0.0) }
+        }
+
+        val ref = if (calcTotalDiff(swapRef) < calcTotalDiff(rawRef)) swapRef else rawRef
+
+        val weights = mapOf(
+            "knee_L" to 1.0, "knee_R" to 1.0,
+            "hip_L" to 1.5, "hip_R" to 1.5,
+            "arm_body_L" to 1.2, "arm_body_R" to 1.2,
+            "elbow_L" to 0.7, "elbow_R" to 0.7
+        )
+
+        var totalScore = 0.0
+        var totalWeight = 0.0
+
+        u.forEach { (k, v) ->
+            val target = ref[k] ?: return@forEach
+            val w = weights[k] ?: 1.0
+            val diff = angleDiff(v, target)
+            val score = max(0.0, 1 - diff / 90.0)
+            totalScore += score * w
+            totalWeight += w
+        }
+        val finalPercent = (totalScore / totalWeight) * 100
+        Log.d("YogaCoach", "📸 Static Image Score: ${finalPercent.toInt()}%")
+        return finalPercent > 80.0
     }
 }

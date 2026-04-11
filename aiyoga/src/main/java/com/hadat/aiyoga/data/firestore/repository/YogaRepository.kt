@@ -1,9 +1,9 @@
-package com.hadat.aiyoga.firestore.repository
+package com.hadat.aiyoga.data.firestore.repository
 
+import android.util.Log
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
-import com.google.firebase.firestore.SetOptions
-import com.hadat.aiyoga.firestore.model.YogaInteractionModel
+import com.hadat.aiyoga.data.firestore.model.YogaInteractionModel
 import kotlinx.coroutines.tasks.await
 import java.text.SimpleDateFormat
 import java.util.*
@@ -51,14 +51,14 @@ class YogaRepository {
             if (!snapshot.isEmpty) {
                 // Lấy đúng field "poseId" từ document
                 val id = snapshot.documents[0].getString("poseId")
-                android.util.Log.d("YOGA_DEBUG", "Tìm thấy PoseId trending trong Firestore: $id")
+                Log.d("YOGA_DEBUG", "Tìm thấy PoseId trending trong Firestore: $id")
                 id
             } else {
-                android.util.Log.d("YOGA_DEBUG", "Không tìm thấy document nào cho ngày hôm nay")
+                Log.d("YOGA_DEBUG", "Không tìm thấy document nào cho ngày hôm nay")
                 "0"
             }
         } catch (e: Exception) {
-            android.util.Log.e("YOGA_DEBUG", "Lỗi Query Firestore: ${e.message}")
+            Log.e("YOGA_DEBUG", "Lỗi Query Firestore: ${e.message}")
             "0"
         }
     }

@@ -60,11 +60,11 @@ class MainActivity : AppCompatActivity() {
 
     private fun setUpBottomNavigation() {
         val bottomNavigationItems = mutableListOf(
-            CurvedBottomNavigation.Model(HOME_ITEM, "Home", R.drawable.ic_home),
-            CurvedBottomNavigation.Model(PRACTICE_ITEM, "Practice", R.drawable.ic_pratice),
+            CurvedBottomNavigation.Model(SOCIAL_ITEM, "Social", R.drawable.ic_social),
             CurvedBottomNavigation.Model(HISTORY_ITEM, "History", R.drawable.ic_history),
-            CurvedBottomNavigation.Model(PROFILE_ITEM, "Profile", R.drawable.ic_my_profile),
-            CurvedBottomNavigation.Model(SOCIAL_ITEM, "Social", R.drawable.ic_social)
+            CurvedBottomNavigation.Model(HOME_ITEM, "Home", R.drawable.ic_home),
+            CurvedBottomNavigation.Model(PRACTICE_ITEM, "Sequences", R.drawable.ic_pratice),
+            CurvedBottomNavigation.Model(PROFILE_ITEM, "Profile", R.drawable.ic_my_profile)
         )
 
         bottomNavigation.apply {

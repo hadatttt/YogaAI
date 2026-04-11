@@ -3,6 +3,7 @@ plugins {
     alias(libs.plugins.kotlin.android)
     id("kotlin-parcelize")
     id("androidx.navigation.safeargs.kotlin")
+    id("com.google.devtools.ksp")
 }
 
 apply(plugin = "com.google.gms.google-services")
@@ -123,4 +124,11 @@ dependencies {
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
     implementation("com.github.qamarelsafadi:CurvedBottomNavigation:0.1.3")
+    // help
+    implementation("com.github.takusemba:spotlight:2.0.3")
+    // room
+    val room_version = "2.6.1"
+    ksp("androidx.room:room-compiler:$room_version")
+    api("com.google.code.gson:gson:2.10.1")
+    implementation("androidx.room:room-ktx:$room_version")
 }

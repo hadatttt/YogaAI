@@ -30,8 +30,8 @@
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintTop_toTopOf="parent"
                     app:layout_constraintBottom_toBottomOf="parent"
-        />
 
+                    app:shapeAppearanceOverlay="@style/RoundedLeftCorners" />
             <LinearLayout
                     android:id="@+id/layout_content"
                     android:layout_width="0dp"

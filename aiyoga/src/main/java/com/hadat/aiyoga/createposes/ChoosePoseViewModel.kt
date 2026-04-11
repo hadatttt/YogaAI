@@ -3,7 +3,7 @@ package com.hadat.aiyoga.createposes
 import androidx.lifecycle.MutableLiveData
 import com.hadat.aiyoga.home.CategoryModel
 import com.hadat.aiyoga.yogamain.YogaPoseModel
-import com.hadat.aiyoga.yogautils.YogaDataUtils
+import com.hadat.aiyoga.utils.yogautils.YogaDataUtils
 import hoang.dqm.codebase.base.viewmodel.BaseViewModel
 
 class ChoosePoseViewModel : BaseViewModel() {
@@ -39,25 +39,27 @@ class ChoosePoseViewModel : BaseViewModel() {
     fun addPose(pose: YogaPoseModel) {
         val currentList = selectedPoses.value ?: mutableListOf()
         val currentIds = selectedIds.value ?: mutableListOf()
-
         if (!currentIds.contains(pose.id)) {
-            currentList.add(pose)
-            currentIds.add(pose.id)
+            val newList = currentList.toMutableList()
+            val newIds = currentIds.toMutableList()
 
-            selectedPoses.postValue(currentList)
-            selectedIds.postValue(currentIds)
+            newList.add(pose)
+            newIds.add(pose.id)
+
+            selectedPoses.value = newList
+            selectedIds.value = newIds
         }
     }
 
     fun removePose(pose: YogaPoseModel) {
         val currentList = selectedPoses.value ?: mutableListOf()
         val currentIds = selectedIds.value ?: mutableListOf()
-
-        currentList.removeAll { it.id == pose.id }
-        currentIds.remove(pose.id)
-
-        selectedPoses.postValue(currentList)
-        selectedIds.postValue(currentIds)
+        val newList = currentList.toMutableList()
+        val newIds = currentIds.toMutableList()
+        newList.removeAll { it.id == pose.id }
+        newIds.remove(pose.id)
+        selectedPoses.value = newList
+        selectedIds.value = newIds
     }
 
     fun setCategory(categoryName: String) {

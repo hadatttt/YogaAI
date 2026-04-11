@@ -6,12 +6,10 @@ import android.annotation.SuppressLint
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.speech.tts.TextToSpeech
-import android.util.Size
 import android.view.View
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.camera.core.*
 import androidx.camera.lifecycle.ProcessCameraProvider
-import androidx.camera.view.PreviewView
 import androidx.core.content.ContextCompat
 import androidx.navigation.fragment.navArgs
 import com.google.mediapipe.tasks.vision.core.RunningMode
@@ -19,7 +17,7 @@ import com.hadat.aiyoga.databinding.FragmentSingleYogaBinding
 import com.hadat.aiyoga.utils.ModelDownloader
 import com.hadat.aiyoga.utils.PoseLandmarkerHelper
 import com.hadat.aiyoga.utils.loadImageFromNetwork
-import com.hadat.aiyoga.yogautils.YogaCoachUtils
+import com.hadat.aiyoga.utils.yogautils.YogaCoachUtils
 import hoang.dqm.codebase.base.activity.BaseFragment
 import hoang.dqm.codebase.base.activity.popBackStack
 import hoang.dqm.codebase.utils.singleClick

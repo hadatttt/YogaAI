@@ -3,11 +3,11 @@ package com.hadat.aiyoga.home
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseAuth
-import com.hadat.aiyoga.firestore.model.User
-import com.hadat.aiyoga.firestore.repository.UserRepository
-import com.hadat.aiyoga.firestore.repository.YogaRepository
+import com.hadat.aiyoga.data.firestore.model.User
+import com.hadat.aiyoga.data.firestore.repository.UserRepository
+import com.hadat.aiyoga.data.firestore.repository.YogaRepository
 import com.hadat.aiyoga.yogamain.YogaPoseModel
-import com.hadat.aiyoga.yogautils.YogaDataUtils
+import com.hadat.aiyoga.utils.yogautils.YogaDataUtils
 import hoang.dqm.codebase.base.viewmodel.BaseViewModel
 import kotlinx.coroutines.launch
 

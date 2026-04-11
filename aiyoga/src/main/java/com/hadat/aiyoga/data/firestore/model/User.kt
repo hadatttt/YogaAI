@@ -1,4 +1,4 @@
-package com.hadat.aiyoga.firestore.model
+package com.hadat.aiyoga.data.firestore.model
 
 data class User(
     val uid: String = "",

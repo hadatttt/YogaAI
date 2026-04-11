@@ -4,8 +4,8 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.google.mediapipe.tasks.vision.poselandmarker.PoseLandmarkerResult
 import com.hadat.aiyoga.yogamain.YogaPoseModel
-import com.hadat.aiyoga.yogautils.YogaCoachUtils
-import com.hadat.aiyoga.yogautils.YogaDataUtils
+import com.hadat.aiyoga.utils.yogautils.YogaCoachUtils
+import com.hadat.aiyoga.utils.yogautils.YogaDataUtils
 import hoang.dqm.codebase.base.viewmodel.BaseViewModel
 import java.util.*
 

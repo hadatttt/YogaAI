@@ -7,7 +7,6 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.hadat.aiyoga.R
 import com.hadat.aiyoga.databinding.FragmentSingleModeBinding
 import com.hadat.aiyoga.home.CategoryAdapter
-import com.hadat.aiyoga.home.YogaPoseAdapter
 import com.hadat.aiyoga.utils.ViewUtils
 import com.hadat.aiyoga.utils.loadImageFromNetwork
 import hoang.dqm.codebase.base.activity.BaseFragment
@@ -40,17 +39,22 @@ class SingleModeFragment : BaseFragment<FragmentSingleModeBinding, SingleModeVie
         viewModel.todayPickPose.observe(viewLifecycleOwner) { pose ->
             pose?.let {
                 binding.tvPoseTodayName.text = it.name
-                binding.poseToday.loadImageFromNetwork(it.photo_url)
+                binding.poseToday.loadImageFromNetwork(it.getDisplayPhoto())
                 handleExpertiseLevel(it.expertise_level)
             }
         }
     }
-
+    override fun onResume() {
+        super.onResume()
+        val currentSearch = binding.edtSearch.text.toString().trim()
+        viewModel.setSearchQuery(requireContext(), currentSearch)
+        viewModel.updateTodayPickFromLocal(requireContext())
+    }
     override fun initListener() {
         categoryAdapter.setOnClickItemRecyclerView { category, position ->
             categoryAdapter.setSelectedPosition(position)
             ViewUtils.scrollToCenter(binding.rvCategory, position)
-            viewModel.setCategory(category.value)
+            viewModel.setCategory(requireContext(),category.value)
             binding.rvTemplates.scrollToPosition(0)
         }
 
@@ -58,9 +62,11 @@ class SingleModeFragment : BaseFragment<FragmentSingleModeBinding, SingleModeVie
             viewModel.trackPoseInteraction(pose)
             navigateToDetail(pose)
         }
-
+        yogaPoseAdapter.setOnFavoriteClick { pose ->
+            viewModel.toggleFavorite(requireContext(),pose)
+        }
         binding.edtSearch.addTextChangedListener { text ->
-            viewModel.setSearchQuery(text.toString().trim())
+            viewModel.setSearchQuery(requireContext(),text.toString().trim())
         }
 
         binding.cvTodayPick.singleClick {
@@ -83,6 +89,8 @@ class SingleModeFragment : BaseFragment<FragmentSingleModeBinding, SingleModeVie
         binding.tvLevel.text = levelText
     }
     override fun initData() {
-        viewModel.fetchData()
+        viewModel.fetchData(requireContext())
     }
+
+
 }
