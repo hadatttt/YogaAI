@@ -4,13 +4,21 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.google.mediapipe.tasks.vision.poselandmarker.PoseLandmarkerResult
 import com.hadat.aiyoga.yogamain.YogaPoseModel
-import com.hadat.aiyoga.yogautils.YogaCoachUtils
-import com.hadat.aiyoga.yogautils.YogaDataUtils
+import com.hadat.aiyoga.utils.yogautils.YogaCoachUtils
+import com.hadat.aiyoga.utils.yogautils.YogaDataUtils
 import hoang.dqm.codebase.base.viewmodel.BaseViewModel
 import java.util.*
 
 class SingleYogaViewModel : BaseViewModel() {
+    private val _isWaitingForCapture = MutableLiveData(false)
+    val isWaitingForCapture: LiveData<Boolean> = _isWaitingForCapture
 
+    private val _captureTrigger = MutableLiveData<Unit>()
+    val captureTrigger: LiveData<Unit> = _captureTrigger
+
+    fun toggleCaptureWait() {
+        _isWaitingForCapture.value = !(_isWaitingForCapture.value ?: false)
+    }
     private val _yogaPoseDataList = MutableLiveData<List<YogaPoseModel>>()
     val yogaPoseDataList: LiveData<List<YogaPoseModel>> = _yogaPoseDataList
 
@@ -35,19 +43,30 @@ class SingleYogaViewModel : BaseViewModel() {
     }
 
     fun startSinglePoseTracking(poseId: Int) {
-        _isTrackingStarted.postValue(true)
+        exerciseTimer?.cancel()
+        exerciseTimer = null
         totalSecondsAccumulated = 0
+        isCurrentlyCorrect = false
+        _timerText.postValue("00:00")
+        _isTrackingStarted.postValue(true)
         startLogicalTimer()
         _currentGuideText.postValue("Vào tư thế để bắt đầu tính giờ!")
         _speakCommand.postValue("Bắt đầu")
     }
-
+    fun stopTracking() {
+        exerciseTimer?.cancel()
+        exerciseTimer = null
+        _isTrackingStarted.postValue(false)
+    }
     fun processCoachLogic(result: PoseLandmarkerResult, poseId: Int) {
         if (poseId != -1 && _isTrackingStarted.value == true) {
             val (isCorrect, feedback) = YogaCoachUtils.getCoachFeedback(poseId, result)
 
             isCurrentlyCorrect = isCorrect
-
+            if (isCorrect && _isWaitingForCapture.value == true) {
+                _captureTrigger.postValue(Unit)
+                _isWaitingForCapture.postValue(false)
+            }
             if (isCorrect) {
                 _currentGuideText.postValue("✅ Tư thế chuẩn! Đang đếm giờ...")
             } else {
@@ -64,7 +83,6 @@ class SingleYogaViewModel : BaseViewModel() {
         exerciseTimer = Timer()
         exerciseTimer?.scheduleAtFixedRate(object : TimerTask() {
             override fun run() {
-                // CHỈ ĐẾM TIẾP NẾU TƯ THẾ ĐANG CHUẨN
                 if (isCurrentlyCorrect) {
                     totalSecondsAccumulated++
                     updateTimerUI()

@@ -38,5 +38,13 @@
                 app:argType="com.hadat.aiyoga.yogamain.YogaPoseModel"
                 app:nullable="false"/>
     </fragment>
+    <fragment
+            android:id="@+id/singleModeFragment"
+            android:name="com.hadat.aiyoga.singlemode.SingleModeFragment"
+            android:label="SingleModeFragment" />
+    <fragment
+            android:id="@+id/choosePoseFragment"
+            android:name="com.hadat.aiyoga.createposes.ChoosePoseFragment"
+            android:label="ChoosePoseFragment" />
 
 </navigation>

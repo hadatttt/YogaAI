@@ -11,7 +11,7 @@ object ModelDownloader {
     private const val BASE_URL = "https://raw.githubusercontent.com/hadatttt/DataYoga/main/"
     val YOGA_MODELS = listOf(
         "yoga_model.tflite",
-        "pose_landmarker_lite.task"
+        "pose_landmarker_heavy.task"
     )
     fun downloadAllModels(
         context: Context,

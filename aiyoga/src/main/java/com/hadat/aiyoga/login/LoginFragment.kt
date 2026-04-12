@@ -22,16 +22,14 @@ class LoginFragment : BaseFragment<FragmentLoginBinding, LoginViewModel>() {
         try {
             val account = task.getResult(ApiException::class.java)
             val credential = GoogleAuthProvider.getCredential(account.idToken, null)
-            viewModel.signInWithFirebase(credential)
+            viewModel.signInWithFirebase(credential, requireContext())
         } catch (e: ApiException) {
-            // Lỗi phổ biến nhất ở đây là code 10 (do SHA-1 sai)
         }
     }
 
     override fun initView() {
-        // Cấu hình Google Sign-In
         val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-            .requestIdToken(getString(R.string.default_web_client_id)) // ID này tự có trong google-services.json
+            .requestIdToken(getString(R.string.default_web_client_id))
             .requestEmail()
             .build()
 
@@ -48,9 +46,9 @@ class LoginFragment : BaseFragment<FragmentLoginBinding, LoginViewModel>() {
     override fun initData() {
         viewModel.loginSuccess.observe(viewLifecycleOwner) { success ->
             if (success) {
+                viewModel.loginSuccess.value = false
                 navigate(R.id.homeFragment)
             } else {
-                // Toast thông báo đăng nhập thất bại
             }
         }
     }

@@ -5,47 +5,50 @@ import android.animation.ObjectAnimator
 import android.annotation.SuppressLint
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
-import android.graphics.Matrix
 import android.speech.tts.TextToSpeech
-import android.util.Size
 import android.view.View
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.camera.core.*
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.content.ContextCompat
 import androidx.navigation.fragment.navArgs
-import com.google.mediapipe.framework.image.BitmapImageBuilder
-import com.google.mediapipe.tasks.core.BaseOptions
 import com.google.mediapipe.tasks.vision.core.RunningMode
-import com.google.mediapipe.tasks.vision.poselandmarker.PoseLandmarker
 import com.hadat.aiyoga.databinding.FragmentSingleYogaBinding
 import com.hadat.aiyoga.utils.ModelDownloader
+import com.hadat.aiyoga.utils.PoseLandmarkerHelper
 import com.hadat.aiyoga.utils.loadImageFromNetwork
-import com.hadat.aiyoga.yogautils.YogaCoachUtils
+import com.hadat.aiyoga.utils.yogautils.YogaCoachUtils
 import hoang.dqm.codebase.base.activity.BaseFragment
 import hoang.dqm.codebase.base.activity.popBackStack
 import hoang.dqm.codebase.utils.singleClick
-import java.io.File
 import java.util.*
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
+import java.util.concurrent.TimeUnit
 
-class SingleYogaFragment : BaseFragment<FragmentSingleYogaBinding, SingleYogaViewModel>() {
+class SingleYogaFragment : BaseFragment<FragmentSingleYogaBinding, SingleYogaViewModel>(),
+    PoseLandmarkerHelper.LandmarkerListener {
 
     private val args by navArgs<SingleYogaFragmentArgs>()
-    private val cameraExecutor: ExecutorService by lazy { Executors.newSingleThreadExecutor() }
-    private val aiExecutor: ExecutorService by lazy { Executors.newSingleThreadExecutor() }
 
-    private var poseLandmarker: PoseLandmarker? = null
+    private lateinit var backgroundExecutor: ExecutorService
+
+    private lateinit var poseLandmarkerHelper: PoseLandmarkerHelper
     private var tts: TextToSpeech? = null
     private var lensFacing = CameraSelector.LENS_FACING_FRONT
+
+    private var preview: Preview? = null
+    private var imageAnalyzer: ImageAnalysis? = null
+    private var cameraProvider: ProcessCameraProvider? = null
 
     private var lastSpeakTime = 0L
     private var lastCoachTime = 0L
     private val COACH_INTERVAL = 2000L
     private var progressAnimator: ObjectAnimator? = null
+    private var isMuted = false
 
     override fun initView() {
+        backgroundExecutor = Executors.newSingleThreadExecutor()
         checkAndStartCamera()
         initTextToSpeech()
 
@@ -54,64 +57,140 @@ class SingleYogaFragment : BaseFragment<FragmentSingleYogaBinding, SingleYogaVie
                 activity?.runOnUiThread { binding.tvGuide.text = "Loading: $progress%" }
             },
             onComplete = { success ->
-                if (success) initializeAiResources()
+                if (success) initializePoseLandmarkerHelper()
             }
         )
     }
+    private fun initializePoseLandmarkerHelper() {
+        backgroundExecutor.execute {
+            poseLandmarkerHelper = PoseLandmarkerHelper(
+                context = requireContext(),
+                runningMode = RunningMode.LIVE_STREAM,
+                currentModel = PoseLandmarkerHelper.MODEL_POSE_LANDMARKER_HEAVY,
+                poseLandmarkerHelperListener = this
+            )
 
-    private fun initializeAiResources() {
-        aiExecutor.execute {
-            try {
-                val taskFile = File(requireContext().filesDir, "pose_landmarker_lite.task")
-                if (taskFile.exists()) {
-                    setupPoseLandmarker(taskFile)
-                    YogaCoachUtils.loadReferenceData(requireContext())
+            YogaCoachUtils.loadReferenceData(requireContext())
 
-                    activity?.runOnUiThread {
-                        viewModel.fetchYogaPoses()
-                        viewModel.startSinglePoseTracking(args.yogaPoseItem.id)
-                    }
-                }
-            } catch (e: Exception) { }
+            activity?.runOnUiThread {
+                viewModel.fetchYogaPoses()
+                viewModel.startSinglePoseTracking(args.yogaPoseItem.id)
+            }
+        }
+    }
+    override fun onResume() {
+        super.onResume()
+        backgroundExecutor.execute {
+            if (::poseLandmarkerHelper.isInitialized && poseLandmarkerHelper.isClose()) {
+                poseLandmarkerHelper.setupPoseLandmarker()
+            }
         }
     }
 
-    private fun setupPoseLandmarker(taskFile: File) {
-        val options = PoseLandmarker.PoseLandmarkerOptions.builder()
-            .setBaseOptions(BaseOptions.builder().setModelAssetPath(taskFile.absolutePath).build())
-            .setRunningMode(RunningMode.LIVE_STREAM)
-            .setResultListener { result, _ ->
-                activity?.runOnUiThread {
-                    if (!isAdded) return@runOnUiThread
-                    binding.overlayView.setResults(result, binding.viewFinder.height, binding.viewFinder.width)
+    override fun onPause() {
+        super.onPause()
+        if (::poseLandmarkerHelper.isInitialized) {
+            backgroundExecutor.execute { poseLandmarkerHelper.clearPoseLandmarker() }
+        }
+    }
 
-                    val currentTime = System.currentTimeMillis()
-                    if (currentTime - lastCoachTime >= COACH_INTERVAL) {
-                        viewModel.processCoachLogic(result, args.yogaPoseItem.id)
-                        lastCoachTime = currentTime
-                    }
-                }
-            }
+    override fun onDestroyView() {
+        binding.overlayView.clear()
+        viewModel.stopTracking()
+        progressAnimator?.cancel()
+        tts?.shutdown()
+        backgroundExecutor.shutdown()
+        backgroundExecutor.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS)
+
+        super.onDestroyView()
+    }
+    private fun checkAndStartCamera() {
+        if (allPermissionsGranted()) setUpCamera()
+        else requestPermissionLauncher.launch(Manifest.permission.CAMERA)
+    }
+
+    private fun allPermissionsGranted() =
+        ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.CAMERA) ==
+                PackageManager.PERMISSION_GRANTED
+
+    private val requestPermissionLauncher =
+        registerForActivityResult(ActivityResultContracts.RequestPermission()) {
+            if (it) setUpCamera()
+        }
+
+    private fun setUpCamera() {
+        val cameraProviderFuture = ProcessCameraProvider.getInstance(requireContext())
+        cameraProviderFuture.addListener({
+            cameraProvider = cameraProviderFuture.get()
+            bindCameraUseCases()
+        }, ContextCompat.getMainExecutor(requireContext()))
+    }
+
+    @SuppressLint("UnsafeOptInUsageError")
+    private fun bindCameraUseCases() {
+        val cameraProvider = cameraProvider
+            ?: throw IllegalStateException("Camera initialization failed.")
+
+        val cameraSelector = CameraSelector.Builder()
+            .requireLensFacing(lensFacing)
             .build()
-        poseLandmarker = PoseLandmarker.createFromOptions(requireContext(), options)
+        preview = Preview.Builder()
+            .setTargetAspectRatio(AspectRatio.RATIO_4_3)
+            .setTargetRotation(binding.viewFinder.display.rotation)
+            .build()
+        imageAnalyzer = ImageAnalysis.Builder()
+            .setTargetAspectRatio(AspectRatio.RATIO_4_3)
+            .setTargetRotation(binding.viewFinder.display.rotation)
+            .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
+            .setOutputImageFormat(ImageAnalysis.OUTPUT_IMAGE_FORMAT_RGBA_8888)
+            .build()
+            .also {
+                it.setAnalyzer(backgroundExecutor) { imageProxy ->
+                    detectPose(imageProxy)
+                }
+            }
+
+        cameraProvider.unbindAll()
+
+        try {
+            cameraProvider.bindToLifecycle(
+                viewLifecycleOwner, cameraSelector, preview, imageAnalyzer
+            )
+            preview?.setSurfaceProvider(binding.viewFinder.surfaceProvider)
+        } catch (e: Exception) { }
     }
 
-    private fun processImage(imageProxy: ImageProxy) {
-        if (poseLandmarker == null) {
-            imageProxy.close()
-            return
+    private fun detectPose(imageProxy: ImageProxy) {
+        if (::poseLandmarkerHelper.isInitialized) {
+            poseLandmarkerHelper.detectLiveStream(
+                imageProxy = imageProxy,
+                isFrontCamera = lensFacing == CameraSelector.LENS_FACING_FRONT
+            )
         }
-        try {
-            val bitmap = imageProxy.toBitmap() ?: return
-            val matrix = Matrix().apply {
-                postRotate(imageProxy.imageInfo.rotationDegrees.toFloat())
-                if (lensFacing == CameraSelector.LENS_FACING_FRONT) postScale(-1f, 1f, bitmap.width.toFloat(), bitmap.height.toFloat())
+    }
+
+    override fun onResults(resultBundle: PoseLandmarkerHelper.ResultBundle) {
+        activity?.runOnUiThread {
+            if (view == null) return@runOnUiThread
+
+            binding.overlayView.setResults(
+                resultBundle.results.first(),
+                resultBundle.inputImageHeight,
+                resultBundle.inputImageWidth,
+                RunningMode.LIVE_STREAM
+            )
+            binding.overlayView.invalidate()
+            val now = System.currentTimeMillis()
+            if (now - lastCoachTime >= COACH_INTERVAL) {
+                viewModel.processCoachLogic(resultBundle.results.first(), args.yogaPoseItem.id)
+                lastCoachTime = now
             }
-            val rotatedBitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.width, bitmap.height, matrix, true)
-            val mpImage = BitmapImageBuilder(rotatedBitmap).build()
-            poseLandmarker?.detectAsync(mpImage, System.currentTimeMillis())
-        } finally {
-            imageProxy.close()
+        }
+    }
+
+    override fun onError(error: String, errorCode: Int) {
+        activity?.runOnUiThread {
+            android.widget.Toast.makeText(requireContext(), error, android.widget.Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -119,11 +198,20 @@ class SingleYogaFragment : BaseFragment<FragmentSingleYogaBinding, SingleYogaVie
         viewModel.currentGuideText.observe(viewLifecycleOwner) { binding.tvGuide.text = it }
         viewModel.timerText.observe(viewLifecycleOwner) { binding.tvTimer.text = it }
         viewModel.speakCommand.observe(viewLifecycleOwner) { speak(it) }
-
+        viewModel.isWaitingForCapture.observe(viewLifecycleOwner) { isWaiting ->
+            if (isWaiting) {
+                binding.ivPhoto.backgroundTintList = android.content.res.ColorStateList.valueOf(android.graphics.Color.RED)
+                binding.ivPhoto.imageTintList = android.content.res.ColorStateList.valueOf(android.graphics.Color.WHITE)
+                binding.tvGuide.text = "Giữ đúng tư thế để chụp ảnh!"
+            } else {
+                binding.ivPhoto.backgroundTintList = android.content.res.ColorStateList.valueOf(android.graphics.Color.parseColor("#E4E3F3"))
+                binding.ivPhoto.imageTintList = android.content.res.ColorStateList.valueOf(ContextCompat.getColor(requireContext(), com.hadat.aiyoga.R.color.primary))
+            }
+        }
+        viewModel.captureTrigger.observe(viewLifecycleOwner) { animatePhotoCapture() }
         viewModel.isTrackingStarted.observe(viewLifecycleOwner) { started ->
             binding.lottieStatus.visibility = if (started) View.VISIBLE else View.GONE
         }
-
         viewModel.yogaPoseDataList.observe(viewLifecycleOwner) { list ->
             list.find { it.id == args.yogaPoseItem.id }?.let {
                 binding.ivYogaSample.visibility = View.VISIBLE
@@ -135,32 +223,35 @@ class SingleYogaFragment : BaseFragment<FragmentSingleYogaBinding, SingleYogaVie
     @SuppressLint("ClickableViewAccessibility")
     override fun initListener() {
         binding.ivBack.singleClick { popBackStack() }
+        binding.ivPhoto.singleClick { viewModel.toggleCaptureWait() }
         binding.progressAround.max = 1000
         binding.progressAround.progress = 0
 
-        // 2. Cấu hình Animator
-        progressAnimator = ObjectAnimator.ofInt(binding.progressAround, "progress", 0, 1000).apply {
-            duration = 1500 // 1.5 giây để xoay hết 1 vòng
-            interpolator = android.view.animation.LinearInterpolator()
+        binding.ivVoice.singleClick {
+            isMuted = !isMuted
+            if (isMuted) {
+                binding.ivVoice.setImageResource(com.hadat.aiyoga.R.drawable.ic_mute)
+                tts?.stop()
+            } else {
+                binding.ivVoice.setImageResource(com.hadat.aiyoga.R.drawable.ic_volume)
+            }
+        }
 
+        progressAnimator = ObjectAnimator.ofInt(binding.progressAround, "progress", 0, 1000).apply {
+            duration = 1500
+            interpolator = android.view.animation.LinearInterpolator()
             addListener(object : android.animation.AnimatorListenerAdapter() {
                 override fun onAnimationEnd(animation: android.animation.Animator) {
-                    if (binding.progressAround.progress >= 1000) {
-                        // Xử lý chuyển Fragment khi hoàn thành vòng xoay
-                        navigateToNextFragment()
-                    }
+                    if (binding.progressAround.progress >= 1000) popBackStack()
                 }
             })
         }
 
-        // 3. Xử lý sự kiện Touch
         binding.layoutAction.setOnTouchListener { _, event ->
             when (event.action) {
-                android.view.MotionEvent.ACTION_DOWN -> {
-                    progressAnimator?.start()
-                    true
-                }
-                android.view.MotionEvent.ACTION_UP, android.view.MotionEvent.ACTION_CANCEL -> {
+                android.view.MotionEvent.ACTION_DOWN -> { progressAnimator?.start(); true }
+                android.view.MotionEvent.ACTION_UP,
+                android.view.MotionEvent.ACTION_CANCEL -> {
                     progressAnimator?.cancel()
                     binding.progressAround.progress = 0
                     true
@@ -168,35 +259,16 @@ class SingleYogaFragment : BaseFragment<FragmentSingleYogaBinding, SingleYogaVie
                 else -> false
             }
         }
+
         binding.ivFlip.singleClick {
-            lensFacing = if (lensFacing == CameraSelector.LENS_FACING_FRONT) CameraSelector.LENS_FACING_BACK else CameraSelector.LENS_FACING_FRONT
-            startCamera()
+            lensFacing = if (lensFacing == CameraSelector.LENS_FACING_FRONT)
+                CameraSelector.LENS_FACING_BACK else CameraSelector.LENS_FACING_FRONT
+            bindCameraUseCases()
         }
-    }
-    private fun navigateToNextFragment() {
-        popBackStack()
-    }
-    private fun startCamera() {
-        val cameraProviderFuture = ProcessCameraProvider.getInstance(requireContext())
-        cameraProviderFuture.addListener({
-            val cameraProvider = cameraProviderFuture.get()
-            val targetSize = Size(720, 1280)
-            val preview = Preview.Builder().setTargetResolution(targetSize).build().also { it.setSurfaceProvider(binding.viewFinder.surfaceProvider) }
-            val analysis = ImageAnalysis.Builder()
-                .setTargetResolution(targetSize)
-                .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
-                .setOutputImageFormat(ImageAnalysis.OUTPUT_IMAGE_FORMAT_RGBA_8888)
-                .build()
-                .also { it.setAnalyzer(cameraExecutor) { img -> processImage(img) } }
-            try {
-                cameraProvider.unbindAll()
-                cameraProvider.bindToLifecycle(viewLifecycleOwner, CameraSelector.Builder().requireLensFacing(lensFacing).build(), preview, analysis)
-            } catch (e: Exception) { }
-        }, ContextCompat.getMainExecutor(requireContext()))
     }
 
     private fun speak(text: String) {
-        if (text.isEmpty()) return
+        if (text.isEmpty() || isMuted) return
         val now = System.currentTimeMillis()
         if (now - lastSpeakTime < 2500) return
         lastSpeakTime = now
@@ -209,21 +281,54 @@ class SingleYogaFragment : BaseFragment<FragmentSingleYogaBinding, SingleYogaVie
         }
     }
 
-    private fun checkAndStartCamera() {
-        if (allPermissionsGranted()) startCamera()
-        else requestPermissionLauncher.launch(Manifest.permission.CAMERA)
+    private fun animatePhotoCapture() {
+        triggerFlashEffect()
+        val bitmap = binding.viewFinder.bitmap ?: return
+        val photoView = androidx.appcompat.widget.AppCompatImageView(requireContext()).apply {
+            setImageBitmap(bitmap)
+            layoutParams = android.widget.FrameLayout.LayoutParams(
+                binding.viewFinder.width / 3, binding.viewFinder.height / 3
+            )
+            elevation = 50f
+            translationX = (binding.viewFinder.width / 3).toFloat()
+            translationY = (binding.viewFinder.height / 4).toFloat()
+        }
+        (binding.root as android.view.ViewGroup).addView(photoView)
+        photoView.animate()
+            .translationY(binding.root.height.toFloat())
+            .scaleX(0.2f).scaleY(0.2f).alpha(0f)
+            .setDuration(800)
+            .withEndAction { (binding.root as android.view.ViewGroup).removeView(photoView) }
+            .start()
+        saveScreenshot()
     }
 
-    private fun allPermissionsGranted() = ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED
-
-    private val requestPermissionLauncher = registerForActivityResult(ActivityResultContracts.RequestPermission()) { if (it) startCamera() }
-
-    override fun onDestroyView() {
-        progressAnimator?.cancel() // Thêm dòng này
-        cameraExecutor.shutdown()
-        aiExecutor.shutdown()
-        poseLandmarker?.close()
-        tts?.shutdown()
-        super.onDestroyView()
+    private fun saveScreenshot() {
+        val bitmap = binding.viewFinder.bitmap ?: return
+        val filename = "Yoga_${System.currentTimeMillis()}.jpg"
+        val contentValues = android.content.ContentValues().apply {
+            put(android.provider.MediaStore.MediaColumns.DISPLAY_NAME, filename)
+            put(android.provider.MediaStore.MediaColumns.MIME_TYPE, "image/jpeg")
+            put(android.provider.MediaStore.Images.Media.RELATIVE_PATH,
+                android.os.Environment.DIRECTORY_PICTURES + "/AI_Yoga")
+        }
+        val uri = requireContext().contentResolver.insert(
+            android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI, contentValues
+        )
+        uri?.let {
+            requireContext().contentResolver.openOutputStream(it)?.use { out ->
+                bitmap.compress(Bitmap.CompressFormat.JPEG, 100, out)
+                activity?.runOnUiThread {
+                    android.widget.Toast.makeText(requireContext(), "Đã lưu ảnh vào thư viện!", android.widget.Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+    }
+    private fun triggerFlashEffect() {
+        binding.viewFlash.visibility = View.VISIBLE
+        binding.viewFlash.alpha = 1f
+        binding.viewFlash.animate().alpha(0f).setDuration(200)
+            .withEndAction { binding.viewFlash.visibility = View.GONE }
+            .start()
     }
 }

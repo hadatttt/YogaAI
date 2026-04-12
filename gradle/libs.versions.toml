@@ -12,10 +12,10 @@ lifecycleLivedataKtx = "2.8.7"
 navigationFragmentKtx = "2.8.8"
 permissionx = "1.8.1"
 googleServices = "4.4.2"
-composeBom = "2024.09.00"
 activityCompose = "1.10.1"
 navigationSafeArgsGradlePlugin = "2.9.0"
 navigationSafeArgsGradlePluginVersion = "2.7.7"
+ksp = "2.0.20-1.0.24"
 
 
 [libraries]
@@ -31,7 +31,6 @@ androidx-navigation-ui-ktx = { module = "androidx.navigation:navigation-ui-ktx",
 androidx-navigation-fragment-ktx = { module = "androidx.navigation:navigation-fragment-ktx", version.ref = "navigationFragmentKtx" }
 permissionx = { module = "com.guolindev.permissionx:permissionx", version.ref = "permissionx" }
 google-services = { module = "com.google.gms:google-services", version.ref = "googleServices" }
-androidx-compose-bom = { group = "androidx.compose", name = "compose-bom", version.ref = "composeBom" }
 androidx-activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "activityCompose" }
 androidx-navigation-safe-args-gradle-plugin = { module = "androidx.navigation:navigation-safe-args-gradle-plugin", version.ref = "navigationSafeArgsGradlePlugin" }
 androidx-navigation-safe-args-gradle-plugin-v277 = { module = "androidx.navigation:navigation-safe-args-gradle-plugin", version.ref = "navigationSafeArgsGradlePluginVersion" }
@@ -41,4 +40,5 @@ android-application = { id = "com.android.application", version.ref = "agp" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 android-library = { id = "com.android.library" }   # bỏ version
 kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
+google-ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 

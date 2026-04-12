@@ -4,6 +4,7 @@ import android.content.Context
 import android.util.DisplayMetrics
 import androidx.recyclerview.widget.LinearSmoothScroller
 import androidx.recyclerview.widget.RecyclerView
+import com.hadat.aiyoga.R
 
 object ViewUtils {
 
@@ -34,5 +35,21 @@ object ViewUtils {
 
         smoothScroller.targetPosition = position
         layoutManager.startSmoothScroll(smoothScroller)
+    }
+    fun String.removeVietnameseAccents(): String {
+        var temp = java.text.Normalizer.normalize(this, java.text.Normalizer.Form.NFD)
+        temp = Regex("\\p{InCombiningDiacriticalMarks}+").replace(temp, "")
+        temp = temp.replace("đ", "d").replace("Đ", "D")
+        temp = temp.replace(Regex("[^\\p{Alnum} ]"), "")
+        return temp.trim()
+    }
+    fun getGreeting(context: Context): String {
+        val hour = java.util.Calendar.getInstance().get(java.util.Calendar.HOUR_OF_DAY)
+        return when (hour) {
+            in 5..11 -> context.getString(R.string.greeting_morning)
+            in 12..16 -> context.getString(R.string.greeting_afternoon)
+            in 17..20 -> context.getString(R.string.greeting_evening)
+            else -> context.getString(R.string.greeting_night)
+        }
     }
 }

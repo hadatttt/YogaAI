@@ -6,44 +6,33 @@
         android:layout_height="match_parent"
         android:background="#F9F9FB">
 
-    <androidx.constraintlayout.widget.Guideline
-            android:id="@+id/gl_top"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            app:layout_constraintGuide_begin="@dimen/_24sdp" />
-
     <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/layout_header"
-            android:layout_width="0dp"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginHorizontal="@dimen/_20sdp"
-            android:paddingVertical="@dimen/_10sdp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
+            android:paddingHorizontal="@dimen/_20sdp"
+            android:paddingTop="@dimen/_15sdp"
+            android:paddingBottom="@dimen/_16sdp"
             app:layout_constraintTop_toTopOf="parent">
 
         <com.google.android.material.imageview.ShapeableImageView
                 android:id="@+id/img_avatar"
-                android:layout_width="@dimen/_45sdp"
-                android:layout_height="@dimen/_45sdp"
-                android:padding="2dp"
+                android:layout_width="@dimen/_50sdp"
+                android:layout_height="@dimen/_50sdp"
                 android:scaleType="centerCrop"
-                android:src="@drawable/ic_learn_yoga"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
                 app:shapeAppearanceOverlay="@style/CircleImage"
-                app:strokeColor="#F0F0F0"
-                app:strokeWidth="1dp" />
+                app:layout_constraintVertical_bias="0.0" />
 
         <LinearLayout
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="@dimen/_12sdp"
+                android:layout_marginStart="@dimen/_14sdp"
                 android:orientation="vertical"
                 app:layout_constraintBottom_toBottomOf="@id/img_avatar"
-                app:layout_constraintEnd_toStartOf="@id/btn_notification"
+                app:layout_constraintEnd_toStartOf="@id/btn_notification_placeholder"
                 app:layout_constraintStart_toEndOf="@id/img_avatar"
                 app:layout_constraintTop_toTopOf="@id/img_avatar">
 
@@ -54,114 +43,252 @@
                     android:fontFamily="@font/font_regular"
                     android:text="Good Morning 👋"
                     android:textColor="#9E9E9E"
-                    android:textSize="@dimen/_11sdp"
-                    android:letterSpacing="0.02" />
+                    android:textSize="15sp"
+                    android:alpha="0.8" />
 
             <TextView
                     android:id="@+id/tv_username"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:fontFamily="@font/font_bold"
-                    android:text="Dat Ha"
-                    android:textColor="@color/primary"
-                    android:textSize="@dimen/_18sdp"
-                    android:includeFontPadding="false" />
+                    android:includeFontPadding="false"
+                    android:textColor="@color/purple_300"
+                    android:text="asdasdasdasdasdassd"
+                    android:textSize="24sp"
+                    android:letterSpacing="-0.02" />
         </LinearLayout>
 
-        <androidx.appcompat.widget.AppCompatImageButton
-                android:id="@+id/btn_notification"
-                android:layout_width="@dimen/_36sdp"
-                android:layout_height="@dimen/_36sdp"
-                android:background="@drawable/shape_round_rect_light"
-                android:src="@drawable/ic_learn_yoga"
-                android:padding="@dimen/_8sdp"
-                app:tint="#2D3142"
+        <View
+                android:id="@+id/btn_notification_placeholder"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
-    <TextView
-            android:id="@+id/tv_category_title"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="@dimen/_20sdp"
-            android:layout_marginTop="@dimen/_24sdp"
-            android:text="Pose Categories"
-            android:textColor="@color/primary"
-            android:textSize="@dimen/_18sdp"
-            android:textStyle="bold"
-            android:fontFamily="@font/font_bold"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/layout_header" />
-
-    <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/rv_category"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/_12sdp"
-            android:clipToPadding="false"
-            android:orientation="horizontal"
-            android:paddingHorizontal="@dimen/_16sdp"
-            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/tv_category_title"
-            tools:listitem="@layout/item_category" />
-
-    <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/rv_templates"
+    <androidx.core.widget.NestedScrollView
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_marginTop="@dimen/_16sdp"
-            android:clipToPadding="false"
-            android:paddingHorizontal="@dimen/_12sdp"
-            android:paddingBottom="@dimen/_80sdp"
-            app:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
+            android:fillViewport="true"
+            android:overScrollMode="never"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/rv_category"
-            app:spanCount="2"
-            tools:listitem="@layout/item_template"
-            tools:layout_editor_absoluteX="0dp"
-            app:layout_constraintVertical_bias="0.0" />
+            app:layout_constraintTop_toBottomOf="@id/layout_header">
 
-    <androidx.appcompat.widget.LinearLayoutCompat
-            android:id="@+id/btn_new_project"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="@dimen/_24sdp"
-            android:background="@drawable/bg_new"
-            android:elevation="@dimen/_8sdp"
-            android:gravity="center"
-            android:orientation="horizontal"
-            android:paddingHorizontal="@dimen/_24sdp"
-            android:paddingVertical="@dimen/_12sdp"
-            android:stateListAnimator="@animator/button_press_alpha"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent">
-
-        <androidx.appcompat.widget.AppCompatImageView
-                android:id="@+id/iv_add_project"
-                android:layout_width="@dimen/_22sdp"
-                android:layout_height="@dimen/_22sdp"
-                android:layout_marginEnd="@dimen/_10sdp"
-                android:src="@drawable/ic_learn_yoga"
-            />
-
-        <androidx.appcompat.widget.AppCompatTextView
-                android:id="@+id/tv_new_project"
-                android:layout_width="wrap_content"
+        <androidx.constraintlayout.widget.ConstraintLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:fontFamily="@font/font_bold"
-                android:letterSpacing="0.03"
-                android:text="START LEARNING"
-                android:textAllCaps="true"
-                android:textColor="@color/white"
-                android:textSize="@dimen/_14sdp" />
+                android:paddingBottom="@dimen/_100sdp">
 
-    </androidx.appcompat.widget.LinearLayoutCompat>
+            <androidx.cardview.widget.CardView
+                    android:id="@+id/cv_today_pick"
+                    android:layout_width="0dp"
+                    android:layout_height="@dimen/_180sdp"
+                    android:layout_marginStart="@dimen/_16sdp"
+                    app:cardCornerRadius="28dp"
+                    app:cardElevation="0dp"
+                    app:layout_constraintEnd_toStartOf="@+id/cv_browse_poses"
+                    app:layout_constraintHorizontal_chainStyle="spread"
+                    app:layout_constraintHorizontal_weight="1.1"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent">
+
+                <FrameLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent">
+
+                    <ImageView
+                            android:id="@+id/pose_today"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:scaleType="centerCrop"
+ />
+
+                    <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="top"
+                            android:orientation="vertical"
+                            android:padding="16dp">
+
+                        <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:background="@drawable/bg_today_pick"
+                                android:paddingHorizontal="12dp"
+                                android:paddingVertical="4dp"
+                                android:text="Today's Pick"
+                                android:textColor="#FFFFFF"
+                                android:textSize="10sp"
+                                android:fontFamily="@font/font_bold" />
+
+                        <TextView
+                                android:id="@+id/tv_pose_name"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="6dp"
+                                android:textColor="#808080"
+                                android:textSize="14sp"
+                                android:fontFamily="@font/font_bold"
+  />
+
+                    </LinearLayout>
+                </FrameLayout>
+            </androidx.cardview.widget.CardView>
+
+            <androidx.cardview.widget.CardView
+                    android:id="@+id/cv_browse_poses"
+                    android:layout_width="0dp"
+                    android:layout_height="@dimen/_180sdp"
+                    android:layout_marginStart="@dimen/_12sdp"
+                    android:layout_marginEnd="@dimen/_16sdp"
+                    app:cardBackgroundColor="#FDF4E9"
+                    app:cardCornerRadius="28dp"
+                    app:cardElevation="0dp"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintHorizontal_weight="0.9"
+                    app:layout_constraintStart_toEndOf="@+id/cv_today_pick"
+                    app:layout_constraintTop_toTopOf="@id/cv_today_pick">
+
+                <androidx.constraintlayout.widget.ConstraintLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:padding="22dp">
+
+                    <ImageView
+                            android:id="@+id/iv_yoga_icon"
+                            android:layout_width="36dp"
+                            android:layout_height="36dp"
+                            android:src="@drawable/ic_yoga_single"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toTopOf="parent" />
+
+                    <TextView
+                            android:id="@+id/tv_title_browse"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="20dp"
+                            android:fontFamily="@font/font_bold"
+                            android:text="Browse\nPoses"
+                            android:textColor="#C68E4E"
+                            android:textSize="20sp"
+                            android:lineSpacingMultiplier="0.9"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toBottomOf="@id/iv_yoga_icon" />
+
+                    <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="8dp"
+                            android:alpha="0.6"
+                            android:text="Explore 100+ poses"
+                            android:textColor="#C68E4E"
+                            android:textSize="13sp"
+                            app:layout_constraintTop_toBottomOf="@id/tv_title_browse" />
+                </androidx.constraintlayout.widget.ConstraintLayout>
+            </androidx.cardview.widget.CardView>
+
+            <androidx.cardview.widget.CardView
+                    android:id="@+id/cv_yoai"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginHorizontal="@dimen/_16sdp"
+                    android:layout_marginTop="@dimen/_16sdp"
+                    app:cardBackgroundColor="#F0F4EF"
+                    app:cardCornerRadius="28dp"
+                    app:cardElevation="0dp"
+                    app:layout_constraintTop_toBottomOf="@id/cv_today_pick">
+
+                <androidx.constraintlayout.widget.ConstraintLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:padding="22dp">
+
+                    <ImageView
+                            android:id="@+id/iv_ai_icon"
+                            android:layout_width="32dp"
+                            android:layout_height="32dp"
+                            android:src="@drawable/ic_ai"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toTopOf="parent"
+                            app:tint="@color/primary" />
+
+                    <TextView
+                            android:id="@+id/tv_yoai_title"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="14dp"
+                            android:fontFamily="@font/font_bold"
+                            android:text="Yoga AI Coach"
+                            android:textColor="#BDBDBD"
+                            android:textSize="19sp"
+                            app:layout_constraintBottom_toBottomOf="@id/iv_ai_icon"
+                            app:layout_constraintStart_toEndOf="@id/iv_ai_icon"
+                            app:layout_constraintTop_toTopOf="@id/iv_ai_icon" />
+
+                    <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="14dp"
+                            android:alpha="0.8"
+                            android:text="Practice with real-time feedback using our advanced AI pose correction system."
+                            android:textColor="#808080"
+                            android:textSize="14sp"
+                            android:lineSpacingExtra="2dp"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toBottomOf="@id/iv_ai_icon" />
+                </androidx.constraintlayout.widget.ConstraintLayout>
+            </androidx.cardview.widget.CardView>
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                    android:id="@+id/layout_recent_header"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginHorizontal="@dimen/_16sdp"
+                    android:layout_marginTop="@dimen/_28sdp"
+                    app:layout_constraintTop_toBottomOf="@id/cv_yoai">
+
+                <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:fontFamily="@font/font_bold"
+                        android:text="Recent Sequences"
+                        android:textColor="@color/purple_500"
+                        android:textSize="20sp"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent" />
+
+                <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:background="?attr/selectableItemBackgroundBorderless"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:text="View All"
+                        android:textColor="@color/primary"
+                        android:textSize="15sp"
+                        android:fontFamily="@font/font_bold"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintTop_toTopOf="parent" />
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+            <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/rv_sequences"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:clipToPadding="false"
+                    android:paddingHorizontal="@dimen/_12sdp"
+                    android:orientation="horizontal"
+                    app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+                    app:layout_constraintTop_toBottomOf="@id/layout_recent_header"
+                    tools:listitem="@layout/item_template" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </androidx.core.widget.NestedScrollView>
 
     <LinearLayout
             android:id="@+id/ll_chatbot_wrapper"

@@ -1,11 +1,11 @@
 package com.hadat.aiyoga.home
 
 import android.os.Bundle
-import androidx.recyclerview.widget.GridLayoutManager
-import androidx.recyclerview.widget.LinearLayoutManager
 import com.hadat.aiyoga.R
 import com.hadat.aiyoga.databinding.FragmentHomeBinding
-import com.hadat.aiyoga.utils.ViewUtils
+import com.hadat.aiyoga.utils.ViewUtils.getGreeting
+import com.hadat.aiyoga.utils.ViewUtils.removeVietnameseAccents
+import com.hadat.aiyoga.utils.loadImageFromNetwork
 import hoang.dqm.codebase.base.activity.BaseFragment
 import hoang.dqm.codebase.base.activity.navigate
 import hoang.dqm.codebase.utils.setDraggableWithClick
@@ -13,51 +13,42 @@ import hoang.dqm.codebase.utils.singleClick
 
 class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
 
-    private val categoryAdapter by lazy { CategoryAdapter() }
-    private val yogaPoseAdapter by lazy { YogaPoseAdapter() }
-
     override fun initView() {
-        binding.rvTemplates.apply {
-            layoutManager = GridLayoutManager(context, 2)
-            adapter = yogaPoseAdapter.apply {
-                setItemAnimation(hoang.dqm.codebase.base.adapter.animation.AnimationType.SlideInBottom)
-                isAnimationFirstOnly = false
+        binding.tvGreeting.text = getGreeting(requireContext())
+
+        viewModel.userData.observe(viewLifecycleOwner) { user ->
+            user?.let {
+                binding.tvUsername.text = it.displayName.removeVietnameseAccents()
+                binding.imgAvatar.loadImageFromNetwork(it.photoUrl)
             }
         }
-        binding.rvCategory.apply {
-            layoutManager = LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
-            adapter = categoryAdapter
-            clipToPadding = false
-        }
-        viewModel.categoryList.observe(viewLifecycleOwner) { categories ->
-            categoryAdapter.setList(categories)
-        }
 
-        viewModel.yogaPoseList.observe(viewLifecycleOwner) { poses ->
-            yogaPoseAdapter.setList(poses)
+        viewModel.todayPickPose.observe(viewLifecycleOwner) { pose ->
+            pose?.let {
+                binding.tvPoseName.text = it.name
+                binding.poseToday.loadImageFromNetwork(it.photo_url)
+            }
         }
     }
 
     override fun initListener() {
-        categoryAdapter.setOnClickItemRecyclerView { category, position ->
-            categoryAdapter.setSelectedPosition(position)
-            ViewUtils.scrollToCenter(binding.rvCategory, position)
-            viewModel.filterPoses(category.value)
-            binding.rvTemplates.scrollToPosition(0)
-        }
-
-        yogaPoseAdapter.setOnClickItemRecyclerView { pose, _ ->
-            val bundle = Bundle().apply {
-                putParcelable("yogaPoseItem", pose)
+        binding.cvTodayPick.singleClick {
+            viewModel.todayPickPose.value?.let { pose ->
+                val bundle = Bundle().apply { putParcelable("yogaPoseItem", pose) }
+                navigate(R.id.detailYogaFragment, bundle)
             }
-            navigate(R.id.detailYogaFragment, bundle)
         }
 
-        binding.btnNewProject.singleClick {
-            navigate(R.id.yogaFragment)
+        binding.cvBrowsePoses.singleClick {
+            navigate(R.id.singleModeFragment)
         }
 
-        binding.llChatbotWrapper.setDraggableWithClick { }
+        binding.cvYoai.singleClick {
+            navigate(R.id.choosePoseFragment)
+        }
+
+        binding.llChatbotWrapper.setDraggableWithClick {
+        }
     }
 
     override fun initData() {

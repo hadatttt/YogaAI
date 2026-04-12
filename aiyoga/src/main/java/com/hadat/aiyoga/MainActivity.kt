@@ -11,6 +11,8 @@ import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
 import com.google.firebase.FirebaseApp
 import com.qamar.curvedbottomnaviagtion.CurvedBottomNavigation
+import com.hadat.aiyoga.service.AppPreferences
+import hoang.dqm.codebase.base.activity.navigate
 
 class MainActivity : AppCompatActivity() {
 
@@ -22,7 +24,6 @@ class MainActivity : AppCompatActivity() {
         val PRACTICE_ITEM = R.id.loginFragment
         val HISTORY_ITEM = R.id.detailYogaFragment
         val PROFILE_ITEM = R.id.yogaSkeletonFragment
-
         val SOCIAL_ITEM = R.id.yogaSkeletonFragment
     }
 
@@ -34,11 +35,13 @@ class MainActivity : AppCompatActivity() {
         enableEdgeToEdge()
         setContentView(R.layout.activity_main)
 
-        val navHostFragment = supportFragmentManager.findFragmentById(R.id.navHostFragment) as NavHostFragment
+        val navHostFragment =
+            supportFragmentManager.findFragmentById(R.id.navHostFragment) as NavHostFragment
         navController = navHostFragment.navController
 
         bottomNavigation = findViewById(R.id.bottomNavigation)
         setUpBottomNavigation()
+
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.navHostFragment)) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, 0)
@@ -46,34 +49,43 @@ class MainActivity : AppCompatActivity() {
         }
 
         val navGraph = navController.navInflater.inflate(R.navigation.app_nav)
-        navGraph.setStartDestination(R.id.loginFragment)
+        val startDestination = if (AppPreferences.isLoggedIn(this)) {
+            R.id.homeFragment
+        } else {
+            R.id.loginFragment
+        }
+        navGraph.setStartDestination(startDestination)
         navController.graph = navGraph
     }
 
     private fun setUpBottomNavigation() {
-        // Tạo danh sách các Model theo đúng tài liệu
         val bottomNavigationItems = mutableListOf(
-            CurvedBottomNavigation.Model(PRACTICE_ITEM, "Practice", R.drawable.ic_pratice),
+            CurvedBottomNavigation.Model(SOCIAL_ITEM, "Social", R.drawable.ic_social),
             CurvedBottomNavigation.Model(HISTORY_ITEM, "History", R.drawable.ic_history),
             CurvedBottomNavigation.Model(HOME_ITEM, "Home", R.drawable.ic_home),
-            CurvedBottomNavigation.Model(PROFILE_ITEM, "Profile", R.drawable.ic_my_profile),
-            CurvedBottomNavigation.Model(SOCIAL_ITEM, "Social", R.drawable.ic_social)
+            CurvedBottomNavigation.Model(PRACTICE_ITEM, "Sequences", R.drawable.ic_pratice),
+            CurvedBottomNavigation.Model(PROFILE_ITEM, "Profile", R.drawable.ic_my_profile)
         )
 
         bottomNavigation.apply {
             bottomNavigationItems.forEach { add(it) }
-            setOnClickMenuListener {
-                navController.navigate(it.id)
+            setOnClickMenuListener { model ->
+                navigate(model.id)
             }
-            show(HOME_ITEM)
-            setupNavController(navController)
         }
 
         navController.addOnDestinationChangedListener { _, destination, _ ->
-            if (destination.id == R.id.loginFragment || destination.id == R.id.yogaFragment) {
+            val fragmentsToHideNavigation = setOf(
+                R.id.loginFragment,
+                R.id.singleYogaFragment,
+                R.id.yogaFragment
+            )
+
+            if (fragmentsToHideNavigation.contains(destination.id)) {
                 bottomNavigation.visibility = View.GONE
             } else {
                 bottomNavigation.visibility = View.VISIBLE
+                bottomNavigation.show(destination.id, true)
             }
         }
     }

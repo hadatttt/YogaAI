@@ -1,52 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <!-- Base -->
-    <color name="black">#FF000000</color>
-    <color name="white">#FFFFFFFF</color>
-    <color name="maincolor">#004BFE</color>
-    <color name="red">#FF1100</color>
-
-    <!-- 🌸 Primary Purple (dịu mắt) -->
-    <color name="purple_200">#D1C4E9</color>
-    <color name="purple_300">#B39DDB</color>
-    <color name="purple_500">#7E57C2</color>
-    <color name="purple_700">#5E35B1</color>
-    <color name="purple_900">#4527A0</color>
-
-    <!-- 🌸 Accent -->
-    <color name="accent_soft">#EDE7F6</color>
+    <color name="black">#1A1A1A</color> <color name="white">#FFFFFF</color>
+    <color name="maincolor">#7E57C2</color> <color name="red">#EF5350</color> <color name="purple_200">#E1D5F2</color> <color name="purple_300">#B39DDB</color> <color name="purple_500">#8E6ECF</color> <color name="purple_700">#6A4EAD</color> <color name="purple_900">#4A3969</color> <color name="accent_soft">#F4F0FA</color>
     <color name="accent_highlight">#CE93D8</color>
+    <color name="overlay_black_40">#66000000</color> <color name="bg_main">#FBF9FF</color> <color name="bg_card">#FFFFFF</color>
+    <color name="bg_soft_purple">#F3E5F5</color> <color name="text_primary">#2D3142</color> <color name="text_secondary">#78909C</color> <color name="text_hint">#B0BEC5</color>
+    <color name="text_white_soft">#E0E0E0</color>
 
-    <!-- 🌿 Background -->
-    <color name="bg_main">#F9F9FB</color>
-    <color name="bg_card">#FFFFFF</color>
-    <color name="bg_soft">#F3F0FA</color>
+    <color name="status_pending">#FFB74D</color>
+    <color name="status_success">#81C784</color>
+    <color name="status_error">#E57373</color>
+    <color name="status_info">#64B5F6</color>
 
-    <!-- ✍️ Text -->
-    <color name="text_primary">#2E2E2E</color>
-    <color name="text_secondary">#8E8E93</color>
-    <color name="text_hint">#B0B0C3</color>
-
-    <!-- 🌿 Status colors (giữ nguyên + bổ sung nhẹ) -->
-    <color name="status_pending">#FFA500</color>
-    <color name="status_confirmed">#4CAF50</color>
-    <color name="status_processing">#2196F3</color>
-    <color name="status_shipped">#9C27B0</color>
-    <color name="status_delivered">#4CAF50</color>
-    <color name="status_cancelled">#F44336</color>
-
-    <!-- 🌿 Soft status (dùng background badge đẹp hơn) -->
     <color name="status_pending_bg">#FFF3E0</color>
     <color name="status_success_bg">#E8F5E9</color>
     <color name="status_error_bg">#FFEBEE</color>
+    <color name="status_info_bg">#E3F2FD</color>
 
-    <!-- 🌟 Extra (dùng cho AI/yoga app) -->
-    <color name="green_soft">#A5D6A7</color>
-    <color name="green_main">#4CAF50</color>
-    <color name="blue_soft">#BBDEFB</color>
+    <color name="ai_green_soft">#C8E6C9</color>
+    <color name="ai_green_main">#66BB6A</color>
+    <color name="ai_blue_soft">#E1F5FE</color>
 
-    <!-- fallback primary -->
-    <color name="primary">#FF956FF9</color>
+    <color name="primary">#8E6ECF</color>
+    <color name="text_gray">#808080</color>
 
 </resources>

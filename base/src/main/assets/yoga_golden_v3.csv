@@ -1,8 +1,8 @@
 pose_id,pose_name,knee_L,knee_R,hip_L,hip_R,arm_body_L,arm_body_R,elbow_L,elbow_R
-0,Akarna_Dhanurasana,177.22,45.15,44.55,82.27,114.77,70.85,168.30,11.23
-1,Bharadvajasana_I,48.89,131.78,124.40,135.85,54.07,68.59,179.33,173.49
-2,Boat_Pose_or_Paripurna_Navasana_,178.30,123.48,142.26,160.00,123.75,110.92,170.78,144.52
-3,Bound_Angle_Pose_or_Baddha_Konasana_,9.84,11.82,64.14,68.74,12.13,14.34,148.44,157.74
+0,Akarna_Dhanurasana,68.7,179.7,44.1,52.9,120.0,106.0,28.6,169.8
+1,Bharadvajasana_I,19.6,13.4,92.9,100.4,44.0,13.8,161.6,135.7
+2,Boat_Pose_or_Paripurna_Navasana_,173.0,172.7,101.3,99.3,36.7,29.9,178.0,171.3
+3,Bound_Angle_Pose_or_Baddha_Konasana_,10.2,7.1,64.7,62.7,39.0,39.0,121.0,108.0
 4,Bow_Pose_or_Dhanurasana_,41.58,62.03,139.13,147.93,44.00,38.34,174.17,173.80
 5,Bridge_Pose_or_Setu_Bandha_Sarvangasana_,175.93,179.79,163.51,153.92,165.14,64.94,177.91,54.57
 6,Camel_Pose_or_Ustrasana_,103.82,88.83,110.41,111.11,175.19,70.48,145.30,168.54
@@ -10,7 +10,7 @@ pose_id,pose_name,knee_L,knee_R,hip_L,hip_R,arm_body_L,arm_body_R,elbow_L,elbow_
 8,Chair_Pose_or_Utkatasana_,70.08,74.23,88.13,82.27,173.10,170.25,178.58,109.74
 9,Child_Pose_or_Balasana_,11.67,12.74,10.69,10.63,172.40,170.51,171.32,171.55
 10,Cobra_Pose_or_Bhujangasana_,156.06,170.77,3.00,157.88,103.04,131.50,153.78,170.78
-11,Cockerel_Pose,15.61,28.33,91.12,65.64,41.83,54.16,101.47,153.89
+11,Cockerel_Pose,3.45,7.05,83.85,74.35,4.88,9.75,173.4,175.43
 12,Corpse_Pose_or_Savasana_,177.87,169.46,174.40,172.62,18.52,7.31,174.25,166.24
 13,Cow_Face_Pose_or_Gomukhasana_,161.99,165.56,98.18,100.94,93.38,65.89,135.64,67.78
 14,Crane_Crow_Pose_or_Bakasana_,29.57,31.22,12.74,14.10,55.14,52.68,156.68,160.68

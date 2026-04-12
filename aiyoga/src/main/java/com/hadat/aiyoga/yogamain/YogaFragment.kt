@@ -17,7 +17,7 @@ import com.google.mediapipe.tasks.vision.poselandmarker.PoseLandmarker
 import com.hadat.aiyoga.databinding.FragmentYogaBinding
 import com.hadat.aiyoga.utils.ModelDownloader
 import com.hadat.aiyoga.utils.loadImageFromNetwork
-import com.hadat.aiyoga.yogautils.YogaCoachUtils
+import com.hadat.aiyoga.utils.yogautils.YogaCoachUtils
 import hoang.dqm.codebase.base.activity.BaseFragment
 import hoang.dqm.codebase.base.activity.popBackStack
 import hoang.dqm.codebase.utils.singleClick
@@ -78,7 +78,7 @@ class YogaFragment : BaseFragment<FragmentYogaBinding, YogaViewModel>() {
         classifierExecutor.execute {
             try {
                 val classifierFile = File(requireContext().filesDir, "yoga_model.tflite")
-                val taskFile = File(requireContext().filesDir, "pose_landmarker_lite.task")
+                val taskFile = File(requireContext().filesDir, "pose_landmarker_heavy.task")
 
                 if (classifierFile.exists() && taskFile.exists()) {
                     setupClassifier(classifierFile)
@@ -122,7 +122,11 @@ class YogaFragment : BaseFragment<FragmentYogaBinding, YogaViewModel>() {
             .setResultListener { result, _ ->
                 activity?.runOnUiThread {
                     if (isAdded && !isFragmentDestroyed) {
-                        binding.overlayView.setResults(result, binding.viewFinder.height, binding.viewFinder.width)
+//                        binding.overlayView.setResults(
+//                            result,
+//                            result.inputImageHeight(),
+//                            result.inputImageWidth()
+//                        )
 
                         val currentTime = System.currentTimeMillis()
                         val currentId = viewModel.detectedPoseId.value ?: -1
