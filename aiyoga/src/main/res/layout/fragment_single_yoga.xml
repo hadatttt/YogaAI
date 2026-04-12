@@ -24,7 +24,7 @@
             android:layout_width="@dimen/_30sdp"
             android:layout_height="@dimen/_30sdp"
             android:layout_marginStart="@dimen/_15sdp"
-            android:layout_marginTop="@dimen/_30sdp"
+            android:layout_marginTop="@dimen/_15sdp"
             android:background="@drawable/shape_circle"
             android:elevation="4dp"
             android:padding="@dimen/_6sdp"
@@ -36,13 +36,12 @@
             android:id="@+id/layout_time_top"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/_30sdp"
             app:cardBackgroundColor="@color/primary"
             app:cardCornerRadius="@dimen/_15sdp"
             app:cardElevation="4dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent">
+            app:layout_constraintTop_toTopOf="@id/iv_back">
 
         <LinearLayout
                 android:layout_width="wrap_content"
@@ -76,7 +75,6 @@
             android:id="@+id/iv_flip"
             android:layout_width="@dimen/_30sdp"
             android:layout_height="@dimen/_30sdp"
-            android:layout_marginTop="@dimen/_30sdp"
             android:layout_marginEnd="@dimen/_15sdp"
             android:background="@drawable/shape_circle"
             android:elevation="4dp"
@@ -84,7 +82,7 @@
             android:src="@drawable/ic_flip"
             android:tint="@color/primary"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintTop_toTopOf="@id/iv_back" />
 
     <com.google.android.material.card.MaterialCardView
             android:id="@+id/card_preview"

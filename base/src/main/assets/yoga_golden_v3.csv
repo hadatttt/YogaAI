@@ -1,8 +1,8 @@
 pose_id,pose_name,knee_L,knee_R,hip_L,hip_R,arm_body_L,arm_body_R,elbow_L,elbow_R
-0,Akarna_Dhanurasana,115.8,174.0,32.2,36.3,55.1,126.1,2.0,170.5
-1,Bharadvajasana_I,13.2,14.5,85.3,99.0,38.2,6.2,160.5,135.5
-2,Boat_Pose_or_Paripurna_Navasana_,178.30,123.48,142.26,160.00,123.75,110.92,170.78,144.52
-3,Bound_Angle_Pose_or_Baddha_Konasana_,9.84,11.82,64.14,68.74,12.13,14.34,148.44,157.74
+0,Akarna_Dhanurasana,68.7,179.7,44.1,52.9,120.0,106.0,28.6,169.8
+1,Bharadvajasana_I,19.6,13.4,92.9,100.4,44.0,13.8,161.6,135.7
+2,Boat_Pose_or_Paripurna_Navasana_,173.0,172.7,101.3,99.3,36.7,29.9,178.0,171.3
+3,Bound_Angle_Pose_or_Baddha_Konasana_,10.2,7.1,64.7,62.7,39.0,39.0,121.0,108.0
 4,Bow_Pose_or_Dhanurasana_,41.58,62.03,139.13,147.93,44.00,38.34,174.17,173.80
 5,Bridge_Pose_or_Setu_Bandha_Sarvangasana_,175.93,179.79,163.51,153.92,165.14,64.94,177.91,54.57
 6,Camel_Pose_or_Ustrasana_,103.82,88.83,110.41,111.11,175.19,70.48,145.30,168.54

@@ -128,7 +128,6 @@ object YogaCoachUtils {
             "elbow_R" to getSmoothAngle("elbow_R", calculateAngleVector(lm[R_SHOULDER], lm[R_ELBOW], lm[R_WRIST]))
         )
 
-        // ===== SMART SWAP =====
         fun totalDiff(a: Map<String, Double>, b: Map<String, Double>): Double {
             return a.entries.sumOf { (k, v) -> angleDiff(v, b[k] ?: 0.0) }
         }
@@ -153,8 +152,6 @@ object YogaCoachUtils {
             val t = ref[k] ?: 0.0
             Log.d("YogaCoach", "$k: Máy đo: ${"%.1f".format(v)}° | Mẫu CSV: ${"%.1f".format(t)}°")
         }
-
-        // ===== WEIGHT =====
         val weights = mapOf(
             "knee_L" to 1.0,
             "knee_R" to 1.0,
@@ -165,8 +162,6 @@ object YogaCoachUtils {
             "elbow_L" to 0.7,
             "elbow_R" to 0.7
         )
-
-        // ===== SCORE =====
         var totalScore = 0.0
         var totalWeight = 0.0
 

@@ -11,7 +11,7 @@
             android:id="@+id/layout_search"
             android:layout_width="0dp"
             android:layout_height="@dimen/_40sdp"
-            android:layout_marginTop="@dimen/_20sdp"
+            android:layout_marginTop="@dimen/_15sdp"
             android:layout_marginHorizontal="@dimen/_20sdp"
             android:background="@drawable/bg_search"
             android:paddingHorizontal="@dimen/_12sdp"

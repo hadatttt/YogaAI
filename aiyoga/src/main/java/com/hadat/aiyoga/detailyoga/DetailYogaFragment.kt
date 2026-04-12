@@ -190,7 +190,6 @@ class DetailYogaFragment : BaseFragment<FragmentDetailYogaBinding, DetailYogaVie
                             binding.tvAiLoading.text = "Correct Pose Image"
                         } else {
                             binding.tvAiLoading.text = "Incorrect Pose! Checking skeleton..."
-                            binding.tvAiLoading.setTextColor(android.graphics.Color.RED)
                         }
 
                         binding.root.postDelayed({

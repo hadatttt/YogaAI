@@ -11,7 +11,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:paddingHorizontal="@dimen/_20sdp"
-            android:paddingTop="@dimen/_32sdp"
+            android:paddingTop="@dimen/_15sdp"
             android:paddingBottom="@dimen/_16sdp"
             app:layout_constraintTop_toTopOf="parent">
 
