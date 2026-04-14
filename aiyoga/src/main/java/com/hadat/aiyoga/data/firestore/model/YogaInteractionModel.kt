@@ -13,7 +13,7 @@ data class YogaInteractionModel(
     var clickCount: Int = 0,
 
     @get:PropertyName("dateKey") @set:PropertyName("dateKey")
-    var dateKey: String = "", // Định dạng: "yyyy-MM-dd" để truy vấn theo ngày
+    var dateKey: String = "",
 
     @get:PropertyName("lastUpdated") @set:PropertyName("lastUpdated")
     var lastUpdated: Long = System.currentTimeMillis()

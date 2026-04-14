@@ -42,9 +42,6 @@ object AppPreferences {
         }
     }
 
-    fun setLoggedIn(context: Context, loggedIn: Boolean) {
-        getPrefs(context).edit { putBoolean(KEY_IS_LOGGED_IN, loggedIn) }
-    }
 
     fun isLoggedIn(context: Context): Boolean {
         return getPrefs(context).getBoolean(KEY_IS_LOGGED_IN, false)

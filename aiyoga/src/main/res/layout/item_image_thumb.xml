@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="@dimen/_8sdp"
+        android:padding="@dimen/_2sdp"> <androidx.cardview.widget.CardView
+        android:id="@+id/card_root"
+        android:layout_width="@dimen/_80sdp"
+        android:layout_height="@dimen/_80sdp"
+        app:cardCornerRadius="16dp"
+        app:cardElevation="0dp"
+        app:cardPreventCornerOverlap="false"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent">
+
+    <ImageView
+            android:id="@+id/iv_thumb"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scaleType="centerCrop"
+/>
+
+</androidx.cardview.widget.CardView>
+
+    <View
+            android:id="@+id/view_selected_stroke"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:background="@drawable/bg_new_sequence"
+            app:layout_constraintTop_toTopOf="@id/card_root"
+            app:layout_constraintBottom_toBottomOf="@id/card_root"
+            app:layout_constraintStart_toStartOf="@id/card_root"
+            app:layout_constraintEnd_toEndOf="@id/card_root" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

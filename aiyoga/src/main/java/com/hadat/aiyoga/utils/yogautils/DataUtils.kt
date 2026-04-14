@@ -7,6 +7,7 @@ import com.google.firebase.remoteconfig.ktx.remoteConfig
 import com.google.firebase.remoteconfig.ktx.remoteConfigSettings
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
+import com.hadat.aiyoga.detailyoga.YogaPoseAngleModel
 import com.hadat.aiyoga.detailyoga.YogaPoseDetailModel
 import com.hadat.aiyoga.home.CategoryModel
 import com.hadat.aiyoga.yogamain.YogaPoseModel
@@ -16,6 +17,7 @@ object YogaDataUtils {
     private const val CONFIG_YOGA_KEY = "data_yoga_image"
     private const val CONFIG_CATEGORY_KEY = "data_yoga_categories"
     private const val CONFIG_DETAIL_KEY = "data_yoga_details"
+    private const val CONFIG_YOGA_ANGLES_KEY = "data_yoga_angles"
 
     @SuppressLint("StaticFieldLeak")
     private val remoteConfig = Firebase.remoteConfig
@@ -27,10 +29,30 @@ object YogaDataUtils {
         }
         remoteConfig.setConfigSettingsAsync(configSettings)
     }
-
-    /**
-     * Giữ nguyên hàm lấy Poses của bạn
-     */
+    fun getRemoteYogaAngles(onResult: (List<YogaPoseAngleModel>?) -> Unit) {
+        remoteConfig.fetchAndActivate().addOnCompleteListener { task ->
+            if (task.isSuccessful) {
+                val json = remoteConfig.getString(CONFIG_YOGA_ANGLES_KEY)
+                if (json.isNotEmpty()) {
+                    onResult(parseAngleJson(json))
+                } else {
+                    Log.e(TAG, "Key '$CONFIG_YOGA_ANGLES_KEY' trống")
+                    onResult(null)
+                }
+            } else {
+                onResult(null)
+            }
+        }
+    }
+    private fun parseAngleJson(json: String): List<YogaPoseAngleModel>? {
+        return try {
+            val listType = object : TypeToken<List<YogaPoseAngleModel>>() {}.type
+            gson.fromJson<List<YogaPoseAngleModel>>(json, listType)
+        } catch (e: Exception) {
+            Log.e(TAG, "❌ Lỗi Parse Angle GSON: ${e.message}")
+            null
+        }
+    }
     fun getRemoteYogaPoses(onResult: (List<YogaPoseModel>?) -> Unit) {
         remoteConfig.fetchAndActivate().addOnCompleteListener { task ->
             if (task.isSuccessful) {
@@ -50,10 +72,6 @@ object YogaDataUtils {
             }
         }
     }
-
-    /**
-     * Hàm mới thêm: Lấy danh sách Category
-     */
     fun getRemoteYogaCategories(onResult: (List<CategoryModel>?) -> Unit) {
         remoteConfig.fetchAndActivate().addOnCompleteListener { task ->
             if (task.isSuccessful) {
@@ -96,9 +114,7 @@ object YogaDataUtils {
             if (task.isSuccessful) {
                 val json = remoteConfig.getString(CONFIG_DETAIL_KEY)
                 if (json.isNotEmpty()) {
-                    // Parse toàn bộ Map từ Firebase: Key là String (ID), Value là DetailModel
                     val detailMap = parseDetailMapJson(json)
-                    // Lấy đúng cái Detail theo ID truyền vào
                     val detail = detailMap?.get(id.toString())
                     onResult(detail)
                 } else {
@@ -113,7 +129,6 @@ object YogaDataUtils {
 
     private fun parseDetailMapJson(json: String): Map<String, YogaPoseDetailModel>? {
         return try {
-            // Sử dụng Map<String, YogaPoseDetailModel> để tối ưu việc tìm kiếm theo ID
             val mapType = object : TypeToken<Map<String, YogaPoseDetailModel>>() {}.type
             gson.fromJson<Map<String, YogaPoseDetailModel>>(json, mapType)
         } catch (e: Exception) {

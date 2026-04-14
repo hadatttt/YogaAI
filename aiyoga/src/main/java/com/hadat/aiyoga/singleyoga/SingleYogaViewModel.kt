@@ -12,6 +12,15 @@ import java.util.*
 class SingleYogaViewModel : BaseViewModel() {
     private val _isWaitingForCapture = MutableLiveData(false)
     val isWaitingForCapture: LiveData<Boolean> = _isWaitingForCapture
+    private val sessionImagePaths = mutableListOf<String>()
+
+    private var errorCount = 0
+    private var hasStartedCorrectPose = false
+    private var isPreviousFrameCorrect = true
+
+    fun addCapturedImage(path: String) {
+        sessionImagePaths.add(path)
+    }
 
     private val _captureTrigger = MutableLiveData<Unit>()
     val captureTrigger: LiveData<Unit> = _captureTrigger
@@ -41,12 +50,22 @@ class SingleYogaViewModel : BaseViewModel() {
     fun fetchYogaPoses() {
         YogaDataUtils.getRemoteYogaPoses { poses -> poses?.let { _yogaPoseDataList.postValue(it) } }
     }
+    fun getCapturedImages(): List<String> {
+        return sessionImagePaths
+    }
 
+    fun getErrorCount(): Int {
+        return errorCount
+    }
     fun startSinglePoseTracking(poseId: Int) {
         exerciseTimer?.cancel()
         exerciseTimer = null
         totalSecondsAccumulated = 0
         isCurrentlyCorrect = false
+        errorCount = 0
+        hasStartedCorrectPose = false
+        isPreviousFrameCorrect = true
+        sessionImagePaths.clear()
         _timerText.postValue("00:00")
         _isTrackingStarted.postValue(true)
         startLogicalTimer()
@@ -62,11 +81,23 @@ class SingleYogaViewModel : BaseViewModel() {
         if (poseId != -1 && _isTrackingStarted.value == true) {
             val (isCorrect, feedback) = YogaCoachUtils.getCoachFeedback(poseId, result)
 
+            if (isCorrect) {
+                hasStartedCorrectPose = true
+            } else {
+                if (hasStartedCorrectPose && isPreviousFrameCorrect) {
+                    errorCount++
+                    android.util.Log.d("YogaCoach", "❌ Lỗi phát sinh! Tổng lỗi: $errorCount")
+                }
+            }
+
+            isPreviousFrameCorrect = isCorrect
             isCurrentlyCorrect = isCorrect
+
             if (isCorrect && _isWaitingForCapture.value == true) {
                 _captureTrigger.postValue(Unit)
                 _isWaitingForCapture.postValue(false)
             }
+
             if (isCorrect) {
                 _currentGuideText.postValue("✅ Tư thế chuẩn! Đang đếm giờ...")
             } else {
@@ -75,6 +106,7 @@ class SingleYogaViewModel : BaseViewModel() {
             }
         } else {
             isCurrentlyCorrect = false
+            isPreviousFrameCorrect = true
         }
     }
 

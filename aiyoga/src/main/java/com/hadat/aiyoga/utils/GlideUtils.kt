@@ -67,6 +67,38 @@ fun ImageView.loadImageFromNetwork(url: String) {
         .transition(DrawableTransitionOptions.withCrossFade()) // Hiệu ứng mượt mà
         .into(this)
 }
+fun ImageView.loadImageWithCallback(url: String, onComplete: () -> Unit) {
+    if (url.isEmpty()) {
+        onComplete()
+        return
+    }
+
+    Glide.with(this.context)
+        .load(url)
+        .listener(object : RequestListener<Drawable> {
+            override fun onLoadFailed(
+                e: GlideException?,
+                model: Any?,
+                target: Target<Drawable>,
+                isFirstResource: Boolean
+            ): Boolean {
+                onComplete()
+                return false
+            }
+
+            override fun onResourceReady(
+                resource: Drawable, // Không dấu ?
+                model: Any,         // Không dấu ?
+                target: Target<Drawable>?, // Có dấu ?
+                dataSource: DataSource,    // Không dấu ?
+                isFirstResource: Boolean
+            ): Boolean {
+                onComplete()
+                return false
+            }
+        })
+        .into(this)
+}
 fun ImageView.loadImage(drawable: Int?) {
     val requestBuilder: RequestBuilder<Drawable> =
         Glide.with(this).asDrawable().sizeMultiplier(0.1f)

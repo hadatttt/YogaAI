@@ -49,7 +49,6 @@ class YogaRepository {
                 .await()
 
             if (!snapshot.isEmpty) {
-                // Lấy đúng field "poseId" từ document
                 val id = snapshot.documents[0].getString("poseId")
                 Log.d("YOGA_DEBUG", "Tìm thấy PoseId trending trong Firestore: $id")
                 id

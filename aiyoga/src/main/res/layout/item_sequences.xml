@@ -1,0 +1,101 @@
+<androidx.cardview.widget.CardView
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="@dimen/_248sdp"
+        android:layout_height="@dimen/_148sdp"
+        android:layout_margin="@dimen/_5sdp"
+        app:cardCornerRadius="@dimen/_16sdp"
+        android:foreground="?attr/selectableItemBackground">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+        <androidx.appcompat.widget.AppCompatImageView
+                android:id="@+id/iv_sequence_thumb"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:scaleType="centerCrop"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toTopOf="@id/tv_sequence_name"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHeight_percent="0.65" />
+
+        <View
+                android:id="@+id/view_gradient"
+                android:layout_width="0dp"
+                android:layout_height="@dimen/_40sdp"
+                android:background="@drawable/bg_gradient_bottom"
+                app:layout_constraintBottom_toBottomOf="@id/iv_sequence_thumb"
+                app:layout_constraintStart_toStartOf="@id/iv_sequence_thumb"
+                app:layout_constraintEnd_toEndOf="@id/iv_sequence_thumb"/>
+
+        <androidx.appcompat.widget.AppCompatTextView
+                android:id="@+id/tv_sequence_name"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="@dimen/_10sdp"
+                android:layout_marginTop="@dimen/_3sdp"
+                android:ellipsize="end"
+                android:maxLines="2"
+                android:text="Morning Yoga Flow"
+                android:textColor="@color/text_gray"
+                android:textSize="@dimen/_15sdp"
+                android:fontFamily="@font/font_bold"
+                app:layout_constraintTop_toBottomOf="@id/iv_sequence_thumb"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent" />
+
+        <ImageView
+                android:id="@+id/ic_level"
+                android:layout_width="@dimen/_14sdp"
+                android:layout_height="@dimen/_14sdp"
+                android:layout_marginStart="@dimen/_10sdp"
+                android:layout_marginTop="@dimen/_4sdp"
+                android:src="@drawable/ic_level"
+                app:tint="@color/primary"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/tv_sequence_name"/>
+
+        <!-- LEVEL LABEL -->
+        <TextView
+                android:id="@+id/tv_level_label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/_4sdp"
+                android:text="Level:"
+                android:textColor="@color/black"
+                android:textSize="@dimen/_10sdp"
+                app:layout_constraintStart_toEndOf="@id/ic_level"
+                app:layout_constraintTop_toTopOf="@id/ic_level"/>
+
+        <!-- LEVEL VALUE -->
+        <TextView
+                android:id="@+id/tv_level_value"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Advanced"
+                android:textColor="#8E8E93"
+                android:textSize="@dimen/_10sdp"
+                app:layout_constraintBaseline_toBaselineOf="@id/tv_level_label"
+                app:layout_constraintStart_toEndOf="@id/tv_level_label"/>
+
+        <TextView
+                android:id="@+id/tv_duration"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="@dimen/_8sdp"
+                android:background="@drawable/bg_time_tag"
+                android:paddingHorizontal="@dimen/_6sdp"
+                android:paddingVertical="@dimen/_2sdp"
+                android:text="15 min"
+                android:textColor="@color/white"
+                android:textSize="@dimen/_9sdp"
+                android:fontFamily="@font/font_bold"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"/>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</androidx.cardview.widget.CardView>

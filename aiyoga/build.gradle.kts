@@ -131,4 +131,8 @@ dependencies {
     ksp("androidx.room:room-compiler:$room_version")
     api("com.google.code.gson:gson:2.10.1")
     implementation("androidx.room:room-ktx:$room_version")
+    //circle progress
+    implementation("com.mikhaellopez:circularprogressbar:3.1.0")
+    //cloudiary
+    implementation("com.cloudinary:cloudinary-android:2.3.1")
 }

@@ -11,6 +11,8 @@ import com.hadat.aiyoga.home.CategoryAdapter
 import com.hadat.aiyoga.utils.ViewUtils
 import hoang.dqm.codebase.base.activity.BaseFragment
 import hoang.dqm.codebase.base.activity.navigate
+import hoang.dqm.codebase.base.activity.onBackPressed
+import hoang.dqm.codebase.base.activity.popBackStack
 import hoang.dqm.codebase.base.adapter.animation.AnimationType
 import hoang.dqm.codebase.utils.singleClick
 
@@ -79,6 +81,21 @@ class ChoosePoseFragment : BaseFragment<FragmentChoosePosesBinding, ChoosePoseVi
 
             if (finalIds.isNullOrEmpty()) return@singleClick
 
+        }
+        binding.btnCreate.singleClick {
+            val selectedList = viewModel.selectedPoses.value
+
+            if (selectedList.isNullOrEmpty()) return@singleClick
+
+            val bundle = Bundle().apply {
+                putParcelableArray("selected_poses_list", selectedList.toTypedArray())
+            }
+
+            navigate(R.id.sequencesFragment, bundle)
+        }
+        onBackPressed {
+            viewModel.resetSelected()
+            popBackStack()
         }
     }
     private fun navigateToDetail(pose: com.hadat.aiyoga.yogamain.YogaPoseModel) {

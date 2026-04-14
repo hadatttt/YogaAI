@@ -1,6 +1,7 @@
 package com.hadat.aiyoga.home
 
 import android.os.Bundle
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.hadat.aiyoga.R
 import com.hadat.aiyoga.databinding.FragmentHomeBinding
 import com.hadat.aiyoga.utils.ViewUtils.getGreeting
@@ -12,10 +13,25 @@ import hoang.dqm.codebase.utils.setDraggableWithClick
 import hoang.dqm.codebase.utils.singleClick
 
 class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
+    private val recentAdapter by lazy {
+        RecentSequencesAdapter(
+            onAddClick = {
+                navigate(R.id.choosePoseFragment)
+            },
+            onItemClick = { sequence ->
 
+            }
+        )
+    }
     override fun initView() {
         binding.tvGreeting.text = getGreeting(requireContext())
-
+        binding.rvSequences.apply {
+            layoutManager = LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
+            adapter = recentAdapter
+        }
+        viewModel.recentSequences.observe(viewLifecycleOwner) { list ->
+            recentAdapter.setList(list)
+        }
         viewModel.userData.observe(viewLifecycleOwner) { user ->
             user?.let {
                 binding.tvUsername.text = it.displayName.removeVietnameseAccents()

@@ -6,56 +6,86 @@ import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.AuthCredential
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
-import com.hadat.aiyoga.service.AppPreferences
 import com.hadat.aiyoga.data.firestore.model.User
 import com.hadat.aiyoga.data.firestore.repository.UserRepository
+import com.hadat.aiyoga.service.AppPreferences
 import hoang.dqm.codebase.base.viewmodel.BaseViewModel
 import kotlinx.coroutines.launch
+
 class LoginViewModel : BaseViewModel() {
 
     val loginSuccess = MutableLiveData<Boolean>()
-    private val auth: FirebaseAuth by lazy { FirebaseAuth.getInstance() }
-    private val userRepository = UserRepository()
+    val errorMessage = MutableLiveData<String>()
 
-    fun signInWithFirebase(credential: AuthCredential, context: Context) {
+    private val auth: FirebaseAuth by lazy { FirebaseAuth.getInstance() }
+    private val userRepository by lazy { UserRepository() }
+    fun signInWithFirebase(
+        credential: AuthCredential,
+        context: Context
+    ) {
         auth.signInWithCredential(credential)
             .addOnCompleteListener { task ->
-                if (task.isSuccessful) {
-                    val firebaseUser = auth.currentUser
-                    if (firebaseUser != null) {
-                        handleUserStorage(firebaseUser, context)
-                    } else {
-                        loginSuccess.postValue(false)
-                    }
-                } else {
-                    loginSuccess.postValue(false)
+                if (!task.isSuccessful) {
+                    handleError("Authentication failed")
+                    return@addOnCompleteListener
                 }
+
+                val firebaseUser = auth.currentUser
+                if (firebaseUser == null) {
+                    handleError("User is null")
+                    return@addOnCompleteListener
+                }
+
+                handleUser(firebaseUser, context)
             }
     }
-
-    private fun handleUserStorage(firebaseUser: FirebaseUser, context: Context) {
+    private fun handleUser(
+        firebaseUser: FirebaseUser,
+        context: Context
+    ) {
         viewModelScope.launch {
-            val uid = firebaseUser.uid
-            val exists = userRepository.isUserExists(uid)
+            try {
+                val uid = firebaseUser.uid
 
-            if (!exists) {
-                val newUser = User(
-                    uid = uid,
-                    email = firebaseUser.email ?: "",
-                    displayName = firebaseUser.displayName ?: "",
-                    photoUrl = firebaseUser.photoUrl.toString()
-                )
-                val isSaved = userRepository.saveUser(newUser)
-                if (isSaved) {
-                    AppPreferences.setLoggedIn(context, true)
-                    loginSuccess.postValue(true)
-                } else {
-                    loginSuccess.postValue(false)
+                val exists = userRepository.isUserExists(uid)
+
+                if (!exists) {
+                    val newUser = mapFirebaseUserToModel(firebaseUser)
+                    val isSaved = userRepository.saveUser(newUser)
+
+                    if (!isSaved) {
+                        handleError("Save user failed")
+                        return@launch
+                    }
                 }
-            } else {
-                AppPreferences.setLoggedIn(context, true)
+
+                saveLoginSession(context, uid)
                 loginSuccess.postValue(true)
+
+            } catch (e: Exception) {
+                handleError(e.message ?: "Unknown error")
             }
         }
+    }
+
+    private fun mapFirebaseUserToModel(firebaseUser: FirebaseUser): User {
+        return User(
+            uid = firebaseUser.uid,
+            email = firebaseUser.email.orEmpty(),
+            displayName = firebaseUser.displayName.orEmpty(),
+            photoUrl = firebaseUser.photoUrl?.toString().orEmpty()
+        )
+    }
+
+    private fun saveLoginSession(
+        context: Context,
+        uid: String
+    ) {
+        AppPreferences.setLoginStatus(context, true, uid)
+    }
+
+    private fun handleError(message: String) {
+        errorMessage.postValue(message)
+        loginSuccess.postValue(false)
     }
 }

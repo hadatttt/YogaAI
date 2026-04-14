@@ -5,6 +5,7 @@ import android.animation.ObjectAnimator
 import android.annotation.SuppressLint
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
+import android.os.Bundle
 import android.speech.tts.TextToSpeech
 import android.view.View
 import androidx.activity.result.contract.ActivityResultContracts
@@ -14,11 +15,13 @@ import androidx.core.content.ContextCompat
 import androidx.navigation.fragment.navArgs
 import com.google.mediapipe.tasks.vision.core.RunningMode
 import com.hadat.aiyoga.databinding.FragmentSingleYogaBinding
+import com.hadat.aiyoga.service.AppPreferences
 import com.hadat.aiyoga.utils.ModelDownloader
 import com.hadat.aiyoga.utils.PoseLandmarkerHelper
 import com.hadat.aiyoga.utils.loadImageFromNetwork
 import com.hadat.aiyoga.utils.yogautils.YogaCoachUtils
 import hoang.dqm.codebase.base.activity.BaseFragment
+import hoang.dqm.codebase.base.activity.navigate
 import hoang.dqm.codebase.base.activity.popBackStack
 import hoang.dqm.codebase.utils.singleClick
 import java.util.*
@@ -32,7 +35,6 @@ class SingleYogaFragment : BaseFragment<FragmentSingleYogaBinding, SingleYogaVie
     private val args by navArgs<SingleYogaFragmentArgs>()
 
     private lateinit var backgroundExecutor: ExecutorService
-
     private lateinit var poseLandmarkerHelper: PoseLandmarkerHelper
     private var tts: TextToSpeech? = null
     private var lensFacing = CameraSelector.LENS_FACING_FRONT
@@ -69,12 +71,16 @@ class SingleYogaFragment : BaseFragment<FragmentSingleYogaBinding, SingleYogaVie
                 currentModel = PoseLandmarkerHelper.MODEL_POSE_LANDMARKER_HEAVY,
                 poseLandmarkerHelperListener = this
             )
+            YogaCoachUtils.loadReferenceData { isSuccess ->
+                if (isSuccess) {
 
-            YogaCoachUtils.loadReferenceData(requireContext())
+                    activity?.runOnUiThread {
+                        viewModel.fetchYogaPoses()
+                        viewModel.startSinglePoseTracking(args.yogaPoseItem.id)
+                    }
+                } else {
 
-            activity?.runOnUiThread {
-                viewModel.fetchYogaPoses()
-                viewModel.startSinglePoseTracking(args.yogaPoseItem.id)
+                }
             }
         }
     }
@@ -224,8 +230,10 @@ class SingleYogaFragment : BaseFragment<FragmentSingleYogaBinding, SingleYogaVie
     override fun initListener() {
         binding.ivBack.singleClick { popBackStack() }
         binding.ivPhoto.singleClick { viewModel.toggleCaptureWait() }
-        binding.progressAround.max = 1000
-        binding.progressAround.progress = 0
+        binding.progressAround.apply {
+            progressMax = 100f
+            progress = 0f
+        }
 
         binding.ivVoice.singleClick {
             isMuted = !isMuted
@@ -237,12 +245,15 @@ class SingleYogaFragment : BaseFragment<FragmentSingleYogaBinding, SingleYogaVie
             }
         }
 
-        progressAnimator = ObjectAnimator.ofInt(binding.progressAround, "progress", 0, 1000).apply {
+        progressAnimator = ObjectAnimator.ofFloat(binding.progressAround, "progress", 0f, 100f).apply {
             duration = 1500
             interpolator = android.view.animation.LinearInterpolator()
+
             addListener(object : android.animation.AnimatorListenerAdapter() {
                 override fun onAnimationEnd(animation: android.animation.Animator) {
-                    if (binding.progressAround.progress >= 1000) popBackStack()
+                    if (binding.progressAround.progress >= 100f) {
+                        navigateToResult()
+                    }
                 }
             })
         }
@@ -253,7 +264,7 @@ class SingleYogaFragment : BaseFragment<FragmentSingleYogaBinding, SingleYogaVie
                 android.view.MotionEvent.ACTION_UP,
                 android.view.MotionEvent.ACTION_CANCEL -> {
                     progressAnimator?.cancel()
-                    binding.progressAround.progress = 0
+                    binding.progressAround.progress = 0f
                     true
                 }
                 else -> false
@@ -318,9 +329,14 @@ class SingleYogaFragment : BaseFragment<FragmentSingleYogaBinding, SingleYogaVie
         uri?.let {
             requireContext().contentResolver.openOutputStream(it)?.use { out ->
                 bitmap.compress(Bitmap.CompressFormat.JPEG, 100, out)
-                activity?.runOnUiThread {
-                    android.widget.Toast.makeText(requireContext(), "Đã lưu ảnh vào thư viện!", android.widget.Toast.LENGTH_SHORT).show()
-                }
+            }
+            viewModel.addCapturedImage(it.toString())
+            activity?.runOnUiThread {
+                android.widget.Toast.makeText(
+                    requireContext(),
+                    "Đã lưu ảnh vào thư viện!",
+                    android.widget.Toast.LENGTH_SHORT
+                ).show()
             }
         }
     }
@@ -330,5 +346,27 @@ class SingleYogaFragment : BaseFragment<FragmentSingleYogaBinding, SingleYogaVie
         binding.viewFlash.animate().alpha(0f).setDuration(200)
             .withEndAction { binding.viewFlash.visibility = View.GONE }
             .start()
+    }
+    private fun navigateToResult() {
+        val userId = AppPreferences.getUserId(requireContext()) ?: "guest"
+        val date = java.text.SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date())
+
+        val result = WorkoutResultModel(
+            userId = userId,
+            poseId = args.yogaPoseItem.id,
+            poseName = args.yogaPoseItem.name,
+            durationInSeconds = viewModel.getTotalTimeStudied(),
+            date = date,
+            capturedImages = viewModel.getCapturedImages(),
+            errorCount = viewModel.getErrorCount()
+        )
+
+        val resultArray = arrayOf(result)
+
+        val bundle = Bundle().apply {
+            putParcelableArray("workout_result_list", resultArray)
+        }
+
+        navigate(com.hadat.aiyoga.R.id.resultFragment, bundle)
     }
 }

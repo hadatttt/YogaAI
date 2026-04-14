@@ -4,6 +4,7 @@ import android.Manifest
 import android.content.pm.PackageManager
 import android.graphics.*
 import android.speech.tts.TextToSpeech
+import android.util.Log
 import android.util.Size
 import android.view.View
 import androidx.activity.result.contract.ActivityResultContracts
@@ -83,7 +84,11 @@ class YogaFragment : BaseFragment<FragmentYogaBinding, YogaViewModel>() {
                 if (classifierFile.exists() && taskFile.exists()) {
                     setupClassifier(classifierFile)
                     setupPoseLandmarker(taskFile)
-                    YogaCoachUtils.loadReferenceData(requireContext())
+                    YogaCoachUtils.loadReferenceData { isSuccess ->
+                        if (isSuccess) {
+                            Log.d("YogaApp", "Load data thành công")
+                        }
+                    }
 
                     val labels = YogaCoachUtils.getPoseLabels()
                     activity?.runOnUiThread {
