@@ -103,6 +103,23 @@
                 android:layout_height="match_parent"
                 android:scaleType="centerCrop" />
     </com.google.android.material.card.MaterialCardView>
+    <TextView
+            android:id="@+id/tv_yoga_name"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/_4sdp"
+            android:textColor="@color/white"
+            android:textSize="@dimen/_10ssp"
+            android:textStyle="bold"
+            android:gravity="center"
+            android:text="Tv name"
+            android:shadowColor="@color/primary"
+            android:shadowDx="2"
+            android:shadowDy="2"
+            android:shadowRadius="2"
+            app:layout_constraintTop_toBottomOf="@id/card_preview"
+            app:layout_constraintStart_toStartOf="@id/card_preview"
+            app:layout_constraintEnd_toEndOf="@id/card_preview" />
 
     <com.google.android.material.card.MaterialCardView
             android:id="@+id/card_guide"

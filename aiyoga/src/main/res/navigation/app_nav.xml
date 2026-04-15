@@ -108,4 +108,9 @@
             android:name="com.hadat.aiyoga.profile.ProfileFragment"
             android:label="ProfileFragment" />
 
+    <fragment
+            android:id="@+id/workoutOverviewFragment"
+            android:name="com.hadat.aiyoga.workoutoverview.WorkoutOverviewFragment"
+            android:label="WorkoutOverviewFragment" />
+
 </navigation>

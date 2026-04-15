@@ -84,6 +84,10 @@ class ProfileFragment : BaseFragment<FragmentProfileBinding, ProfileViewModel>()
                 navigate(R.id.loginFragment, isPop = true)
             }
         }
+
+        binding.btnWorkoutOverview.singleClick {
+            navigate(R.id.workoutOverviewFragment)
+        }
     }
 
 

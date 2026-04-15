@@ -234,6 +234,7 @@ class SingleYogaFragment : BaseFragment<FragmentSingleYogaBinding, SingleYogaVie
 
     @SuppressLint("ClickableViewAccessibility")
     override fun initListener() {
+        binding.tvYogaName.text=args.yogaPoseItem.name
         binding.ivBack.singleClick { popBackStack() }
         binding.ivPhoto.singleClick { viewModel.toggleCaptureWait() }
         binding.progressAround.apply {
@@ -364,7 +365,8 @@ class SingleYogaFragment : BaseFragment<FragmentSingleYogaBinding, SingleYogaVie
             durationInSeconds = viewModel.getTotalTimeStudied(),
             date = date,
             capturedImages = viewModel.getCapturedImages(),
-            errorCount = viewModel.getErrorCount()
+            errorCount = viewModel.getErrorCount(),
+            workoutTimestamp = System.currentTimeMillis()
         )
 
         val resultArray = arrayOf(result)

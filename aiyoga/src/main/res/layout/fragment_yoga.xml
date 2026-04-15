@@ -80,7 +80,20 @@
                 android:textColor="@color/primary"
                 android:textSize="@dimen/_12ssp" />
     </com.google.android.material.card.MaterialCardView>
-
+    <TextView
+            android:id="@+id/tvName"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="sans-serif-medium"
+            android:gravity="center"
+            android:letterSpacing="0.02"
+            android:paddingHorizontal="@dimen/_20sdp"
+            android:paddingVertical="@dimen/_8sdp"
+            android:text="Hãy đứng lùi lại để thấy toàn thân"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            android:textColor="@color/primary"
+            android:textSize="@dimen/_12ssp" />
     <LinearLayout
             android:id="@+id/ll_controls"
             android:layout_width="match_parent"

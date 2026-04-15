@@ -11,5 +11,6 @@ data class WorkoutResultModel(
     val durationInSeconds: Int = 0,
     val date: String = "",
     val capturedImages: List<String> = emptyList(),
-    val errorCount: Int = 0
+    val errorCount: Int = 0,
+    val workoutTimestamp: Long = 0L
 ) : Parcelable

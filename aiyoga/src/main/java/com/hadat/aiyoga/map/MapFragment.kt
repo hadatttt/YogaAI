@@ -27,7 +27,6 @@ class MapFragment : BaseFragment<FragmentMapBinding, MapViewModel>(), OnMapReady
     private var mMap: GoogleMap? = null
     private var currentMarker: Marker? = null
     private var selectedLatLng: LatLng? = null
-    private var userMarker: Marker? = null
     private var selectedMarkerForOverlay: Marker? = null
 
     private val postsAdapter by lazy { MapPostsAdapter { } }

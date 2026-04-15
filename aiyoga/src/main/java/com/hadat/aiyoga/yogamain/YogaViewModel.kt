@@ -1,5 +1,6 @@
 package com.hadat.aiyoga.yogamain
 
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.google.mediapipe.tasks.vision.poselandmarker.PoseLandmarkerResult
@@ -10,8 +11,38 @@ import java.util.*
 
 class YogaViewModel : BaseViewModel() {
 
+    private val TAG = "YogaAI_Debug"
+
+    // DANH SÁCH 82 TƯ THẾ CỐ ĐỊNH THEO MODEL L3
+    private val YOGA_LABELS_FIXED = arrayOf(
+        "Akarna Dhanurasana", "Bharadvajasana I", "Boat Pose", "Bound Angle Pose",
+        "Bow Pose", "Bridge Pose", "Camel Pose", "Cat Cow Pose", "Chair Pose",
+        "Child Pose", "Cobra Pose", "Cockerel Pose", "Corpse Pose", "Cow Face Pose",
+        "Crane (Crow) Pose", "Dolphin Plank", "Dolphin Pose", "Downward-Facing Dog",
+        "Eagle Pose", "Eight-Angle Pose", "Extended Puppy Pose", "Extended Revolved Side Angle",
+        "Extended Revolved Triangle", "Feathered Peacock Pose", "Firefly Pose", "Fish Pose",
+        "Four-Limbed Staff Pose", "Frog Pose", "Garland Pose", "Gate Pose", "Half Lord of the Fishes",
+        "Half Moon Pose", "Handstand Pose", "Happy Baby Pose", "Head-to-Knee Forward Bend",
+        "Heron Pose", "Intense Side Stretch", "Legs-Up-the-Wall Pose", "Locust Pose",
+        "Lord of the Dance Pose", "Low Lunge Pose", "Noose Pose", "Peacock Pose",
+        "Pigeon Pose", "Plank Pose", "Plow Pose", "Sage Koundinya", "Rajakapotasana",
+        "Reclining Hand-to-Big-Toe", "Revolved Head-to-Knee", "Scale Pose", "Scorpion Pose",
+        "Seated Forward Bend", "Shoulder-Pressing Pose", "Side-Reclining Leg Lift",
+        "Side Crane (Crow) Pose", "Side Plank Pose", "Sitting pose 1", "Split pose",
+        "Staff Pose", "Standing Forward Bend", "Standing Split Pose", "Standing big toe hold",
+        "Supported Headstand", "Supported Shoulderstand", "Supta Baddha Konasana",
+        "Supta Virasana Vajrasana", "Tortoise Pose", "Tree Pose", "Upward Bow (Wheel)",
+        "Upward Facing Two-Foot Staff", "Upward Plank Pose", "Virasana", "Warrior III Pose",
+        "Warrior II Pose", "Warrior I Pose", "Wide-Angle Seated Forward Bend",
+        "Wide-Legged Forward Bend", "Wild Thing Pose", "Wind Relieving Pose", "Yogic sleep pose",
+        "Reverse Warrior Pose"
+    )
+
     private val _yogaPoseDataList = MutableLiveData<List<YogaPoseModel>>()
     val yogaPoseDataList: LiveData<List<YogaPoseModel>> = _yogaPoseDataList
+
+    private val _currentPoseName = MutableLiveData<String>("Nhận diện...")
+    val currentPoseName: LiveData<String> = _currentPoseName
 
     private val _currentGuideText = MutableLiveData<String>()
     val currentGuideText: LiveData<String> = _currentGuideText
@@ -35,69 +66,55 @@ class YogaViewModel : BaseViewModel() {
     private var poseStartTime: Long = 0
     private var exerciseTimer: Timer? = null
     private var secondsElapsed = 0
-    private val PREPARATION_TIME_MS = 2000L
+    private val PREPARATION_TIME_MS = 2500L
 
     fun fetchYogaPoses() {
         YogaDataUtils.getRemoteYogaPoses { poses -> poses?.let { _yogaPoseDataList.postValue(it) } }
     }
 
-    fun handlePoseInference(currentPose: String, poseId: Int) {
-        if (currentPose == "Unknown" || currentPose == "No Pose") {
-            if (lastPoseName != null) {
-                resetTracking(null, -1)
-                _currentGuideText.postValue("Hãy thực hiện tư thế Yoga")
-            }
-            return
-        }
+    fun handlePoseInference(poseId: Int) {
+        if (poseId < 0 || poseId >= YOGA_LABELS_FIXED.size) return
 
-        // Kiểm tra nếu vẫn là tư thế cũ đang đếm ngược hoặc đang tập
-        if (currentPose == lastPoseName) {
+        val poseName = YOGA_LABELS_FIXED[poseId]
+
+        if (poseName == lastPoseName) {
             val elapsedTime = System.currentTimeMillis() - poseStartTime
-
             if (elapsedTime >= PREPARATION_TIME_MS) {
-                // ĐÃ HẾT 2 GIÂY CHUẨN BỊ
                 if (_isTrackingStarted.value == false) {
                     _isTrackingStarted.postValue(true)
                     startExerciseTimer()
-                    _speakCommand.postValue("Bắt đầu")
+                    _speakCommand.postValue("Bắt đầu tập $poseName")
                 }
-
-                // Cập nhật ID để processCoachLogic bắt đầu sửa tư thế
-                if (_detectedPoseId.value != poseId) {
-                    _detectedPoseId.postValue(poseId)
-                }
+                if (_detectedPoseId.value != poseId) _detectedPoseId.postValue(poseId)
             } else {
-                // ĐANG TRONG 2 GIÂY CHUẨN BỊ -> Hiện đếm ngược
                 val countdown = ((PREPARATION_TIME_MS - elapsedTime) / 1000) + 1
-                _currentGuideText.postValue("Sẵn sàng: $currentPose ($countdown s)")
+                _currentGuideText.postValue("Chuẩn bị: $poseName ($countdown)")
             }
         } else {
-            // PHÁT HIỆN TƯ THẾ MỚI -> Chỉ Reset 1 lần duy nhất tại đây
-            resetTracking(currentPose, poseId)
+            resetTracking(poseName, poseId)
         }
     }
 
     fun processCoachLogic(result: PoseLandmarkerResult) {
         val poseId = _detectedPoseId.value ?: -1
-        // Chỉ sửa khi ID hợp lệ và cờ tập luyện đã bật (sau 2s chuẩn bị)
         if (poseId != -1 && _isTrackingStarted.value == true) {
             val (isCorrect, feedback) = YogaCoachUtils.getCoachFeedback(poseId, result)
-            _currentGuideText.postValue(if (isCorrect) "✅ Tư thế chuẩn!" else "⚠️ $feedback")
+            _currentGuideText.postValue(if (isCorrect) "✅ Tư thế đúng!" else "⚠️ $feedback")
             if (!isCorrect) _speakCommand.postValue(feedback)
         }
     }
 
     private fun resetTracking(poseName: String?, poseId: Int) {
         lastPoseName = poseName
-        poseStartTime = System.currentTimeMillis() // Đánh dấu mốc thời gian bắt đầu tư thế mới
-
+        _currentPoseName.postValue(poseName ?: "Nhận diện...")
+        poseStartTime = System.currentTimeMillis()
         stopExerciseTimer()
-        _detectedPoseId.postValue(-1) // Chưa cho phép sửa lỗi
-        _previewPoseId.postValue(poseId) // Đổi ảnh mẫu ngay lập tức
+        _detectedPoseId.postValue(-1)
+        _previewPoseId.postValue(poseId)
 
         if (poseName != null) {
-            _currentGuideText.postValue("Chuẩn bị cho: $poseName")
-            _speakCommand.postValue("Chuẩn bị $poseName")
+            _currentGuideText.postValue("Bắt đầu cho: $poseName")
+            _speakCommand.postValue("Sẵn sàng $poseName")
         }
     }
 

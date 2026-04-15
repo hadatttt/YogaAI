@@ -135,4 +135,6 @@ dependencies {
     implementation("com.mikhaellopez:circularprogressbar:3.1.0")
     //cloudiary
     implementation("com.cloudinary:cloudinary-android:2.3.1")
+    //char
+    implementation("com.github.PhilJay:MPAndroidChart:v3.1.0")
 }
