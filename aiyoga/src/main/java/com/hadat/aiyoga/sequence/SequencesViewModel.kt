@@ -12,13 +12,17 @@ import kotlinx.coroutines.launch
 class SequencesViewModel : BaseViewModel() {
     private val repository = SequenceRepository()
     private val recommender = YogaRecommender()
+    val lastSavedSequence = MutableLiveData<WorkoutSequenceModel>()
 
     val sequenceList = MutableLiveData<MutableList<SequenceModel>>(mutableListOf())
     val recommendationList = MutableLiveData<List<YogaPoseModel>>()
-    val saveStatus = MutableLiveData<Boolean>()
+    val saveStatus = MutableLiveData<Boolean?>()
 
     private var allPoses = listOf<YogaPoseModel>()
-
+    fun resetSaveStatus() {
+        saveStatus.value = null
+        lastSavedSequence.value = null
+    }
     fun fetchAllPoses() {
         if (allPoses.isNotEmpty()) return
         YogaDataUtils.getRemoteYogaPoses { poses ->
@@ -66,13 +70,51 @@ class SequencesViewModel : BaseViewModel() {
             coverImageUrl = coverUrl,
             totalDuration = String.format("%02d:%02d", totalSeconds / 60, totalSeconds % 60),
             level = level,
+            isPublic = true,
             poses = currentPoses,
             createdAt = null
         )
 
         viewModelScope.launch {
             val result = repository.saveSequence(finalSequence)
-            saveStatus.postValue(result)
+            if (result) {
+                lastSavedSequence.postValue(finalSequence)
+                saveStatus.postValue(true)
+            } else {
+                saveStatus.postValue(false)
+            }
+        }
+    }
+    fun updateSequence(id: String, title: String, level: Int, coverUrl: String, userId: String) {
+        val currentPoses = sequenceList.value ?: emptyList()
+
+        val totalSeconds = currentPoses.sumOf {
+            val parts = it.duration.split(":")
+            val mins = parts.getOrNull(0)?.toIntOrNull() ?: 0
+            val secs = parts.getOrNull(1)?.toIntOrNull() ?: 0
+            (mins * 60) + secs
+        }
+
+        val updatedSequence = WorkoutSequenceModel(
+            id = id,
+            userId = userId,
+            title = title,
+            coverImageUrl = coverUrl,
+            totalDuration = String.format("%02d:%02d", totalSeconds / 60, totalSeconds % 60),
+            level = level,
+            isPublic = true,
+            poses = currentPoses,
+            createdAt = null
+        )
+
+        viewModelScope.launch {
+            val result = repository.updateSequence(updatedSequence)
+            if (result) {
+                lastSavedSequence.postValue(updatedSequence)
+                saveStatus.postValue(true)
+            } else {
+                saveStatus.postValue(false)
+            }
         }
     }
 }

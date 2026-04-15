@@ -19,11 +19,15 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
                 navigate(R.id.choosePoseFragment)
             },
             onItemClick = { sequence ->
-
+                val bundle = Bundle().apply {
+                    putParcelable("detail_sequence", sequence)
+                }
+                navigate(R.id.detailSequenceFragment,bundle, isPop = true)
             }
         )
     }
     override fun initView() {
+        viewModel.fetchData()
         binding.tvGreeting.text = getGreeting(requireContext())
         binding.rvSequences.apply {
             layoutManager = LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
@@ -68,6 +72,5 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
     }
 
     override fun initData() {
-        viewModel.fetchData()
     }
 }

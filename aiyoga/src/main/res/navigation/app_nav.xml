@@ -51,6 +51,16 @@
                 app:argType="com.hadat.aiyoga.yogamain.YogaPoseModel[]"
                 app:nullable="true"
                 android:defaultValue="@null" />
+        <argument
+                android:name="isEdit"
+                app:argType="boolean"
+                android:defaultValue="false" />
+
+        <argument
+                android:name="detail_sequence"
+                app:argType="com.hadat.aiyoga.sequence.WorkoutSequenceModel"
+                app:nullable="true"
+                android:defaultValue="@null" />
     </fragment>
     <fragment
             android:id="@+id/mapFragment"
@@ -63,6 +73,16 @@
         <argument
                 android:name="workout_result_list"
                 app:argType="com.hadat.aiyoga.singleyoga.WorkoutResultModel[]"
+                app:nullable="true"
+                android:defaultValue="@null" />
+    </fragment>
+    <fragment
+            android:id="@+id/detailSequenceFragment"
+            android:name="com.hadat.aiyoga.detailsequence.DetailSequenceFragment"
+            android:label="DetailSequenceFragment" >
+        <argument
+                android:name="detail_sequence"
+                app:argType="com.hadat.aiyoga.sequence.WorkoutSequenceModel"
                 app:nullable="true"
                 android:defaultValue="@null" />
     </fragment>

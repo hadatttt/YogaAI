@@ -2,10 +2,10 @@ package com.hadat.aiyoga.utils
 
 import android.content.Context
 import android.net.Uri
-import android.util.Log
 import com.cloudinary.android.MediaManager
 import com.cloudinary.android.callback.ErrorInfo
 import com.cloudinary.android.callback.UploadCallback
+import java.io.File
 
 object CloudinaryUtils {
 
@@ -22,6 +22,21 @@ object CloudinaryUtils {
         isInit = true
     }
 
+    private fun uriToFile(context: Context, uri: Uri): String? {
+        return try {
+            val inputStream = context.contentResolver.openInputStream(uri) ?: return null
+            val file = File(context.cacheDir, "upload_${System.currentTimeMillis()}.jpg")
+
+            file.outputStream().use { output ->
+                inputStream.copyTo(output)
+            }
+
+            file.absolutePath
+        } catch (e: Exception) {
+            null
+        }
+    }
+
     fun uploadImage(
         context: Context,
         imageUri: Uri,
@@ -30,24 +45,27 @@ object CloudinaryUtils {
     ) {
         init(context)
 
-        MediaManager.get().upload(imageUri)
+        val filePath = uriToFile(context, imageUri)
+
+        if (filePath == null) {
+            onError("Cannot read image")
+            return
+        }
+
+        MediaManager.get().upload(filePath)
             .unsigned("yoga_ai_data")
             .callback(object : UploadCallback {
 
-                override fun onStart(requestId: String?) {
-                    Log.d("Cloudinary", "Upload started")
-                }
+                override fun onStart(requestId: String?) {}
 
                 override fun onProgress(requestId: String?, bytes: Long, totalBytes: Long) {}
 
                 override fun onSuccess(requestId: String?, resultData: Map<*, *>) {
                     val url = resultData["secure_url"] as String
-                    Log.d("Cloudinary", "Upload success: $url")
                     onSuccess(url)
                 }
 
                 override fun onError(requestId: String?, error: ErrorInfo?) {
-                    Log.e("Cloudinary", "Upload error: ${error?.description}")
                     onError(error?.description ?: "Upload failed")
                 }
 

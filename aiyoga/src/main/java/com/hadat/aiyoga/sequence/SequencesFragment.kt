@@ -4,6 +4,7 @@ import android.app.Dialog
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.net.Uri
+import android.os.Bundle
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
@@ -12,12 +13,14 @@ import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.bumptech.glide.Glide
+import com.hadat.aiyoga.R
 import com.hadat.aiyoga.databinding.DialogTimeBinding
 import com.hadat.aiyoga.databinding.FragmentSequencesBinding
 import com.hadat.aiyoga.service.AppPreferences
 import com.hadat.aiyoga.utils.CloudinaryUtils
+import com.hadat.aiyoga.utils.loadImageFromNetwork
 import hoang.dqm.codebase.base.activity.BaseFragment
+import hoang.dqm.codebase.base.activity.navigate
 import hoang.dqm.codebase.base.activity.popBackStack
 import hoang.dqm.codebase.utils.singleClick
 
@@ -41,6 +44,13 @@ class SequencesFragment : BaseFragment<FragmentSequencesBinding, SequencesViewMo
     }
 
     override fun initView() {
+        if (args.isEdit) {
+            binding.tvTitle.text = "Edit Sequence"
+            binding.btnCreate.text = "Update Sequence"
+        } else {
+            binding.tvTitle.text = "Sequence Settings"
+            binding.btnCreate.text = "Create Sequence"
+        }
         binding.rcvPeakOptions.apply {
             layoutManager = LinearLayoutManager(context)
             adapter = poseAdapter
@@ -50,7 +60,9 @@ class SequencesFragment : BaseFragment<FragmentSequencesBinding, SequencesViewMo
             adapter = recommendAdapter
         }
 
-        Glide.with(this).load(defaultImageUrl).into(binding.ivSequenceBackground)
+        if (!args.isEdit) {
+            binding.ivSequenceBackground.loadImageFromNetwork(defaultImageUrl)
+        }
 
         val callback = object : ItemTouchHelper.SimpleCallback(ItemTouchHelper.UP or ItemTouchHelper.DOWN, 0) {
             override fun onMove(rv: RecyclerView, vh: RecyclerView.ViewHolder, target: RecyclerView.ViewHolder): Boolean {
@@ -72,9 +84,20 @@ class SequencesFragment : BaseFragment<FragmentSequencesBinding, SequencesViewMo
         viewModel.recommendationList.observe(viewLifecycleOwner) { recommendAdapter.setList(it) }
 
         viewModel.saveStatus.observe(viewLifecycleOwner) { isSuccess ->
+            if (isSuccess == null) return@observe
             if (isSuccess) {
-                showToast("Sequence created successfully!")
-                popBackStack()
+                val message = if (args.isEdit) "Updated successfully!" else "Created successfully!"
+                showToast(message)
+                val sequence = viewModel.lastSavedSequence.value
+                if (sequence != null) {
+                    val bundle = Bundle().apply {
+                        putParcelable("detail_sequence", sequence)
+                    }
+                    viewModel.resetSaveStatus()
+                    navigate(R.id.detailSequenceFragment,bundle, isPop = true)
+                } else {
+                    popBackStack()
+                }
             } else {
                 showToast("Failed to save sequence")
                 binding.btnCreate.isEnabled = true
@@ -119,25 +142,67 @@ class SequencesFragment : BaseFragment<FragmentSequencesBinding, SequencesViewMo
             else -> 1
         }
 
+        val onProcessComplete: (String) -> Unit = { url ->
+            if (args.isEdit && args.detailSequence != null) {
+                viewModel.updateSequence(
+                    id = args.detailSequence!!.id,
+                    title = name,
+                    level = level,
+                    coverUrl = url,
+                    userId = userId
+                )
+            } else {
+                viewModel.saveSequence(name, level, url, userId)
+            }
+        }
+
         selectedImageUri?.let { uri ->
             CloudinaryUtils.uploadImage(requireContext(), uri,
-                onSuccess = { url -> viewModel.saveSequence(name, level, url, userId) },
+                onSuccess = { url -> onProcessComplete(url) },
                 onError = {
                     showToast(it)
                     binding.btnCreate.isEnabled = true
                 }
             )
-        } ?: viewModel.saveSequence(name, level, defaultImageUrl, userId)
+        } ?: onProcessComplete(args.detailSequence?.coverImageUrl ?: defaultImageUrl)
     }
 
     override fun initData() {
         viewModel.fetchAllPoses()
-        args.selectedPosesList?.let { array ->
-            val sequenceData = array.map { pose ->
-                SequenceModel(id = pose.id.toString(), name = pose.name, category = pose.category, duration = "01:00", photoUrl = pose.photo_url)
+        if (args.isEdit && args.detailSequence != null) {
+            val data = args.detailSequence!!
+
+            binding.apply {
+                edtSequenceName.setText(data.title)
+
+                when (data.level) {
+                    1 -> cgLevel.check(R.id.chip_beginner)
+                    2 -> cgLevel.check(R.id.chip_intermediate)
+                    3 -> cgLevel.check(R.id.chip_advanced)
+                }
+
+                if (selectedImageUri == null) {
+                    ivSequenceBackground.loadImageFromNetwork(data.coverImageUrl)
+                }
             }
-            poseAdapter.setList(sequenceData)
-            viewModel.updateList(sequenceData)
+
+            poseAdapter.setList(data.poses)
+            viewModel.updateList(data.poses)
+
+        } else {
+            args.selectedPosesList?.let { array ->
+                val sequenceData = array.map { pose ->
+                    SequenceModel(
+                        id = pose.id.toString(),
+                        name = pose.name,
+                        category = pose.category,
+                        duration = "01:00",
+                        photoUrl = pose.photo_url
+                    )
+                }
+                poseAdapter.setList(sequenceData)
+                viewModel.updateList(sequenceData)
+            }
         }
     }
 

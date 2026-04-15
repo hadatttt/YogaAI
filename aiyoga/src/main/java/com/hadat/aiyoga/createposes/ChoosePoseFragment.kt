@@ -58,7 +58,9 @@ class ChoosePoseFragment : BaseFragment<FragmentChoosePosesBinding, ChoosePoseVi
         binding.edtSearch.addTextChangedListener {
             viewModel.setSearchQuery(it.toString().trim())
         }
-
+        binding.ivBack.singleClick {
+            popBackStack(R.id.homeFragment)
+        }
         categoryAdapter.setOnClickItemRecyclerView { category, position ->
             categoryAdapter.setSelectedPosition(position)
             ViewUtils.scrollToCenter(binding.rvCategory, position)
