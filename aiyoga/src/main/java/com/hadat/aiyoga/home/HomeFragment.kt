@@ -66,6 +66,9 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
         binding.cvYoai.singleClick {
             navigate(R.id.choosePoseFragment)
         }
+        binding.ivProfileEdit.singleClick {
+            navigate(R.id.profileFragment)
+        }
 
         binding.llChatbotWrapper.setDraggableWithClick {
         }

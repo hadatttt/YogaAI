@@ -15,13 +15,18 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent" />
 
-        <include
-                android:id="@+id/layoutOverlayInfo"
-                layout="@layout/layout_custom_info_window"
-                android:layout_width="280dp"
+        <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rvMarkerPosts"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                android:clipToPadding="false"
+                android:paddingHorizontal="8dp"
                 android:visibility="gone"
-                app:layout_constraintTop_toTopOf="parent"
+                android:orientation="horizontal"
+                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+                app:layout_constraintBottom_toTopOf="@id/btnShareLocation"
+                app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent" />
 
         <androidx.cardview.widget.CardView
@@ -45,7 +50,7 @@
                         android:id="@+id/tvRadius"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Bán kính vùng Zen: 50m"
+                        android:text="Zen radius: 50m"
                         android:textColor="@android:color/black" />
 
                 <SeekBar
@@ -63,7 +68,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_margin="16dp"
-                android:text="Chia sẻ địa điểm này"
+                android:text="Share this location"
                 android:visibility="gone"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"

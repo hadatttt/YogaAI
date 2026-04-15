@@ -8,7 +8,6 @@ import java.util.Date
 
 @Parcelize
 data class WorkoutSequenceModel(
-    @DocumentId
     val id: String = "",
     val userId: String = "",
     val title: String = "",

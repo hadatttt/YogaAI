@@ -12,6 +12,7 @@ object AppPreferences {
     private const val KEY_LAST_APP_OPEN_DATE = "last_app_open_date"
     private const val KEY_IS_LOGGED_IN = "is_logged_in"
     private const val KEY_USER_ID = "user_id"
+    private const val KEY_NOTIFICATION_TIME = "notification_time"
 
     private fun getPrefs(context: Context): SharedPreferences {
         return context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
@@ -52,9 +53,17 @@ object AppPreferences {
     }
 
     fun logout(context: Context) {
-        getPrefs(context).edit {
+        getPrefs(context).edit(commit = true) {
             putBoolean(KEY_IS_LOGGED_IN, false)
             remove(KEY_USER_ID)
         }
+    }
+
+    fun setNotificationTime(context: Context, time: String) {
+        getPrefs(context).edit { putString(KEY_NOTIFICATION_TIME, time) }
+    }
+
+    fun getNotificationTime(context: Context): String {
+        return getPrefs(context).getString(KEY_NOTIFICATION_TIME, "19:00") ?: "19:00"
     }
 }

@@ -6,6 +6,7 @@ import android.annotation.SuppressLint
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.os.Bundle
+import android.view.Surface
 import android.speech.tts.TextToSpeech
 import android.view.View
 import androidx.activity.result.contract.ActivityResultContracts
@@ -127,6 +128,7 @@ class SingleYogaFragment : BaseFragment<FragmentSingleYogaBinding, SingleYogaVie
     private fun setUpCamera() {
         val cameraProviderFuture = ProcessCameraProvider.getInstance(requireContext())
         cameraProviderFuture.addListener({
+            if (!isAdded || view == null) return@addListener
             cameraProvider = cameraProviderFuture.get()
             bindCameraUseCases()
         }, ContextCompat.getMainExecutor(requireContext()))
@@ -134,19 +136,23 @@ class SingleYogaFragment : BaseFragment<FragmentSingleYogaBinding, SingleYogaVie
 
     @SuppressLint("UnsafeOptInUsageError")
     private fun bindCameraUseCases() {
+        if (!isAdded || view == null) return
+
         val cameraProvider = cameraProvider
             ?: throw IllegalStateException("Camera initialization failed.")
 
         val cameraSelector = CameraSelector.Builder()
             .requireLensFacing(lensFacing)
             .build()
+        val targetRotation = view?.display?.rotation ?: Surface.ROTATION_0
+
         preview = Preview.Builder()
             .setTargetAspectRatio(AspectRatio.RATIO_4_3)
-            .setTargetRotation(binding.viewFinder.display.rotation)
+            .setTargetRotation(targetRotation)
             .build()
         imageAnalyzer = ImageAnalysis.Builder()
             .setTargetAspectRatio(AspectRatio.RATIO_4_3)
-            .setTargetRotation(binding.viewFinder.display.rotation)
+            .setTargetRotation(targetRotation)
             .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
             .setOutputImageFormat(ImageAnalysis.OUTPUT_IMAGE_FORMAT_RGBA_8888)
             .build()

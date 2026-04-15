@@ -36,4 +36,17 @@ class UserRepository {
             false
         }
     }
+
+    suspend fun updateProfile(uid: String, displayName: String, photoUrl: String): Boolean = withContext(Dispatchers.IO) {
+        return@withContext try {
+            val data = mapOf(
+                "displayName" to displayName,
+                "photoUrl" to photoUrl
+            )
+            usersCollection.document(uid).update(data).await()
+            true
+        } catch (e: Exception) {
+            false
+        }
+    }
 }

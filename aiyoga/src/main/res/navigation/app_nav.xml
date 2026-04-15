@@ -87,4 +87,25 @@
                 android:defaultValue="@null" />
     </fragment>
 
+    <fragment
+            android:id="@+id/sequenceCommunityDetailFragment"
+            android:name="com.hadat.aiyoga.sequence_community.SequenceCommunityDetailFragment"
+            android:label="SequenceCommunityDetailFragment" >
+        <argument
+                android:name="detail_sequence"
+                app:argType="com.hadat.aiyoga.sequence.WorkoutSequenceModel"
+                app:nullable="true"
+                android:defaultValue="@null" />
+    </fragment>
+
+    <fragment
+            android:id="@+id/communityFragment"
+            android:name="com.hadat.aiyoga.community.CommunityFragment"
+            android:label="CommunityFragment" />
+
+    <fragment
+            android:id="@+id/profileFragment"
+            android:name="com.hadat.aiyoga.profile.ProfileFragment"
+            android:label="ProfileFragment" />
+
 </navigation>

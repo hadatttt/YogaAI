@@ -21,7 +21,6 @@ class SequencesViewModel : BaseViewModel() {
     private var allPoses = listOf<YogaPoseModel>()
     fun resetSaveStatus() {
         saveStatus.value = null
-        lastSavedSequence.value = null
     }
     fun fetchAllPoses() {
         if (allPoses.isNotEmpty()) return

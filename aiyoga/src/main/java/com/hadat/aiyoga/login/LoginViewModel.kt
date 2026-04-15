@@ -68,6 +68,7 @@ class LoginViewModel : BaseViewModel() {
         }
     }
 
+
     private fun mapFirebaseUserToModel(firebaseUser: FirebaseUser): User {
         return User(
             uid = firebaseUser.uid,

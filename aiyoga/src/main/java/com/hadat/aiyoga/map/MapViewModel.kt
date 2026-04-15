@@ -1,54 +1,58 @@
 package com.hadat.aiyoga.map
 
+
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.viewModelScope
+import com.hadat.aiyoga.data.firestore.model.MapPostModel
+import com.hadat.aiyoga.data.firestore.repository.MapRepository
+import com.hadat.aiyoga.data.firestore.repository.UserRepository
 import hoang.dqm.codebase.base.viewmodel.BaseViewModel
+import kotlinx.coroutines.launch
 
 class MapViewModel : BaseViewModel() {
 
-    val zenPlaces = MutableLiveData<List<ZenPlace>>()
+    private val mapRepository = MapRepository()
+    private val userRepository = UserRepository()
 
-    fun fetchAllZenPlaces() {
-        val imageUrl = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT3s7xQrKz46dWK_UZ0J5UWVbnjxtWVp3nEYQ&s"
+    val posts = MutableLiveData<List<MapPostModel>>(emptyList())
 
-        val dummyList = listOf(
-            ZenPlace(
-                id = "1",
-                name = "Công viên 29/3 - Góc thiền",
-                creatorName = "Hà Văn Khánh Đạt",
-                creatorAvatar = imageUrl,
-                backgroundImage = imageUrl,
-                description = "Góc này buổi sáng rất vắng, nhiều cây xanh, cực hợp để tập Vinyasa.",
-                time = "12/04/2026", // Ngày tháng cụ thể
-                lat = 16.0667,
-                lng = 108.2117,
-                radius = 60.0
-            ),
-            ZenPlace(
-                id = "2",
-                name = "Bờ hồ Hàm Nghi",
-                creatorName = "Minh Anh",
-                creatorAvatar = imageUrl,
-                backgroundImage = imageUrl,
-                description = "View hồ cực chill, gió mát rượi vào sáng sớm. Mọi người nên thử nhé!",
-                time = "10/04/2026",
-                lat = 16.0595,
-                lng = 108.2100,
-                radius = 45.0
-            ),
-            ZenPlace(
-                id = "3",
-                name = "Bãi biển Mỹ Khê",
-                creatorName = "Yoga Master",
-                creatorAvatar = imageUrl,
-                backgroundImage = imageUrl,
-                description = "Tập yoga đón bình minh trên biển là trải nghiệm tuyệt vời nhất.",
-                time = "01/01/2026",
-                lat = 16.0600,
-                lng = 108.2450,
-                radius = 100.0
+    fun fetchLatestPosts() {
+        viewModelScope.launch {
+            val rawPosts = mapRepository.getLatestPosts()
+            posts.postValue(enrichPosts(rawPosts))
+        }
+    }
+
+    fun fetchPostsNear(lat: Double, lng: Double) {
+        viewModelScope.launch {
+            val rawPosts = mapRepository.getPostsNear(lat, lng)
+            posts.postValue(enrichPosts(rawPosts))
+        }
+    }
+
+    private suspend fun enrichPosts(input: List<MapPostModel>): List<MapPostModel> {
+        if (input.isEmpty()) return emptyList()
+        val userCache = mutableMapOf<String, Pair<String, String>>()
+
+        return input.map { post ->
+            if (post.userName.isNotBlank() && post.userAvatar.isNotBlank()) {
+                return@map post
+            }
+            val cached = userCache[post.userId]
+            if (cached != null) {
+                return@map post.copy(
+                    userName = cached.first,
+                    userAvatar = cached.second
+                )
+            }
+            val user = userRepository.getUser(post.userId)
+            val name = user?.displayName.orEmpty()
+            val avatar = user?.photoUrl.orEmpty()
+            userCache[post.userId] = name to avatar
+            post.copy(
+                userName = name,
+                userAvatar = avatar
             )
-        )
-
-        zenPlaces.value = dummyList
+        }
     }
 }

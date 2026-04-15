@@ -44,7 +44,7 @@ class DetailSequenceFragment : BaseFragment<FragmentSequenceDetailBinding, Detai
         viewModel.sequenceData.observe(viewLifecycleOwner) { sequence ->
             binding.apply {
                 tvDetailName.text = sequence.title
-                tvDetailDuration.text = "${sequence.totalDuration} mins"
+                tvDetailDuration.text = formatDurationToMin(sequence.totalDuration)
                 tvDetailPosesCount.text = "${sequence.poses.size} Poses"
 
                 ivSequenceCover.loadImageFromNetwork(sequence.coverImageUrl)
@@ -58,6 +58,20 @@ class DetailSequenceFragment : BaseFragment<FragmentSequenceDetailBinding, Detai
         }
 
         binding.btnStartWorkout.singleClick {
+        }
+    }
+
+    private fun formatDurationToMin(duration: String): String {
+        return try {
+            val parts = duration.split(":")
+            if (parts.isNotEmpty()) {
+                val minutes = parts[0].toIntOrNull() ?: 0
+                "$minutes min"
+            } else {
+                "0 min"
+            }
+        } catch (_: Exception) {
+            "0 min"
         }
     }
 }

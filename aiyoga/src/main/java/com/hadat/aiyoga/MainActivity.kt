@@ -21,10 +21,10 @@ class MainActivity : AppCompatActivity() {
 
     companion object {
         val HOME_ITEM = R.id.homeFragment
-        val PRACTICE_ITEM = R.id.loginFragment
-        val HISTORY_ITEM = R.id.detailYogaFragment
-        val PROFILE_ITEM = R.id.mapFragment
-        val SOCIAL_ITEM = R.id.mapFragment
+        val PRACTICE_ITEM = R.id.mapFragment
+        val HISTORY_ITEM = R.id.choosePoseFragment
+        val PROFILE_ITEM = R.id.profileFragment
+        val SOCIAL_ITEM = R.id.communityFragment
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
