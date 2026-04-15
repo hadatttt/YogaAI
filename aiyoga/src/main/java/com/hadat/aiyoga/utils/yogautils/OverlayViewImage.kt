@@ -20,12 +20,9 @@ class OverlayViewImage(context: Context?, attrs: AttributeSet?) :
     private var results: PoseLandmarkerResult? = null
     private var pointPaint = Paint()
     private var linePaint = Paint()
-
     private var scaleFactor: Float = 1f
     private var imageWidth: Int = 1
     private var imageHeight: Int = 1
-
-    // Hai biến quan trọng để bù trừ khoảng cách bị mất do Crop
     private var offsetX: Float = 0f
     private var offsetY: Float = 0f
 
@@ -42,7 +39,6 @@ class OverlayViewImage(context: Context?, attrs: AttributeSet?) :
         linePaint.color = ContextCompat.getColor(context!!, R.color.primary)
         linePaint.strokeWidth = LANDMARK_STROKE_WIDTH
         linePaint.style = Paint.Style.STROKE
-
         pointPaint.color = Color.YELLOW
         pointPaint.strokeWidth = LANDMARK_STROKE_WIDTH
         pointPaint.style = Paint.Style.FILL
@@ -53,7 +49,6 @@ class OverlayViewImage(context: Context?, attrs: AttributeSet?) :
         results?.let { poseLandmarkerResult ->
             val landmarks = poseLandmarkerResult.landmarks().firstOrNull() ?: return
 
-            // Vẽ các đường nối (Sử dụng các giá trị đã được scale và offset)
             PoseLandmarker.POSE_LANDMARKS.forEach { connection ->
                 val start = landmarks[connection.start()]
                 val end = landmarks[connection.end()]
@@ -67,7 +62,6 @@ class OverlayViewImage(context: Context?, attrs: AttributeSet?) :
                 )
             }
 
-            // Vẽ các điểm mốc
             for (normalizedLandmark in landmarks) {
                 canvas.drawPoint(
                     normalizedLandmark.x() * imageWidth * scaleFactor - offsetX,
@@ -88,14 +82,10 @@ class OverlayViewImage(context: Context?, attrs: AttributeSet?) :
         this.imageHeight = imageHeight
         this.imageWidth = imageWidth
 
-        // LOGIC CENTER CROP:
-        // 1. Tính tỉ lệ scale dựa trên max để phủ kín View (Center Crop)
         val scaleX = width.toFloat() / imageWidth
         val scaleY = height.toFloat() / imageHeight
         scaleFactor = max(scaleX, scaleY)
 
-        // 2. Tính khoảng cách bị lệch (Offset)
-        // Offset = (Kích thước ảnh sau khi scale - Kích thước View thực tế) / 2
         offsetX = (imageWidth * scaleFactor - width) / 2f
         offsetY = (imageHeight * scaleFactor - height) / 2f
 

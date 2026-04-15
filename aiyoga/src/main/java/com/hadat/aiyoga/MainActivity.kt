@@ -21,10 +21,10 @@ class MainActivity : AppCompatActivity() {
 
     companion object {
         val HOME_ITEM = R.id.homeFragment
-        val PRACTICE_ITEM = R.id.loginFragment
-        val HISTORY_ITEM = R.id.detailYogaFragment
-        val PROFILE_ITEM = R.id.yogaSkeletonFragment
-        val SOCIAL_ITEM = R.id.yogaSkeletonFragment
+        val PRACTICE_ITEM = R.id.mapFragment
+        val HISTORY_ITEM = R.id.choosePoseFragment
+        val PROFILE_ITEM = R.id.profileFragment
+        val SOCIAL_ITEM = R.id.communityFragment
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -66,21 +66,18 @@ class MainActivity : AppCompatActivity() {
             CurvedBottomNavigation.Model(PRACTICE_ITEM, "Sequences", R.drawable.ic_pratice),
             CurvedBottomNavigation.Model(PROFILE_ITEM, "Profile", R.drawable.ic_my_profile)
         )
-
         bottomNavigation.apply {
             bottomNavigationItems.forEach { add(it) }
             setOnClickMenuListener { model ->
                 navigate(model.id)
             }
         }
-
         navController.addOnDestinationChangedListener { _, destination, _ ->
             val fragmentsToHideNavigation = setOf(
                 R.id.loginFragment,
                 R.id.singleYogaFragment,
                 R.id.yogaFragment
             )
-
             if (fragmentsToHideNavigation.contains(destination.id)) {
                 bottomNavigation.visibility = View.GONE
             } else {

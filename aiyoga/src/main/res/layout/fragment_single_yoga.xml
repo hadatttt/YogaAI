@@ -158,21 +158,23 @@
                 android:layout_height="wrap_content"
                 android:layout_marginHorizontal="@dimen/_25sdp">
 
-            <ProgressBar
+            <com.mikhaellopez.circularprogressbar.CircularProgressBar
                     android:id="@+id/progress_around"
-                    style="?android:attr/progressBarStyleHorizontal"
                     android:layout_width="@dimen/_85sdp"
                     android:layout_height="@dimen/_85sdp"
-                    android:layout_gravity="center"
-                    android:indeterminate="false"
-                    android:max="1000"
-                    android:progress="0"
-                    android:progressDrawable="@drawable/circular_progress_bar" />
+                    app:cpb_progress="0"
+                    app:cpb_progress_max="100"
+                    app:cpb_progressbar_color="#FF956FF9"
+                    app:cpb_background_progressbar_color="@color/transparent"
+                    app:cpb_progressbar_width="@dimen/_15sdp"
+                    app:cpb_background_progressbar_width="@dimen/_15sdp"
+                    app:cpb_round_border="true"
+    />
 
             <com.google.android.material.card.MaterialCardView
                     android:id="@+id/layout_action"
-                    android:layout_width="@dimen/_65sdp"
-                    android:layout_height="@dimen/_65sdp"
+                    android:layout_width="@dimen/_60sdp"
+                    android:layout_height="@dimen/_60sdp"
                     android:layout_gravity="center"
                     app:cardBackgroundColor="#E4E3F3"
                     app:cardCornerRadius="@dimen/_35sdp"

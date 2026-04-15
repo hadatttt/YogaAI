@@ -39,7 +39,6 @@ class PoseLandmarkerHelper(
         poseLandmarker = null
     }
 
-    // Return running status of PoseLandmarkerHelper
     fun isClose(): Boolean {
         return poseLandmarker == null
     }

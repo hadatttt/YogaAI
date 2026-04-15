@@ -26,10 +26,6 @@
                 app:nullable="false"/>
     </fragment>
     <fragment
-            android:id="@+id/yogaSkeletonFragment"
-            android:name="com.hadat.aiyoga.yogaskeleton.YogaSkeletonFragment"
-            android:label="YogaSkeletonFragment" />
-    <fragment
             android:id="@+id/singleYogaFragment"
             android:name="com.hadat.aiyoga.singleyoga.SingleYogaFragment"
             android:label="SingleYogaFragment" >
@@ -46,5 +42,70 @@
             android:id="@+id/choosePoseFragment"
             android:name="com.hadat.aiyoga.createposes.ChoosePoseFragment"
             android:label="ChoosePoseFragment" />
+    <fragment
+            android:id="@+id/sequencesFragment"
+            android:name="com.hadat.aiyoga.sequence.SequencesFragment"
+            android:label="SequencesFragment" >
+        <argument
+                android:name="selected_poses_list"
+                app:argType="com.hadat.aiyoga.yogamain.YogaPoseModel[]"
+                app:nullable="true"
+                android:defaultValue="@null" />
+        <argument
+                android:name="isEdit"
+                app:argType="boolean"
+                android:defaultValue="false" />
+
+        <argument
+                android:name="detail_sequence"
+                app:argType="com.hadat.aiyoga.sequence.WorkoutSequenceModel"
+                app:nullable="true"
+                android:defaultValue="@null" />
+    </fragment>
+    <fragment
+            android:id="@+id/mapFragment"
+            android:name="com.hadat.aiyoga.map.MapFragment"
+            android:label="MapFragment" />
+    <fragment
+            android:id="@+id/resultFragment"
+            android:name="com.hadat.aiyoga.result.ResultFragment"
+            android:label="ResultFragment" >
+        <argument
+                android:name="workout_result_list"
+                app:argType="com.hadat.aiyoga.singleyoga.WorkoutResultModel[]"
+                app:nullable="true"
+                android:defaultValue="@null" />
+    </fragment>
+    <fragment
+            android:id="@+id/detailSequenceFragment"
+            android:name="com.hadat.aiyoga.detailsequence.DetailSequenceFragment"
+            android:label="DetailSequenceFragment" >
+        <argument
+                android:name="detail_sequence"
+                app:argType="com.hadat.aiyoga.sequence.WorkoutSequenceModel"
+                app:nullable="true"
+                android:defaultValue="@null" />
+    </fragment>
+
+    <fragment
+            android:id="@+id/sequenceCommunityDetailFragment"
+            android:name="com.hadat.aiyoga.sequence_community.SequenceCommunityDetailFragment"
+            android:label="SequenceCommunityDetailFragment" >
+        <argument
+                android:name="detail_sequence"
+                app:argType="com.hadat.aiyoga.sequence.WorkoutSequenceModel"
+                app:nullable="true"
+                android:defaultValue="@null" />
+    </fragment>
+
+    <fragment
+            android:id="@+id/communityFragment"
+            android:name="com.hadat.aiyoga.community.CommunityFragment"
+            android:label="CommunityFragment" />
+
+    <fragment
+            android:id="@+id/profileFragment"
+            android:name="com.hadat.aiyoga.profile.ProfileFragment"
+            android:label="ProfileFragment" />
 
 </navigation>

@@ -9,8 +9,6 @@ import kotlinx.coroutines.withContext
 class UserRepository {
     private val db = FirebaseFirestore.getInstance()
     private val usersCollection = db.collection("users")
-
-    // CREATE / UPDATE: Lưu thông tin user
     suspend fun saveUser(user: User): Boolean = withContext(Dispatchers.IO) {
         return@withContext try {
             usersCollection.document(user.uid).set(user).await()
@@ -21,7 +19,6 @@ class UserRepository {
         }
     }
 
-    // READ: Lấy thông tin user bằng UID
     suspend fun getUser(uid: String): User? = withContext(Dispatchers.IO) {
         return@withContext try {
             val snapshot = usersCollection.document(uid).get().await()
@@ -31,11 +28,23 @@ class UserRepository {
         }
     }
 
-    // CHECK: Kiểm tra user đã tồn tại chưa
     suspend fun isUserExists(uid: String): Boolean = withContext(Dispatchers.IO) {
         return@withContext try {
             val document = usersCollection.document(uid).get().await()
             document.exists()
+        } catch (e: Exception) {
+            false
+        }
+    }
+
+    suspend fun updateProfile(uid: String, displayName: String, photoUrl: String): Boolean = withContext(Dispatchers.IO) {
+        return@withContext try {
+            val data = mapOf(
+                "displayName" to displayName,
+                "photoUrl" to photoUrl
+            )
+            usersCollection.document(uid).update(data).await()
+            true
         } catch (e: Exception) {
             false
         }

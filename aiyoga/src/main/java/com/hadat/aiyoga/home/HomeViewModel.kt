@@ -4,8 +4,10 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseAuth
 import com.hadat.aiyoga.data.firestore.model.User
+import com.hadat.aiyoga.data.firestore.repository.SequenceRepository
 import com.hadat.aiyoga.data.firestore.repository.UserRepository
 import com.hadat.aiyoga.data.firestore.repository.YogaRepository
+import com.hadat.aiyoga.sequence.WorkoutSequenceModel
 import com.hadat.aiyoga.yogamain.YogaPoseModel
 import com.hadat.aiyoga.utils.yogautils.YogaDataUtils
 import hoang.dqm.codebase.base.viewmodel.BaseViewModel
@@ -15,7 +17,8 @@ class HomeViewModel : BaseViewModel() {
     private val userRepository = UserRepository()
     private val yogaRepository = YogaRepository()
     private val auth = FirebaseAuth.getInstance()
-
+    private val sequenceRepository = SequenceRepository()
+    val recentSequences = MutableLiveData<List<WorkoutSequenceModel>>()
     val userData = MutableLiveData<User?>()
     val todayPickPose = MutableLiveData<YogaPoseModel?>()
     private var fullYogaList = listOf<YogaPoseModel>()
@@ -25,6 +28,8 @@ class HomeViewModel : BaseViewModel() {
         viewModelScope.launch {
             val user = userRepository.getUser(uid)
             userData.postValue(user)
+            val sequences = sequenceRepository.getMySequences(uid)
+            recentSequences.postValue(sequences)
             YogaDataUtils.getRemoteYogaPoses { poses ->
                 poses?.let {
                     fullYogaList = it

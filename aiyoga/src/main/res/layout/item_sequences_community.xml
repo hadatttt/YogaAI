@@ -1,0 +1,181 @@
+<androidx.cardview.widget.CardView
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="@dimen/_12sdp"
+        android:layout_marginVertical="@dimen/_6sdp"
+        app:cardCornerRadius="@dimen/_16sdp"
+        app:cardElevation="2dp"
+        android:foreground="?attr/selectableItemBackground">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingBottom="@dimen/_12sdp">
+
+        <androidx.appcompat.widget.AppCompatImageView
+                android:id="@+id/iv_sequence_thumb"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/_160sdp"
+                android:scaleType="centerCrop"
+                app:layout_constraintTop_toTopOf="parent" />
+
+        <View
+                android:id="@+id/view_gradient"
+                android:layout_width="0dp"
+                android:layout_height="@dimen/_50sdp"
+                android:background="@drawable/bg_gradient_bottom"
+                app:layout_constraintBottom_toBottomOf="@id/iv_sequence_thumb"
+                app:layout_constraintEnd_toEndOf="@id/iv_sequence_thumb"
+                app:layout_constraintStart_toStartOf="@id/iv_sequence_thumb" />
+
+        <LinearLayout
+                android:id="@+id/ll_level_badge"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="@dimen/_10sdp"
+                android:background="@drawable/bg_today_pick"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:paddingHorizontal="@dimen/_8sdp"
+                android:paddingVertical="@dimen/_3sdp"
+                app:layout_constraintStart_toStartOf="@id/iv_sequence_thumb"
+                app:layout_constraintTop_toTopOf="@id/iv_sequence_thumb">
+
+            <ImageView
+                    android:layout_width="@dimen/_16ssp"
+                    android:layout_height="@dimen/_16ssp"
+                    android:src="@drawable/ic_level"
+                    android:tint="@color/white"
+/>
+
+            <TextView
+                    android:id="@+id/tv_level_badge"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/_4sdp"
+                    android:fontFamily="@font/font_bold"
+                    android:text="Advanced"
+                    android:textColor="@color/white"
+                    android:textSize="@dimen/_16ssp" />
+        </LinearLayout>
+
+        <TextView
+                android:id="@+id/tv_duration"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="@dimen/_10sdp"
+                android:background="@drawable/bg_time_tag"
+                android:fontFamily="@font/font_bold"
+                android:paddingHorizontal="@dimen/_8sdp"
+                android:paddingVertical="@dimen/_3sdp"
+                android:text="15 min"
+                android:textColor="@color/white"
+                android:textSize="@dimen/_13ssp"
+                app:layout_constraintEnd_toEndOf="@id/iv_sequence_thumb"
+                app:layout_constraintTop_toTopOf="@id/iv_sequence_thumb" />
+
+        <androidx.appcompat.widget.AppCompatTextView
+                android:id="@+id/tv_sequence_name"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="@dimen/_12sdp"
+                android:layout_marginTop="@dimen/_10sdp"
+                android:ellipsize="end"
+                android:fontFamily="@font/font_bold"
+                android:maxLines="1"
+                android:text="Power Yoga Morning"
+                android:textColor="@color/text_gray"
+                android:textSize="@dimen/_20sp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/iv_sequence_thumb" />
+
+        <TextView
+                android:id="@+id/tv_author_name"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/_2sdp"
+                android:alpha="0.7"
+                android:text="by Ha Van Khanh Dat"
+                android:textColor="@color/text_gray"
+                android:textSize="@dimen/_10sp"
+                app:layout_constraintStart_toStartOf="@id/tv_sequence_name"
+                app:layout_constraintTop_toBottomOf="@id/tv_sequence_name" />
+
+        <LinearLayout
+                android:id="@+id/ll_poses_info"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/_6sdp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                app:layout_constraintStart_toStartOf="@id/tv_sequence_name"
+                app:layout_constraintTop_toBottomOf="@id/tv_author_name">
+
+            <ImageView
+                    android:layout_width="@dimen/_12sdp"
+                    android:layout_height="@dimen/_12sdp"
+                    android:src="@drawable/ic_yoga_single"
+                    app:tint="@color/primary" />
+
+            <TextView
+                    android:id="@+id/tv_poses_count"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/_4sdp"
+                    android:text="12 Poses"
+                    android:textColor="#8E8E93"
+                    android:textSize="@dimen/_10sp" />
+        </LinearLayout>
+
+        <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                app:layout_constraintBottom_toBottomOf="@id/ll_poses_info"
+                app:layout_constraintEnd_toEndOf="@id/tv_sequence_name"
+                app:layout_constraintTop_toTopOf="@id/ll_poses_info">
+
+            <ImageView
+                    android:id="@+id/iv_like"
+                    android:layout_width="@dimen/_14sdp"
+                    android:layout_height="@dimen/_14sdp"
+                    android:src="@drawable/ic_heart_filled"
+                    app:tint="#E91E63" />
+
+            <TextView
+                    android:id="@+id/tv_like_count"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/_3sdp"
+                    android:fontFamily="@font/font_bold"
+                    android:text="1.2k"
+                    android:textColor="@color/text_gray"
+                    android:textSize="@dimen/_10sp" />
+
+            <View
+                    android:layout_width="@dimen/_10sdp"
+                    android:layout_height="0dp" />
+
+            <ImageView
+                    android:id="@+id/iv_view"
+                    android:layout_width="@dimen/_14sdp"
+                    android:layout_height="@dimen/_14sdp"
+                    android:src="@drawable/ic_eye"
+                    app:tint="#9E9E9E" />
+
+            <TextView
+                    android:id="@+id/tv_view_count"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/_3sdp"
+                    android:fontFamily="@font/font_bold"
+                    android:text="4.5k"
+                    android:textColor="@color/text_gray"
+                    android:textSize="@dimen/_10sp" />
+        </LinearLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</androidx.cardview.widget.CardView>

@@ -1,6 +1,7 @@
 package com.hadat.aiyoga.home
 
 import android.os.Bundle
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.hadat.aiyoga.R
 import com.hadat.aiyoga.databinding.FragmentHomeBinding
 import com.hadat.aiyoga.utils.ViewUtils.getGreeting
@@ -12,10 +13,29 @@ import hoang.dqm.codebase.utils.setDraggableWithClick
 import hoang.dqm.codebase.utils.singleClick
 
 class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
-
+    private val recentAdapter by lazy {
+        RecentSequencesAdapter(
+            onAddClick = {
+                navigate(R.id.choosePoseFragment)
+            },
+            onItemClick = { sequence ->
+                val bundle = Bundle().apply {
+                    putParcelable("detail_sequence", sequence)
+                }
+                navigate(R.id.detailSequenceFragment,bundle, isPop = true)
+            }
+        )
+    }
     override fun initView() {
+        viewModel.fetchData()
         binding.tvGreeting.text = getGreeting(requireContext())
-
+        binding.rvSequences.apply {
+            layoutManager = LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
+            adapter = recentAdapter
+        }
+        viewModel.recentSequences.observe(viewLifecycleOwner) { list ->
+            recentAdapter.setList(list)
+        }
         viewModel.userData.observe(viewLifecycleOwner) { user ->
             user?.let {
                 binding.tvUsername.text = it.displayName.removeVietnameseAccents()
@@ -46,12 +66,14 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
         binding.cvYoai.singleClick {
             navigate(R.id.choosePoseFragment)
         }
+        binding.ivProfileEdit.singleClick {
+            navigate(R.id.profileFragment)
+        }
 
         binding.llChatbotWrapper.setDraggableWithClick {
         }
     }
 
     override fun initData() {
-        viewModel.fetchData()
     }
 }
