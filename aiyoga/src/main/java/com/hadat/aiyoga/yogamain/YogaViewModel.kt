@@ -1,47 +1,30 @@
 package com.hadat.aiyoga.yogamain
 
-import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.google.mediapipe.tasks.vision.poselandmarker.PoseLandmarkerResult
+import com.hadat.aiyoga.sequence.SequenceModel
 import com.hadat.aiyoga.utils.yogautils.YogaCoachUtils
 import com.hadat.aiyoga.utils.yogautils.YogaDataUtils
 import hoang.dqm.codebase.base.viewmodel.BaseViewModel
 import java.util.*
+import kotlin.collections.ArrayList
 
 class YogaViewModel : BaseViewModel() {
+    private val _isWaitingForCapture = MutableLiveData(false)
+    val isWaitingForCapture: LiveData<Boolean> = _isWaitingForCapture
 
-    private val TAG = "YogaAI_Debug"
+    private val _captureTrigger = MutableLiveData<Unit>()
+    val captureTrigger: LiveData<Unit> = _captureTrigger
 
-    // DANH SÁCH 82 TƯ THẾ CỐ ĐỊNH THEO MODEL L3
-    private val YOGA_LABELS_FIXED = arrayOf(
-        "Akarna Dhanurasana", "Bharadvajasana I", "Boat Pose", "Bound Angle Pose",
-        "Bow Pose", "Bridge Pose", "Camel Pose", "Cat Cow Pose", "Chair Pose",
-        "Child Pose", "Cobra Pose", "Cockerel Pose", "Corpse Pose", "Cow Face Pose",
-        "Crane (Crow) Pose", "Dolphin Plank", "Dolphin Pose", "Downward-Facing Dog",
-        "Eagle Pose", "Eight-Angle Pose", "Extended Puppy Pose", "Extended Revolved Side Angle",
-        "Extended Revolved Triangle", "Feathered Peacock Pose", "Firefly Pose", "Fish Pose",
-        "Four-Limbed Staff Pose", "Frog Pose", "Garland Pose", "Gate Pose", "Half Lord of the Fishes",
-        "Half Moon Pose", "Handstand Pose", "Happy Baby Pose", "Head-to-Knee Forward Bend",
-        "Heron Pose", "Intense Side Stretch", "Legs-Up-the-Wall Pose", "Locust Pose",
-        "Lord of the Dance Pose", "Low Lunge Pose", "Noose Pose", "Peacock Pose",
-        "Pigeon Pose", "Plank Pose", "Plow Pose", "Sage Koundinya", "Rajakapotasana",
-        "Reclining Hand-to-Big-Toe", "Revolved Head-to-Knee", "Scale Pose", "Scorpion Pose",
-        "Seated Forward Bend", "Shoulder-Pressing Pose", "Side-Reclining Leg Lift",
-        "Side Crane (Crow) Pose", "Side Plank Pose", "Sitting pose 1", "Split pose",
-        "Staff Pose", "Standing Forward Bend", "Standing Split Pose", "Standing big toe hold",
-        "Supported Headstand", "Supported Shoulderstand", "Supta Baddha Konasana",
-        "Supta Virasana Vajrasana", "Tortoise Pose", "Tree Pose", "Upward Bow (Wheel)",
-        "Upward Facing Two-Foot Staff", "Upward Plank Pose", "Virasana", "Warrior III Pose",
-        "Warrior II Pose", "Warrior I Pose", "Wide-Angle Seated Forward Bend",
-        "Wide-Legged Forward Bend", "Wild Thing Pose", "Wind Relieving Pose", "Yogic sleep pose",
-        "Reverse Warrior Pose"
-    )
+    private val sessionImagePaths = mutableListOf<String>()
+
+    private val workoutSequenceMap = mutableMapOf<Int, SequenceModel>()
 
     private val _yogaPoseDataList = MutableLiveData<List<YogaPoseModel>>()
     val yogaPoseDataList: LiveData<List<YogaPoseModel>> = _yogaPoseDataList
 
-    private val _currentPoseName = MutableLiveData<String>("Nhận diện...")
+    private val _currentPoseName = MutableLiveData<String>("Đang chờ...")
     val currentPoseName: LiveData<String> = _currentPoseName
 
     private val _currentGuideText = MutableLiveData<String>()
@@ -49,9 +32,6 @@ class YogaViewModel : BaseViewModel() {
 
     private val _timerText = MutableLiveData("00:00")
     val timerText: LiveData<String> = _timerText
-
-    private val _isTrackingStarted = MutableLiveData(false)
-    val isTrackingStarted: LiveData<Boolean> = _isTrackingStarted
 
     private val _detectedPoseId = MutableLiveData(-1)
     val detectedPoseId: LiveData<Int> = _detectedPoseId
@@ -64,83 +44,156 @@ class YogaViewModel : BaseViewModel() {
 
     private var lastPoseName: String? = null
     private var poseStartTime: Long = 0
+    private var isTrackingStarted = false
     private var exerciseTimer: Timer? = null
-    private var secondsElapsed = 0
-    private val PREPARATION_TIME_MS = 2500L
 
-    fun fetchYogaPoses() {
-        YogaDataUtils.getRemoteYogaPoses { poses -> poses?.let { _yogaPoseDataList.postValue(it) } }
+    // Biến quan trọng giống SingleYoga
+    private var isCurrentlyCorrect = false
+    private var currentPoseTotalSeconds = 0
+    private val PREPARATION_TIME_MS = 3000L
+
+
+fun toggleCaptureWait() {
+    _isWaitingForCapture.value = !(_isWaitingForCapture.value ?: false)
+}
+
+    fun addCapturedImage(path: String) {
+        sessionImagePaths.add(path)
     }
 
-    fun handlePoseInference(poseId: Int) {
-        if (poseId < 0 || poseId >= YOGA_LABELS_FIXED.size) return
-
-        val poseName = YOGA_LABELS_FIXED[poseId]
-
-        if (poseName == lastPoseName) {
-            val elapsedTime = System.currentTimeMillis() - poseStartTime
-            if (elapsedTime >= PREPARATION_TIME_MS) {
-                if (_isTrackingStarted.value == false) {
-                    _isTrackingStarted.postValue(true)
-                    startExerciseTimer()
-                    _speakCommand.postValue("Bắt đầu tập $poseName")
-                }
-                if (_detectedPoseId.value != poseId) _detectedPoseId.postValue(poseId)
-            } else {
-                val countdown = ((PREPARATION_TIME_MS - elapsedTime) / 1000) + 1
-                _currentGuideText.postValue("Chuẩn bị: $poseName ($countdown)")
-            }
-        } else {
-            resetTracking(poseName, poseId)
-        }
-    }
+    fun getCapturedImages(): List<String> = sessionImagePaths
 
     fun processCoachLogic(result: PoseLandmarkerResult) {
         val poseId = _detectedPoseId.value ?: -1
-        if (poseId != -1 && _isTrackingStarted.value == true) {
+        if (poseId != -1 && isTrackingStarted) {
             val (isCorrect, feedback) = YogaCoachUtils.getCoachFeedback(poseId, result)
-            _currentGuideText.postValue(if (isCorrect) "✅ Tư thế đúng!" else "⚠️ $feedback")
-            if (!isCorrect) _speakCommand.postValue(feedback)
+            isCurrentlyCorrect = isCorrect
+
+            // LOGIC CHỤP ẢNH: Nếu đang đợi chụp + đứng đúng tư thế
+            if (isCorrect && _isWaitingForCapture.value == true) {
+                _captureTrigger.postValue(Unit)
+                _isWaitingForCapture.postValue(false)
+            }
+
+            if (isCorrect) {
+                _currentGuideText.postValue("✅ Tư thế chuẩn! Đang đếm giờ...")
+            } else {
+                _currentGuideText.postValue("⚠️ $feedback")
+                _speakCommand.postValue(feedback)
+            }
+        } else {
+            isCurrentlyCorrect = false
         }
     }
 
-    private fun resetTracking(poseName: String?, poseId: Int) {
-        lastPoseName = poseName
-        _currentPoseName.postValue(poseName ?: "Nhận diện...")
-        poseStartTime = System.currentTimeMillis()
+    // Cập nhật hàm clearData
+    fun clearData() {
+        workoutSequenceMap.clear()
+        sessionImagePaths.clear() // Xóa ảnh khi kết thúc
+        currentPoseTotalSeconds = 0
+        _isWaitingForCapture.value = false
+        lastPoseName = null
         stopExerciseTimer()
-        _detectedPoseId.postValue(-1)
-        _previewPoseId.postValue(poseId)
-
-        if (poseName != null) {
-            _currentGuideText.postValue("Bắt đầu cho: $poseName")
-            _speakCommand.postValue("Sẵn sàng $poseName")
+    }
+    fun fetchYogaPoses() {
+        YogaDataUtils.getRemoteYogaPoses { poses ->
+            poses?.let { _yogaPoseDataList.postValue(it) }
         }
     }
 
-    private fun startExerciseTimer() {
-        secondsElapsed = 0
+    fun handlePoseInference(poseId: Int) {
+        val allPoses = _yogaPoseDataList.value ?: return
+        val poseData = allPoses.find { it.id == poseId } ?: return
+        val currentPose = poseData.name
+
+        if (currentPose == lastPoseName) {
+            val elapsedTime = System.currentTimeMillis() - poseStartTime
+
+            if (elapsedTime >= PREPARATION_TIME_MS) {
+                if (!isTrackingStarted) {
+                    isTrackingStarted = true
+
+                    // Lấy thời gian cũ nếu tập lại bài này
+                    currentPoseTotalSeconds = workoutSequenceMap[poseId]?.let {
+                        timeStringToSeconds(it.duration)
+                    } ?: 0
+
+                    // Bắt đầu Timer logic (Timer luôn chạy nhưng chỉ cộng giây khi isCurrentlyCorrect = true)
+                    startLogicalTimer()
+
+                    if (!workoutSequenceMap.containsKey(poseId)) {
+                        workoutSequenceMap[poseId] = SequenceModel(
+                            id = poseData.id.toString(),
+                            name = poseData.name,
+                            photoUrl = poseData.photo_url,
+                            duration = "00:00"
+                        )
+                    }
+
+                    _previewPoseId.postValue(poseId)
+                    _currentPoseName.postValue(currentPose)
+                    _speakCommand.postValue("Bắt đầu tập $currentPose")
+                }
+                _detectedPoseId.postValue(poseId)
+            } else {
+                val countdown = 3 - (elapsedTime / 1000)
+                _currentGuideText.postValue("Giữ nguyên $currentPose ($countdown s)")
+            }
+        } else {
+            lastPoseName = currentPose
+            poseStartTime = System.currentTimeMillis()
+            _detectedPoseId.postValue(-1)
+            _previewPoseId.postValue(-1)
+            isCurrentlyCorrect = false // Reset trạng thái đúng/sai
+            if (isTrackingStarted) stopExerciseTimer()
+            _currentGuideText.postValue("Chuẩn bị: $currentPose")
+        }
+    }
+
+
+    private fun startLogicalTimer() {
         exerciseTimer?.cancel()
         exerciseTimer = Timer()
         exerciseTimer?.scheduleAtFixedRate(object : TimerTask() {
             override fun run() {
-                secondsElapsed++
-                val min = secondsElapsed / 60
-                val sec = secondsElapsed % 60
-                _timerText.postValue(String.format("%02d:%02d", min, sec))
+                // CHỈ CỘNG GIÂY KHI TƯ THẾ ĐANG ĐÚNG
+                if (isCurrentlyCorrect) {
+                    val currentId = _detectedPoseId.value ?: return
+                    if (currentId == -1) return
+
+                    currentPoseTotalSeconds++
+                    val min = currentPoseTotalSeconds / 60
+                    val sec = currentPoseTotalSeconds % 60
+                    val timeStr = String.format("%02d:%02d", min, sec)
+
+                    _timerText.postValue(timeStr)
+                    workoutSequenceMap[currentId]?.duration = timeStr
+                }
             }
         }, 1000, 1000)
     }
 
     fun stopExerciseTimer() {
-        _isTrackingStarted.postValue(false)
+        isTrackingStarted = false
+        isCurrentlyCorrect = false
         exerciseTimer?.cancel()
         exerciseTimer = null
         _timerText.postValue("00:00")
+        _detectedPoseId.postValue(-1)
+    }
+
+    fun getFinalSequenceList(): ArrayList<SequenceModel> {
+        return ArrayList(workoutSequenceMap.values.toList())
+    }
+
+
+    private fun timeStringToSeconds(time: String): Int {
+        val parts = time.split(":")
+        return if (parts.size == 2) parts[0].toInt() * 60 + parts[1].toInt() else 0
     }
 
     override fun onCleared() {
-        stopExerciseTimer()
+        clearData()
         super.onCleared()
     }
 }

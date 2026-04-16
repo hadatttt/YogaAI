@@ -84,13 +84,7 @@ class ProfileFragment : BaseFragment<FragmentProfileBinding, ProfileViewModel>()
                 navigate(R.id.loginFragment, isPop = true)
             }
         }
-
-        binding.btnWorkoutOverview.singleClick {
-            navigate(R.id.workoutOverviewFragment)
-        }
     }
-
-
 
     private fun showTimePicker() {
         val currentHour = reminderTime.substringBefore(":").toIntOrNull() ?: 19

@@ -56,17 +56,5 @@
         app:layout_constraintStart_toStartOf="@id/card"
         app:layout_constraintTop_toBottomOf="@id/tv_pose_name" />
 
-    <androidx.appcompat.widget.AppCompatTextView
-        android:id="@+id/tv_date"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/_1sdp"
-        android:gravity="center"
-        android:textColor="#8E8E93"
-        android:textSize="@dimen/_8sdp"
-        app:layout_constraintEnd_toEndOf="@id/card"
-        app:layout_constraintStart_toStartOf="@id/card"
-        app:layout_constraintTop_toBottomOf="@id/tv_duration" />
-
 </androidx.constraintlayout.widget.ConstraintLayout>
 

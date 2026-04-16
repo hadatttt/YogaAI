@@ -11,37 +11,42 @@ import android.util.Log
 import android.view.MotionEvent
 import android.view.View
 import android.view.animation.LinearInterpolator
+import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.camera.core.*
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.content.ContextCompat
 import com.google.mediapipe.tasks.vision.core.RunningMode
 import com.hadat.aiyoga.databinding.FragmentSingleYogaBinding
+import com.hadat.aiyoga.singleyoga.WorkoutResultModel
+import com.hadat.aiyoga.utils.ModelDownloader
+import com.hadat.aiyoga.utils.PoseLandmarkerHelper
+import com.hadat.aiyoga.utils.loadImageFromNetwork
+import com.hadat.aiyoga.utils.yogautils.YogaCoachUtils
 import hoang.dqm.codebase.base.activity.BaseFragment
+import hoang.dqm.codebase.base.activity.navigate
+import hoang.dqm.codebase.base.activity.onBackPressed
 import hoang.dqm.codebase.base.activity.popBackStack
 import hoang.dqm.codebase.utils.singleClick
 import org.tensorflow.lite.Interpreter
+import org.tensorflow.lite.gpu.GpuDelegate
 import java.io.File
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import java.util.*
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
-import com.hadat.aiyoga.utils.ModelDownloader
-import com.hadat.aiyoga.utils.PoseLandmarkerHelper
-import com.hadat.aiyoga.utils.loadImageFromNetwork
-import com.hadat.aiyoga.utils.yogautils.YogaCoachUtils
 
 class YogaFragment : BaseFragment<FragmentSingleYogaBinding, YogaViewModel>(),
     PoseLandmarkerHelper.LandmarkerListener {
-
+    private var gpuDelegate: GpuDelegate? = null
     private val TAG = "YogaAI_Debug"
     private lateinit var backgroundExecutor: ExecutorService
     private val classifierExecutor: ExecutorService by lazy { Executors.newSingleThreadExecutor() }
 
     private var classifierInterpreter: Interpreter? = null
     private var poseLandmarkerHelper: PoseLandmarkerHelper? = null
-    private var tts: TextToSpeech? = null // Biến TTS
+    private var tts: TextToSpeech? = null
     private val tfliteLock = Any()
 
     private var lensFacing = CameraSelector.LENS_FACING_FRONT
@@ -57,41 +62,17 @@ class YogaFragment : BaseFragment<FragmentSingleYogaBinding, YogaViewModel>(),
 
     override fun initView() {
         backgroundExecutor = Executors.newSingleThreadExecutor()
-
-        // 1. Khởi tạo TTS ngay từ đầu
         initTextToSpeech()
-
-        // 2. Kiểm tra quyền và mở Camera
         checkAndStartCamera()
 
-        // 3. Tải model
         ModelDownloader.downloadAllModels(requireContext(),
             onProgress = { progress ->
                 activity?.runOnUiThread { binding.tvGuide.text = "Loading: $progress%" }
             },
             onComplete = { success ->
-                if (success) {
-                    Log.d(TAG, "Download success. Initializing AI...")
-                    initializeAiResources()
-                }
+                if (success) initializeAiResources()
             }
         )
-    }
-
-    private fun initTextToSpeech() {
-        tts = TextToSpeech(requireContext()) { status ->
-            if (status == TextToSpeech.SUCCESS) {
-                // Ưu tiên tiếng Việt, nếu không có thì dùng tiếng Anh
-                val result = tts?.setLanguage(Locale("vi", "VN"))
-                if (result == TextToSpeech.LANG_MISSING_DATA || result == TextToSpeech.LANG_NOT_SUPPORTED) {
-                    tts?.language = Locale.US
-                    Log.e(TAG, "Ngôn ngữ tiếng Việt không được hỗ trợ, chuyển sang tiếng Anh.")
-                }
-                Log.d(TAG, "TTS Initialized thành công.")
-            } else {
-                Log.e(TAG, "TTS Initialization thất bại!")
-            }
-        }
     }
 
     private fun initializeAiResources() {
@@ -99,53 +80,61 @@ class YogaFragment : BaseFragment<FragmentSingleYogaBinding, YogaViewModel>(),
             try {
                 val context = context ?: return@execute
                 val classifierFile = File(context.filesDir, "yoga_model.tflite")
+
                 if (classifierFile.exists()) {
-                    val options = Interpreter.Options().setNumThreads(4).setUseNNAPI(true)
+                    val options = Interpreter.Options().apply {
+                        setNumThreads(4)
+
+                        try {
+                            gpuDelegate = GpuDelegate()
+                            addDelegate(gpuDelegate)
+                            Log.d(TAG, "TFLite using GPU Delegate")
+                        } catch (e: Exception) {
+                            setUseNNAPI(true)
+                            Log.d(TAG, "GPU not available, fallback NNAPI")
+                        }
+                    }
+
                     synchronized(tfliteLock) {
                         classifierInterpreter = Interpreter(classifierFile, options)
                     }
+
+                    Log.d(TAG, "TFLite model loaded")
                 }
 
                 poseLandmarkerHelper = PoseLandmarkerHelper(
                     context = context,
                     runningMode = RunningMode.LIVE_STREAM,
                     currentModel = PoseLandmarkerHelper.MODEL_POSE_LANDMARKER_HEAVY,
+                    currentDelegate = PoseLandmarkerHelper.DELEGATE_GPU,
                     poseLandmarkerHelperListener = this
                 )
 
                 YogaCoachUtils.loadReferenceData { isSuccess ->
-                    Log.d(TAG, "Load Reference Data: $isSuccess")
-                    activity?.runOnUiThread { viewModel.fetchYogaPoses() }
+                    activity?.runOnUiThread {
+                        viewModel.fetchYogaPoses()
+                    }
                 }
             } catch (e: Exception) {
-                Log.e(TAG, "Init AI Error: ${e.message}")
+                Log.e(TAG, "Error initializing AI resources: ${e.message}")
             }
         }
     }
-
     override fun onResults(resultBundle: PoseLandmarkerHelper.ResultBundle) {
         activity?.runOnUiThread {
             if (view == null) return@runOnUiThread
-            val detectedId = viewModel.detectedPoseId.value ?: -1
-
-            if (detectedId != -1) {
-                binding.overlayView.visibility = View.VISIBLE
-                binding.overlayView.setResults(
-                    resultBundle.results.first(),
-                    resultBundle.inputImageHeight,
-                    resultBundle.inputImageWidth,
-                    RunningMode.LIVE_STREAM
-                )
-                binding.overlayView.invalidate()
-
-                val now = System.currentTimeMillis()
-                if (now - lastCoachTime >= COACH_INTERVAL && viewModel.isTrackingStarted.value == true) {
-                    viewModel.processCoachLogic(resultBundle.results.first())
-                    lastCoachTime = now
-                }
-            } else {
-                binding.overlayView.clear()
-                binding.overlayView.visibility = View.GONE
+            binding.overlayView.visibility = View.VISIBLE
+            binding.overlayView.setResults(
+                resultBundle.results.first(),
+                resultBundle.inputImageHeight,
+                resultBundle.inputImageWidth,
+                RunningMode.LIVE_STREAM
+            )
+            binding.overlayView.invalidate()
+            val now = System.currentTimeMillis()
+            if (now - lastCoachTime >= COACH_INTERVAL) {
+                viewModel.processCoachLogic(resultBundle.results.first())
+                lastCoachTime = now
             }
         }
     }
@@ -159,10 +148,10 @@ class YogaFragment : BaseFragment<FragmentSingleYogaBinding, YogaViewModel>(),
         providerFuture.addListener({
             if (!isAdded || view == null) return@addListener
             val cameraProvider = providerFuture.get()
-            val previewUseCase = Preview.Builder().setTargetAspectRatio(AspectRatio.RATIO_4_3).build()
+            val preview = Preview.Builder().setTargetAspectRatio(AspectRatio.RATIO_4_3).build()
                 .also { it.setSurfaceProvider(binding.viewFinder.surfaceProvider) }
 
-            val analysisUseCase = ImageAnalysis.Builder()
+            val analysis = ImageAnalysis.Builder()
                 .setTargetAspectRatio(AspectRatio.RATIO_4_3)
                 .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
                 .setOutputImageFormat(ImageAnalysis.OUTPUT_IMAGE_FORMAT_RGBA_8888)
@@ -172,58 +161,53 @@ class YogaFragment : BaseFragment<FragmentSingleYogaBinding, YogaViewModel>(),
             try {
                 cameraProvider.unbindAll()
                 cameraProvider.bindToLifecycle(viewLifecycleOwner,
-                    CameraSelector.Builder().requireLensFacing(lensFacing).build(), previewUseCase, analysisUseCase)
+                    CameraSelector.Builder().requireLensFacing(lensFacing).build(), preview, analysis)
             } catch (e: Exception) { }
         }, ContextCompat.getMainExecutor(requireContext()))
     }
 
     private fun processFrame(imageProxy: ImageProxy) {
         try {
-            val shouldRunClassifier = (frameCounter % 5 == 0 && classifierInterpreter != null)
-            var bitmap: Bitmap? = null
-            if (shouldRunClassifier) bitmap = imageProxy.toBitmap()
+            val bitmap = imageProxy.toBitmap()
+            val matrix = Matrix().apply {
+                postRotate(imageProxy.imageInfo.rotationDegrees.toFloat())
+                if (lensFacing == CameraSelector.LENS_FACING_FRONT) {
+                    postScale(-1f, 1f, bitmap!!.width / 2f, bitmap.height / 2f)
+                }
+            }
+            val rotatedBitmap = Bitmap.createBitmap(bitmap!!, 0, 0, bitmap.width, bitmap.height, matrix, true)
 
             poseLandmarkerHelper?.detectLiveStream(imageProxy, lensFacing == CameraSelector.LENS_FACING_FRONT)
-
             frameCounter++
-            if (shouldRunClassifier && bitmap != null) {
-                classifierExecutor.execute { runPoseClassifier(bitmap) }
+            if (frameCounter % 5 == 0 && classifierInterpreter != null) {
+                classifierExecutor.execute { runPoseClassifier(rotatedBitmap) }
             }
         } catch (e: Exception) { imageProxy.close() }
     }
 
     private fun runPoseClassifier(bitmap: Bitmap) {
         val interpreter = classifierInterpreter ?: return
-        val matrix = Matrix().apply {
-            postScale(224f / bitmap.width, 224f / bitmap.height)
-            if (lensFacing == CameraSelector.LENS_FACING_FRONT) postScale(-1f, 1f, 112f, 112f)
-        }
-        val classifierInput = Bitmap.createBitmap(bitmap, 0, 0, bitmap.width, bitmap.height, matrix, true)
-        val buffer = prepareByteBuffer(classifierInput)
+        val scaled = Bitmap.createScaledBitmap(bitmap, 224, 224, true)
+        val buffer = prepareByteBuffer(scaled)
 
-        val outL3 = Array(1) { FloatArray(82) }
-        val outputs = mutableMapOf<Int, Any>()
-        for (i in 0 until interpreter.outputTensorCount) {
-            if (interpreter.getOutputTensor(i).shape()[1] == 82) outputs[i] = outL3
-        }
+        val out82 = Array(1) { FloatArray(82) }
+        val outputs: MutableMap<Int, Any> = mutableMapOf(2 to out82)
 
         synchronized(tfliteLock) {
             try { interpreter.runForMultipleInputsOutputs(arrayOf(buffer), outputs) } catch (e: Exception) {}
         }
 
-        val probabilities = outL3[0]
+        val probabilities = out82[0]
         val maxIdx = probabilities.indices.maxByOrNull { probabilities[it] } ?: 0
         val confidence = probabilities[maxIdx]
 
-        Log.d(TAG, "AI -> ID: $maxIdx | Conf: $confidence")
-
-        if (confidence > 0.70f) {
+        if (confidence > 0.65f) {
             if (maxIdx == lastPendingPoseId) poseCounter++ else { lastPendingPoseId = maxIdx; poseCounter = 0 }
             if (poseCounter >= STABLE_THRESHOLD) {
                 activity?.runOnUiThread { viewModel.handlePoseInference(maxIdx) }
             }
         }
-        classifierInput.recycle(); bitmap.recycle()
+        bitmap.recycle(); scaled.recycle()
     }
 
     private fun prepareByteBuffer(bitmap: Bitmap): ByteBuffer {
@@ -239,56 +223,93 @@ class YogaFragment : BaseFragment<FragmentSingleYogaBinding, YogaViewModel>(),
     }
 
     override fun initData() {
-        viewModel.currentPoseName.observe(viewLifecycleOwner) { binding.tvYogaName.text = it }
+        viewModel.currentPoseName.observe(viewLifecycleOwner) { name ->
+            binding.tvYogaName.text = name
+        }
+        viewModel.isWaitingForCapture.observe(viewLifecycleOwner) { isWaiting ->
+            if (isWaiting) {
+                binding.ivPhoto.backgroundTintList = android.content.res.ColorStateList.valueOf(android.graphics.Color.RED)
+                binding.ivPhoto.imageTintList = android.content.res.ColorStateList.valueOf(android.graphics.Color.WHITE)
+                binding.tvGuide.text = "Giữ đúng tư thế để chụp ảnh!"
+            } else {
+                binding.ivPhoto.backgroundTintList = android.content.res.ColorStateList.valueOf(android.graphics.Color.parseColor("#E4E3F3"))
+                binding.ivPhoto.imageTintList = android.content.res.ColorStateList.valueOf(ContextCompat.getColor(requireContext(), com.hadat.aiyoga.R.color.primary))
+            }
+        }
+
+        viewModel.captureTrigger.observe(viewLifecycleOwner) {
+            animatePhotoCapture()
+        }
         viewModel.currentGuideText.observe(viewLifecycleOwner) { binding.tvGuide.text = it }
         viewModel.timerText.observe(viewLifecycleOwner) { binding.tvTimer.text = it }
 
-        // Nhận lệnh nói từ ViewModel
         viewModel.speakCommand.observe(viewLifecycleOwner) { text ->
             if (text.isNotEmpty() && !isMuted) {
                 tts?.speak(text, TextToSpeech.QUEUE_FLUSH, null, null)
             }
         }
-
         viewModel.previewPoseId.observe(viewLifecycleOwner) { id ->
             if (id != -1) {
-                viewModel.yogaPoseDataList.value?.find { it.id == id }?.let {
+                viewModel.yogaPoseDataList.value?.find { it.id == id }?.let { pose ->
                     binding.ivYogaSample.visibility = View.VISIBLE
-                    binding.ivYogaSample.loadImageFromNetwork(it.photo_url)
+                    binding.ivYogaSample.loadImageFromNetwork(pose.photo_url)
                 }
-            } else binding.ivYogaSample.visibility = View.GONE
+            } else {
+                binding.ivYogaSample.visibility = View.GONE
+            }
         }
     }
 
     override fun initListener() {
-        binding.ivBack.singleClick { popBackStack() }
+        binding.ivPhoto.singleClick {
+            viewModel.toggleCaptureWait()
+        }
+        binding.ivBack.singleClick {
+            viewModel.clearData()
+            popBackStack()
+        }
+        onBackPressed {
+            viewModel.clearData()
+            popBackStack()
+        }
         binding.ivFlip.singleClick {
             lensFacing = if (lensFacing == CameraSelector.LENS_FACING_FRONT) CameraSelector.LENS_FACING_BACK else CameraSelector.LENS_FACING_FRONT
             startCamera()
         }
-
-        // Nút loa để Mute/Unmute
         binding.ivVoice.singleClick {
             isMuted = !isMuted
             binding.ivVoice.setImageResource(if (isMuted) com.hadat.aiyoga.R.drawable.ic_mute else com.hadat.aiyoga.R.drawable.ic_volume)
-            if (isMuted) tts?.stop()
         }
-
-        // Logic giữ nút để thoát (Finish workout)
+        progressAnimator = ObjectAnimator.ofFloat(binding.progressAround, "progress", 0f, 100f).apply {
+            duration = 1500
+            interpolator = LinearInterpolator()
+            addListener(object : android.animation.AnimatorListenerAdapter() {
+                override fun onAnimationEnd(animation: android.animation.Animator) {
+                    if (binding.progressAround.progress >= 100f) {
+                        navigateToResult()
+                    }
+                }
+            })
+        }
         binding.layoutAction.setOnTouchListener { _, event ->
-            if (event.action == MotionEvent.ACTION_DOWN) {
-                progressAnimator = ObjectAnimator.ofFloat(binding.progressAround, "progress", 0f, 100f).apply {
-                    duration = 1500; interpolator = LinearInterpolator()
-                    addListener(object : android.animation.AnimatorListenerAdapter() {
-                        override fun onAnimationEnd(animation: android.animation.Animator) {
-                            if (binding.progressAround.progress >= 100f) popBackStack()
-                        }
-                    })
-                }; progressAnimator?.start()
-            } else if (event.action == MotionEvent.ACTION_UP || event.action == MotionEvent.ACTION_CANCEL) {
-                progressAnimator?.cancel(); binding.progressAround.progress = 0f
+            when (event.action) {
+                MotionEvent.ACTION_DOWN -> {
+                    progressAnimator?.start()
+                    true
+                }
+                MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
+                    progressAnimator?.cancel()
+                    binding.progressAround.progress = 0f
+                    true
+                }
+                else -> false
             }
-            true
+        }
+    }
+
+    private fun initTextToSpeech() {
+        tts = TextToSpeech(requireContext()) { status ->
+            if (status == TextToSpeech.SUCCESS) tts?.language = Locale("vi", "VN")
         }
     }
 
@@ -302,9 +323,94 @@ class YogaFragment : BaseFragment<FragmentSingleYogaBinding, YogaViewModel>(),
     override fun onDestroyView() {
         viewModel.stopExerciseTimer()
         backgroundExecutor.shutdown()
-        synchronized(tfliteLock) { classifierInterpreter?.close(); classifierInterpreter = null }
+
+        synchronized(tfliteLock) {
+            classifierInterpreter?.close()
+            classifierInterpreter = null
+        }
+        gpuDelegate?.close()
+        gpuDelegate = null
         poseLandmarkerHelper?.clearPoseLandmarker()
-        tts?.shutdown() // Tắt loa khi thoát
+        tts?.shutdown()
         super.onDestroyView()
+    }
+    private fun navigateToResult() {
+        val results = viewModel.getFinalSequenceList().map { sequence ->
+            WorkoutResultModel(
+                userId = com.hadat.aiyoga.service.AppPreferences.getUserId(requireContext()) ?: "guest",
+                poseUrl = sequence.photoUrl,
+                poseId = sequence.id.toIntOrNull() ?: -1,
+                poseName = sequence.name,
+                durationInSeconds = timeStringToSeconds(sequence.duration),
+                date = java.text.SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date()),
+                capturedImages = viewModel.getCapturedImages(),
+                errorCount = 0,
+                workoutTimestamp = System.currentTimeMillis()
+            )
+        }.toTypedArray()
+
+        val bundle = Bundle().apply {
+            putParcelableArray("workout_result_list", results)
+        }
+        navigate(com.hadat.aiyoga.R.id.resultFragment, bundle)
+        viewModel.clearData()
+    }
+
+    private fun timeStringToSeconds(time: String): Int {
+        val parts = time.split(":")
+        return if (parts.size == 2) parts[0].toInt() * 60 + parts[1].toInt() else 0
+    }
+    private fun animatePhotoCapture() {
+        triggerFlashEffect()
+        val bitmap = binding.viewFinder.bitmap ?: return
+
+        val photoView = androidx.appcompat.widget.AppCompatImageView(requireContext()).apply {
+            setImageBitmap(bitmap)
+            layoutParams = android.widget.FrameLayout.LayoutParams(
+                binding.viewFinder.width / 3, binding.viewFinder.height / 3
+            )
+            elevation = 50f
+            translationX = (binding.viewFinder.width / 3).toFloat()
+            translationY = (binding.viewFinder.height / 4).toFloat()
+        }
+
+        (binding.root as android.view.ViewGroup).addView(photoView)
+
+        photoView.animate()
+            .translationY(binding.root.height.toFloat())
+            .scaleX(0.2f).scaleY(0.2f).alpha(0f)
+            .setDuration(800)
+            .withEndAction { (binding.root as android.view.ViewGroup).removeView(photoView) }
+            .start()
+
+        saveScreenshot(bitmap)
+    }
+    private fun saveScreenshot(bitmap: Bitmap) {
+        val filename = "Yoga_Sequence_${System.currentTimeMillis()}.jpg"
+        val contentValues = android.content.ContentValues().apply {
+            put(android.provider.MediaStore.MediaColumns.DISPLAY_NAME, filename)
+            put(android.provider.MediaStore.MediaColumns.MIME_TYPE, "image/jpeg")
+            put(android.provider.MediaStore.Images.Media.RELATIVE_PATH, android.os.Environment.DIRECTORY_PICTURES + "/AI_Yoga")
+        }
+
+        val uri = requireContext().contentResolver.insert(
+            android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI, contentValues
+        )
+
+        uri?.let {
+            requireContext().contentResolver.openOutputStream(it)?.use { out ->
+                bitmap.compress(Bitmap.CompressFormat.JPEG, 100, out)
+            }
+            viewModel.addCapturedImage(it.toString())
+            Toast.makeText(requireContext(), "Save Photo", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun triggerFlashEffect() {
+        binding.viewFlash.visibility = View.VISIBLE
+        binding.viewFlash.alpha = 1f
+        binding.viewFlash.animate().alpha(0f).setDuration(200)
+            .withEndAction { binding.viewFlash.visibility = View.GONE }
+            .start()
     }
 }

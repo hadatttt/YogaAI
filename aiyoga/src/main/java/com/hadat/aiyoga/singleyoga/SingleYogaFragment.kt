@@ -70,6 +70,7 @@ class SingleYogaFragment : BaseFragment<FragmentSingleYogaBinding, SingleYogaVie
                 context = requireContext(),
                 runningMode = RunningMode.LIVE_STREAM,
                 currentModel = PoseLandmarkerHelper.MODEL_POSE_LANDMARKER_HEAVY,
+                currentDelegate = PoseLandmarkerHelper.DELEGATE_GPU,
                 poseLandmarkerHelperListener = this
             )
             YogaCoachUtils.loadReferenceData { isSuccess ->
@@ -103,11 +104,30 @@ class SingleYogaFragment : BaseFragment<FragmentSingleYogaBinding, SingleYogaVie
 
     override fun onDestroyView() {
         binding.overlayView.clear()
+
         viewModel.stopTracking()
+
         progressAnimator?.cancel()
+        progressAnimator = null
+
+        tts?.stop()
         tts?.shutdown()
-        backgroundExecutor.shutdown()
-        backgroundExecutor.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS)
+        tts = null
+
+        imageAnalyzer?.clearAnalyzer()
+        imageAnalyzer = null
+        preview = null
+
+        cameraProvider?.unbindAll()
+        cameraProvider = null
+
+        if (::poseLandmarkerHelper.isInitialized) {
+            poseLandmarkerHelper.clearPoseLandmarker()
+        }
+
+        if (::backgroundExecutor.isInitialized) {
+            backgroundExecutor.shutdownNow()
+        }
 
         super.onDestroyView()
     }
@@ -361,6 +381,7 @@ class SingleYogaFragment : BaseFragment<FragmentSingleYogaBinding, SingleYogaVie
         val result = WorkoutResultModel(
             userId = userId,
             poseId = args.yogaPoseItem.id,
+            poseUrl = args.yogaPoseItem.photo_url,
             poseName = args.yogaPoseItem.name,
             durationInSeconds = viewModel.getTotalTimeStudied(),
             date = date,

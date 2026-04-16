@@ -7,6 +7,7 @@ import kotlinx.parcelize.Parcelize
 data class WorkoutResultModel(
     val userId: String = "",
     val poseId: Int = 0,
+    val poseUrl: String = "",
     val poseName: String = "",
     val durationInSeconds: Int = 0,
     val date: String = "",

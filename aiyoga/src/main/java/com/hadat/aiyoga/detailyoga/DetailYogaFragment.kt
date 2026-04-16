@@ -47,6 +47,7 @@ class DetailYogaFragment : BaseFragment<FragmentDetailYogaBinding, DetailYogaVie
         poseLandmarkerHelper = PoseLandmarkerHelper(
             context = requireContext(),
             runningMode = RunningMode.IMAGE,
+            currentDelegate = PoseLandmarkerHelper.DELEGATE_GPU,
             poseLandmarkerHelperListener = this
         )
         viewModel.isFavorite.observe(viewLifecycleOwner) { favorite ->
@@ -223,5 +224,19 @@ class DetailYogaFragment : BaseFragment<FragmentDetailYogaBinding, DetailYogaVie
             binding.lottieAi.visibility = View.GONE
             binding.tvAiLoading.text = error
         }
+    }
+    override fun onDestroyView() {
+        binding.overlayResult.clear()
+
+        if (::poseLandmarkerHelper.isInitialized) {
+            poseLandmarkerHelper.clearPoseLandmarker()
+        }
+
+        backgroundExecutor.shutdownNow()
+
+        binding.rvCategory.adapter = null
+        binding.rvYogaContent.adapter = null
+
+        super.onDestroyView()
     }
 }

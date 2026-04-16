@@ -171,28 +171,10 @@
     </LinearLayout>
 
     <com.google.android.material.button.MaterialButton
-            android:id="@+id/btn_workout_overview"
-            android:layout_width="0dp"
-            android:layout_height="@dimen/_48sdp"
-            android:layout_marginStart="@dimen/_16sdp"
-            android:layout_marginTop="@dimen/_16sdp"
-            android:layout_marginEnd="@dimen/_16sdp"
-            android:background="@drawable/bg_search"
-            android:fontFamily="@font/font_bold"
-            android:text="Workout Overview"
-            android:textAllCaps="false"
-            android:textColor="@color/primary"
-            android:textSize="@dimen/_16sdp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/layout_notification_time" />
-
-    <com.google.android.material.button.MaterialButton
             android:id="@+id/btn_logout"
             android:layout_width="0dp"
             android:layout_height="@dimen/_48sdp"
             android:layout_marginStart="@dimen/_16sdp"
-            android:layout_marginTop="@dimen/_12sdp"
             android:layout_marginEnd="@dimen/_16sdp"
             android:background="@drawable/bg_btn_create"
             android:backgroundTint="@null"
@@ -201,14 +183,15 @@
             android:textAllCaps="false"
             android:textColor="@color/white"
             android:textSize="@dimen/_16sdp"
-            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/layout_notification_time"
+            android:layout_marginTop="@dimen/_30sdp"
+            app:layout_constraintWidth_percent="0.5"
             app:cornerRadius="@dimen/_14sdp"
             app:icon="@drawable/ic_logout"
             app:iconGravity="textStart"
             app:iconPadding="@dimen/_8sdp"
             app:iconTint="@color/primary"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/btn_workout_overview"/>
+            app:layout_constraintStart_toStartOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
