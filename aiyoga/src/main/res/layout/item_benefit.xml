@@ -25,7 +25,7 @@
                 android:id="@+id/tv_benefit_title"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Heart Health"
+                android:text="@string/heart_health"
                 android:textColor="@color/primary"
                 android:textSize="@dimen/_14sp"
                 android:fontFamily="@font/font_bold" />
@@ -35,7 +35,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="@dimen/_2sdp"
-                android:text="Improve hip flexibility and blood flow"
+                android:text="@string/heart_health_desc"
                 android:textColor="#666666"
                 android:textSize="@dimen/_12sp"
                 android:fontFamily="sans-serif" />

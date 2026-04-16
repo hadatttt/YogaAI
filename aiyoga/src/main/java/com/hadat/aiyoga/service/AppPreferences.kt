@@ -13,6 +13,7 @@ object AppPreferences {
     private const val KEY_IS_LOGGED_IN = "is_logged_in"
     private const val KEY_USER_ID = "user_id"
     private const val KEY_NOTIFICATION_TIME = "notification_time"
+    private const val KEY_LANGUAGE_CODE = "language_code"
 
     private fun getPrefs(context: Context): SharedPreferences {
         return context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
@@ -65,5 +66,13 @@ object AppPreferences {
 
     fun getNotificationTime(context: Context): String {
         return getPrefs(context).getString(KEY_NOTIFICATION_TIME, "19:00") ?: "19:00"
+    }
+
+    fun setLanguageCode(context: Context, languageCode: String) {
+        getPrefs(context).edit { putString(KEY_LANGUAGE_CODE, languageCode) }
+    }
+
+    fun getLanguageCode(context: Context): String {
+        return getPrefs(context).getString(KEY_LANGUAGE_CODE, "en") ?: "en"
     }
 }

@@ -29,8 +29,16 @@ class CapturedImagesAdapter(
         return BaseViewHolder(binding)
     }
 
+
     override fun bindData(binding: ItemImageThumbBinding, item: String, position: Int) {
-        Glide.with(binding.ivThumb).load(Uri.parse(item)).into(binding.ivThumb)
+        if (item.isBlank()) return
+
+        val request = Glide.with(binding.ivThumb)
+            .load(if (item.startsWith("content://") || item.startsWith("file://")) Uri.parse(item) else item)
+            .skipMemoryCache(true)
+            .diskCacheStrategy(com.bumptech.glide.load.engine.DiskCacheStrategy.NONE)
+
+        request.into(binding.ivThumb)
 
         val isSelected = selectedItem == item
         binding.viewSelectedStroke.isVisible = selectable && isSelected
@@ -39,6 +47,7 @@ class CapturedImagesAdapter(
         binding.root.singleClick {
             if (selectable) {
                 if (selectedItem == item) return@singleClick
+
                 val previous = selectedItem
                 selectedItem = item
                 previous?.let {

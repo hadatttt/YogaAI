@@ -2,6 +2,7 @@ package com.hadat.aiyoga.map
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import com.hadat.aiyoga.R
 import com.hadat.aiyoga.data.firestore.model.MapPostModel
 import com.hadat.aiyoga.databinding.ItemMapPostBinding
 import com.hadat.aiyoga.utils.loadImageFromNetwork
@@ -20,20 +21,25 @@ class MapPostsAdapter(
         return BaseViewHolder(binding)
     }
 
+
     override fun bindData(binding: ItemMapPostBinding, item: MapPostModel, position: Int) {
         binding.root.singleClick { onItemClick(item) }
 
-        binding.tvName.text = item.userName.ifBlank { item.userId }
+        binding.tvName.text = item.userName.ifBlank { "User ${item.userId.takeLast(4)}" }
         binding.tvDescription.text = item.description
 
         val date = item.createdAt?.let {
-            SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(it)
-        } ?: ""
+            SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault()).format(it)
+        } ?: "Vừa xong"
         binding.tvTime.text = date
-
         binding.imgAvatar.loadImageFromNetwork(item.userAvatar)
-        val bg = item.imageUrls.firstOrNull().orEmpty()
-        if (bg.isNotBlank()) binding.imgBackground.loadImageFromNetwork(bg)
+        val bgImage = item.imageUrls
+
+        if (bgImage.isNotBlank()) {
+            binding.imgBackground.loadImageFromNetwork(bgImage)
+        } else {
+            binding.imgBackground.setImageResource(R.drawable.ic_practice)
+        }
     }
 }
 

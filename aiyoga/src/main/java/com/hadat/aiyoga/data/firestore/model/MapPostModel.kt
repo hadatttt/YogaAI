@@ -14,12 +14,12 @@ data class MapPostModel(
     val userName: String = "",
     val userAvatar: String = "",
     val description: String = "",
-    val imageUrls: List<String> = emptyList(),
-    val lat: Double = 0.0,
-    val lng: Double = 0.0,
+    val imageUrls: String = "",
     val placeName: String = "",
     val workoutId: String = "",
     val workoutTitle: String = "",
+    val lat: Double = 0.0,
+    val lng: Double = 0.0,
     @ServerTimestamp
     val createdAt: Date? = null
 ) : Parcelable

@@ -7,7 +7,7 @@ import com.github.mikephil.charting.data.Entry
 import com.github.mikephil.charting.data.PieEntry
 import com.hadat.aiyoga.databinding.FragmentWorkoutOverviewBinding
 import com.hadat.aiyoga.service.AppPreferences
-import com.hadat.aiyoga.singleyoga.WorkoutResultModel
+import com.hadat.aiyoga.sequence.WorkoutSequenceModel
 import hoang.dqm.codebase.base.activity.BaseFragment
 import hoang.dqm.codebase.base.activity.popBackStack
 import hoang.dqm.codebase.utils.singleClick
@@ -38,36 +38,36 @@ class WorkoutOverviewFragment : BaseFragment<FragmentWorkoutOverviewBinding, Wor
 
     override fun initData() {
         renderDateTexts()
+        fetch()
 
-        // --- CHẾ ĐỘ TEST ---
-        mockData() // Hãy comment dòng này và mở fetch() khi đã có data thật
-        // fetch()
-
-        viewModel.results.observe(viewLifecycleOwner) { listResults ->
+        viewModel.sequences.observe(viewLifecycleOwner) { listResults ->
             if (listResults.isNullOrEmpty()) {
                 resetUI()
                 return@observe
             }
 
-            // --- 1. TỔNG HỢP CHỈ SỐ (Dùng cho 3 vòng tròn Progress) ---
-            val totalSec = listResults.sumOf { it.durationInSeconds.toLong() }
-            val totalErr = listResults.sumOf { it.errorCount.toLong() }
+            val parsedDurations = listResults.map { sequence ->
+                parseDurationSeconds(sequence.totalDuration)
+            }
 
+            val totalSec = parsedDurations.sum().toLong()
             val totalCalo = totalSec * 0.15f
             val totalMin = totalSec / 60f
-            val totalAcc = (100f - (totalErr * 5f)).coerceIn(10f, 100f)
+            val totalAcc = listResults.map { sequence ->
+                if (sequence.viewCount > 0) {
+                    (sequence.likeCount.toFloat() / sequence.viewCount.toFloat() * 100f).coerceIn(10f, 100f)
+                } else {
+                    100f
+                }
+            }.average().toFloat()
 
             updateProgressBars(totalCalo, totalMin, totalAcc)
 
-            // --- 2. CHUẨN BỊ DỮ LIỆU CHO CÁC LOẠI BIỂU ĐỒ ---
-
-            // Sắp xếp danh sách theo thời gian thực (parse từ String date)
-            val sortedList = listResults.sortedBy {
-                try { modelDateFormat.parse(it.date) } catch (e: Exception) { Date(it.workoutTimestamp) }
+            val sortedList = listResults.sortedBy { it.createdAt?.time ?: 0L }
+            val dailyGrouped = sortedList.groupBy {
+                val date = it.createdAt ?: Date()
+                modelDateFormat.format(date)
             }
-
-            // Group theo ngày để mỗi ngày là 1 cột/điểm trên biểu đồ
-            val dailyGrouped = sortedList.groupBy { it.date }
 
             val labels = mutableListOf<String>()
             val caloEntries = mutableListOf<BarEntry>()
@@ -75,24 +75,25 @@ class WorkoutOverviewFragment : BaseFragment<FragmentWorkoutOverviewBinding, Wor
 
             dailyGrouped.values.forEachIndexed { index, listPerDay ->
                 val x = index.toFloat()
+                val firstDate = listPerDay.firstOrNull()?.createdAt ?: Date()
+                labels.add(dateFormatLabel.format(firstDate))
 
-                // Lấy label dd/MM từ chuỗi dd/MM/yyyy
-                val dateObj = try { modelDateFormat.parse(listPerDay[0].date) } catch (e: Exception) { null }
-                labels.add(dateObj?.let { dateFormatLabel.format(it) } ?: listPerDay[0].date)
-
-                // Tính toán cho từng ngày (Dùng .toDouble() để tránh lỗi Ambiguity)
-                val dayCalo = listPerDay.sumOf { (it.durationInSeconds * 0.15).toDouble() }.toFloat()
-                val dayAcc = listPerDay.map { (100f - (it.errorCount * 5f)).coerceIn(10f, 100f) }.average().toFloat()
+                val dayCalo = listPerDay.sumOf { parseDurationSeconds(it.totalDuration).toDouble() }.toFloat() * 0.15f
+                val dayAcc = listPerDay.map {
+                    if (it.viewCount > 0) {
+                        (it.likeCount.toFloat() / it.viewCount.toFloat() * 100f).coerceIn(10f, 100f)
+                    } else {
+                        100f
+                    }
+                }.average().toFloat()
 
                 caloEntries.add(BarEntry(x, dayCalo))
                 accTrendEntries.add(Entry(x, dayAcc))
             }
 
-            // Biểu đồ tròn: Tỷ lệ các tư thế Pose
-            val poseGroups = listResults.groupBy { it.poseName }
-            val pieEntries = poseGroups.map { PieEntry(it.value.size.toFloat(), it.key) }
+            val levelGroups = listResults.groupBy { "Level ${it.level}" }
+            val pieEntries = levelGroups.map { PieEntry(it.value.size.toFloat(), it.key) }
 
-            // Gửi dữ liệu vào Adapter
             val barModel = ChartDataModel("Calories (kcal)", caloEntries, Color.parseColor("#FF6A00"))
             val lineModel = ChartDataModel("Accuracy Trend (%)", accTrendEntries, Color.parseColor("#4A90E2"))
 
@@ -115,29 +116,6 @@ class WorkoutOverviewFragment : BaseFragment<FragmentWorkoutOverviewBinding, Wor
 
         binding.progressAccuracy.setProgressWithAnimation(acc, 1000)
         binding.tvAccuracyValue.text = "${acc.toInt()}%"
-    }
-
-    private fun mockData() {
-        val mockList = mutableListOf<WorkoutResultModel>()
-        val random = Random()
-        val poses = listOf("Warrior I", "Cobra", "Tree Pose", "Downward Dog")
-
-        for (i in 6 downTo 0) {
-            val cal = Calendar.getInstance().apply { add(Calendar.DAY_OF_YEAR, -i) }
-            val dateStr = modelDateFormat.format(cal.time)
-
-            // Mỗi ngày tập ngẫu nhiên 1-3 bài tập
-            repeat(random.nextInt(3) + 1) {
-                mockList.add(WorkoutResultModel(
-                    poseName = poses[random.nextInt(poses.size)],
-                    date = dateStr,
-                    durationInSeconds = random.nextInt(1200) + 300,
-                    errorCount = random.nextInt(6),
-                    workoutTimestamp = cal.timeInMillis
-                ))
-            }
-        }
-        viewModel.results.postValue(mockList)
     }
 
     override fun initListener() {
@@ -183,5 +161,15 @@ class WorkoutOverviewFragment : BaseFragment<FragmentWorkoutOverviewBinding, Wor
         DatePickerDialog(requireContext(), { _, y, m, d ->
             onPicked(Calendar.getInstance().apply { set(y, m, d) })
         }, initial.get(Calendar.YEAR), initial.get(Calendar.MONTH), initial.get(Calendar.DAY_OF_MONTH)).show()
+    }
+
+    private fun parseDurationSeconds(duration: String): Int {
+        val parts = duration.split(":").mapNotNull { it.toIntOrNull() }
+        return when (parts.size) {
+            1 -> parts[0]
+            2 -> parts[0] * 60 + parts[1]
+            3 -> parts[0] * 3600 + parts[1] * 60 + parts[2]
+            else -> 0
+        }
     }
 }

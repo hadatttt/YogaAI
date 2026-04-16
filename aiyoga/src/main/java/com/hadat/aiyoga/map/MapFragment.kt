@@ -1,10 +1,11 @@
 package com.hadat.aiyoga.map
 
 import android.Manifest
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.Canvas
-import android.graphics.Point
+import android.net.Uri
 import android.view.View
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
@@ -15,10 +16,12 @@ import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.*
+import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.hadat.aiyoga.R
 import com.hadat.aiyoga.data.firestore.model.MapPostModel
 import com.hadat.aiyoga.databinding.FragmentMapBinding
 import com.hadat.aiyoga.databinding.LayoutCustomMarkerBinding
+import com.hadat.aiyoga.databinding.LayoutMapPostsBottomSheetBinding
 import hoang.dqm.codebase.base.activity.BaseFragment
 import hoang.dqm.codebase.utils.singleClick
 
@@ -27,10 +30,6 @@ class MapFragment : BaseFragment<FragmentMapBinding, MapViewModel>(), OnMapReady
     private var mMap: GoogleMap? = null
     private var currentMarker: Marker? = null
     private var selectedLatLng: LatLng? = null
-    private var selectedMarkerForOverlay: Marker? = null
-
-    private val postsAdapter by lazy { MapPostsAdapter { } }
-
 
     private val requestLocationPermission =
         registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { result ->
@@ -52,88 +51,99 @@ class MapFragment : BaseFragment<FragmentMapBinding, MapViewModel>(), OnMapReady
     override fun initView() {
         val mapFragment = childFragmentManager.findFragmentById(R.id.map) as SupportMapFragment
         mapFragment.getMapAsync(this)
-
-        binding.rvMarkerPosts.apply {
-            layoutManager = LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
-            adapter = postsAdapter
-        }
-
-        binding.cvRadiusController.visibility = View.GONE
     }
 
     override fun onMapReady(googleMap: GoogleMap) {
         mMap = googleMap
-        mMap?.isBuildingsEnabled = true
-        mMap?.uiSettings?.isTiltGesturesEnabled = true
-        mMap?.apply {
-            uiSettings.isMapToolbarEnabled = true
-            uiSettings.isZoomControlsEnabled = true
-            uiSettings.isMyLocationButtonEnabled = true
-
-            setInfoWindowAdapter(object : GoogleMap.InfoWindowAdapter {
-                override fun getInfoWindow(marker: Marker): View = View(requireContext()).apply {
-                    layoutParams = android.view.ViewGroup.LayoutParams(1, 1)
-                }
-                override fun getInfoContents(marker: Marker): View? = null
-            })
-
-            setOnMarkerClickListener { marker ->
-                val posts = (marker.tag as? List<*>)?.filterIsInstance<MapPostModel>().orEmpty()
-                if (posts.isNotEmpty()) {
-                    selectedMarkerForOverlay = marker
-                    showPostsCarousel(posts)
-                }
-                false
-            }
-
-            setOnMapClickListener {
-                binding.rvMarkerPosts.visibility = View.GONE
-                selectedMarkerForOverlay = null
-                setupNewLocationSelection(it)
-            }
-
-            setOnCameraMoveListener { updateOverlayPosition() }
-        }
-
+        setupMapSettings()
+        setupMapListeners()
         ensureLocationPermissionAndEnable()
         viewModel.fetchLatestPosts()
     }
 
-    private fun showPostsCarousel(posts: List<MapPostModel>) {
-        postsAdapter.setList(posts)
-        binding.rvMarkerPosts.visibility = View.VISIBLE
-    }
-
-    private fun updateOverlayPosition() {
-        val marker = selectedMarkerForOverlay ?: return
-        if (binding.rvMarkerPosts.visibility == View.VISIBLE) {
-            val projection = mMap?.projection ?: return
-            val screenPosition: Point = projection.toScreenLocation(marker.position)
-            binding.rvMarkerPosts.x = (screenPosition.x - (binding.rvMarkerPosts.width / 2)).toFloat()
-            binding.rvMarkerPosts.y = (screenPosition.y - binding.rvMarkerPosts.height - 50).toFloat()
+    private fun setupMapSettings() {
+        mMap?.apply {
+            isBuildingsEnabled = true
+            uiSettings.apply {
+                isTiltGesturesEnabled = true
+                isMapToolbarEnabled = true
+                isZoomControlsEnabled = true
+                isMyLocationButtonEnabled = true
+            }
         }
     }
 
-    override fun initListener() {
-        binding.btnShareLocation.singleClick {
-            val latLng = selectedLatLng ?: return@singleClick
-            mMap?.addMarker(MarkerOptions().position(latLng).icon(yogaMarkerIcon).anchor(0.5f, 1.0f))?.tag = emptyList<MapPostModel>()
-            binding.btnShareLocation.visibility = View.GONE
-            currentMarker?.remove()
+    private fun setupMapListeners() {
+        mMap?.apply {
+            setOnMarkerClickListener { marker ->
+                val posts = (marker.tag as? List<*>)?.filterIsInstance<MapPostModel>().orEmpty()
+                if (posts.isNotEmpty()) {
+                    showPostsBottomSheet(posts, marker.position)
+                    return@setOnMarkerClickListener true
+                }
+                false
+            }
+
+            setOnMapClickListener { latLng ->
+                setupNewLocationSelection(latLng)
+            }
         }
+    }
+
+    private fun showPostsBottomSheet(posts: List<MapPostModel>, location: LatLng) {
+        val dialog = BottomSheetDialog(requireContext(), R.style.BottomSheetDialogTheme)
+        val sheetBinding = LayoutMapPostsBottomSheetBinding.inflate(layoutInflater)
+        dialog.setContentView(sheetBinding.root)
+
+        val postsAdapter = MapPostsAdapter { /* Handle post click if needed */ }
+        sheetBinding.rvMarkerPosts.apply {
+            layoutManager = LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
+            adapter = postsAdapter
+        }
+        postsAdapter.setList(posts.sortedByDescending { it.createdAt })
+
+        sheetBinding.btnDirection.singleClick {
+            val uri = Uri.parse("google.navigation:q=${location.latitude},${location.longitude}")
+            val intent = Intent(Intent.ACTION_VIEW, uri).apply {
+                setPackage("com.google.android.apps.maps")
+            }
+            startActivity(intent)
+        }
+
+        sheetBinding.btnShare.singleClick {
+            sheetBinding.btnShare.isEnabled = false
+            val lat = location.latitude
+            val lng = location.longitude
+            val mapLink = "https://www.google.com/maps/search/?api=1&query=$lat,$lng"
+            val shareBody = """
+        🧘‍♂️ Cùng tập Yoga tại địa điểm này nhé!
+        🔗 Xem trên Google Maps: $mapLink
+    """.trimIndent()
+            val shareIntent = Intent(Intent.ACTION_SEND).apply {
+                type = "text/plain"
+                putExtra(Intent.EXTRA_TEXT, shareBody)
+            }
+            val chooser = Intent.createChooser(shareIntent, "Chia sẻ địa điểm tập Yoga qua:")
+            startActivity(chooser)
+            dialog.dismiss()
+            sheetBinding.btnShare.postDelayed({ sheetBinding.btnShare.isEnabled = true }, 500)
+        }
+
+        dialog.show()
     }
 
     override fun initData() {
-        viewModel.posts.observe(viewLifecycleOwner) { list ->
+        viewModel.posts.observe(viewLifecycleOwner) { allPosts ->
             mMap?.clear()
-            list.groupBy { "${it.lat},${it.lng}" }.values.forEach { posts ->
-                val first = posts.first()
+            clusterPosts(allPosts).forEach { (center, posts) ->
                 val marker = mMap?.addMarker(
-                    MarkerOptions().position(LatLng(first.lat, first.lng)).icon(yogaMarkerIcon).anchor(0.5f, 1.0f)
+                    MarkerOptions()
+                        .position(center)
+                        .icon(yogaMarkerIcon)
+                        .anchor(0.5f, 1.0f)
                 )
                 marker?.tag = posts
             }
-            moveToCurrentLocation()
         }
     }
 
@@ -145,8 +155,6 @@ class MapFragment : BaseFragment<FragmentMapBinding, MapViewModel>(), OnMapReady
                 .position(latLng)
                 .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE))
         )
-        binding.btnShareLocation.visibility = View.VISIBLE
-        binding.rvMarkerPosts.visibility = View.GONE
     }
 
     private fun ensureLocationPermissionAndEnable() {
@@ -170,10 +178,11 @@ class MapFragment : BaseFragment<FragmentMapBinding, MapViewModel>(), OnMapReady
         LocationServices.getFusedLocationProviderClient(requireActivity()).lastLocation.addOnSuccessListener { location ->
             location?.let {
                 val latLng = LatLng(it.latitude, it.longitude)
+
                 val cameraPosition = CameraPosition.Builder()
                     .target(latLng)
-                    .zoom(18f)
-                    .tilt(60f)
+                    .zoom(16f)
+                    .tilt(45f)
                     .bearing(30f)
                     .build()
 
@@ -181,4 +190,32 @@ class MapFragment : BaseFragment<FragmentMapBinding, MapViewModel>(), OnMapReady
             }
         }
     }
+
+    private fun clusterPosts(posts: List<MapPostModel>): Map<LatLng, List<MapPostModel>> {
+        val clusters = mutableListOf<MutableList<MapPostModel>>()
+        val radiusInMeters = 50.0
+
+        for (post in posts) {
+            var added = false
+            for (cluster in clusters) {
+                val centerLat = cluster.map { it.lat }.average()
+                val centerLng = cluster.map { it.lng }.average()
+                val results = FloatArray(1)
+                android.location.Location.distanceBetween(post.lat, post.lng, centerLat, centerLng, results)
+
+                if (results[0] <= radiusInMeters) {
+                    cluster.add(post)
+                    added = true
+                    break
+                }
+            }
+            if (!added) clusters.add(mutableListOf(post))
+        }
+
+        return clusters.associate { list ->
+            LatLng(list.map { it.lat }.average(), list.map { it.lng }.average()) to list
+        }
+    }
+
+    override fun initListener() {}
 }

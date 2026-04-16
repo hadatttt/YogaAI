@@ -149,7 +149,8 @@ class SequencesFragment : BaseFragment<FragmentSequencesBinding, SequencesViewMo
                     title = name,
                     level = level,
                     coverUrl = url,
-                    userId = userId
+                    userId = userId,
+                    isPublic = args.detailSequence!!.isPublic
                 )
             } else {
                 viewModel.saveSequence(name, level, url, userId)
@@ -222,7 +223,7 @@ class SequencesFragment : BaseFragment<FragmentSequencesBinding, SequencesViewMo
         }
 
         bindingDialog.apply {
-            npMinutes.minValue = 1
+            npMinutes.minValue = 0
             npMinutes.maxValue = 9
             npSeconds.minValue = 0
             npSeconds.maxValue = 59

@@ -5,8 +5,10 @@ import android.util.Log
 import android.view.View
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.core.os.LocaleListCompat
 import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
 import com.google.firebase.FirebaseApp
@@ -22,12 +24,15 @@ class MainActivity : AppCompatActivity() {
     companion object {
         val HOME_ITEM = R.id.homeFragment
         val PRACTICE_ITEM = R.id.workoutOverviewFragment
-        val HISTORY_ITEM = R.id.choosePoseFragment
+        val SEQUENCES_ITEM = R.id.communityMySequenceFragment
         val PROFILE_ITEM = R.id.profileFragment
-        val SOCIAL_ITEM = R.id.mapFragment
+        val MAP_ITEM = R.id.mapFragment
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        AppCompatDelegate.setApplicationLocales(
+            LocaleListCompat.forLanguageTags(AppPreferences.getLanguageCode(this))
+        )
         super.onCreate(savedInstanceState)
         FirebaseApp.initializeApp(applicationContext)
         Log.d("FCM", "Init OK")
@@ -58,31 +63,49 @@ class MainActivity : AppCompatActivity() {
         navController.graph = navGraph
     }
 
+    private var currentSelectedBottomItem = HOME_ITEM
+
     private fun setUpBottomNavigation() {
         val bottomNavigationItems = mutableListOf(
-            CurvedBottomNavigation.Model(SOCIAL_ITEM, "Social", R.drawable.ic_social),
-            CurvedBottomNavigation.Model(HISTORY_ITEM, "History", R.drawable.ic_history),
-            CurvedBottomNavigation.Model(HOME_ITEM, "Home", R.drawable.ic_home),
-            CurvedBottomNavigation.Model(PRACTICE_ITEM, "Sequences", R.drawable.ic_pratice),
-            CurvedBottomNavigation.Model(PROFILE_ITEM, "Profile", R.drawable.ic_my_profile)
+            CurvedBottomNavigation.Model(MAP_ITEM, getString(R.string.map), R.drawable.ic_social),
+            CurvedBottomNavigation.Model(PRACTICE_ITEM, getString(R.string.history), R.drawable.ic_history),
+            CurvedBottomNavigation.Model(HOME_ITEM, getString(R.string.home), R.drawable.ic_home),
+            CurvedBottomNavigation.Model(SEQUENCES_ITEM, getString(R.string.sequences), R.drawable.ic_pratice),
+            CurvedBottomNavigation.Model(PROFILE_ITEM, getString(R.string.profile), R.drawable.ic_my_profile)
         )
+
         bottomNavigation.apply {
             bottomNavigationItems.forEach { add(it) }
+
             setOnClickMenuListener { model ->
+                currentSelectedBottomItem = model.id
                 navigate(model.id)
             }
         }
+
         navController.addOnDestinationChangedListener { _, destination, _ ->
             val fragmentsToHideNavigation = setOf(
                 R.id.loginFragment,
                 R.id.singleYogaFragment,
                 R.id.yogaFragment
             )
+
             if (fragmentsToHideNavigation.contains(destination.id)) {
                 bottomNavigation.visibility = View.GONE
             } else {
                 bottomNavigation.visibility = View.VISIBLE
-                bottomNavigation.show(destination.id, true)
+
+                when (destination.id) {
+                    MAP_ITEM,
+                    PRACTICE_ITEM,
+                    HOME_ITEM,
+                    SEQUENCES_ITEM,
+                    PROFILE_ITEM -> {
+                        currentSelectedBottomItem = destination.id
+                    }
+                }
+
+                bottomNavigation.show(currentSelectedBottomItem, true)
             }
         }
     }

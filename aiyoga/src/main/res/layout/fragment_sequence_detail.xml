@@ -90,7 +90,7 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:fontFamily="@font/font_bold"
-                    android:text="Morning Yoga Flow"
+                    android:text="@string/sequence_name_placeholder"
                     android:textColor="@color/purple_500"
                     android:textSize="@dimen/_20sdp"
                     app:layout_constraintEnd_toEndOf="parent"
@@ -117,7 +117,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="@dimen/_4sdp"
-                        android:text="15 mins"
+                        android:text="@string/fifteen_mins"
                         android:textColor="@color/text_gray"
                         android:textSize="@dimen/_11sdp" />
 
@@ -134,7 +134,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="@dimen/_4sdp"
-                        android:text="12 Poses"
+                        android:text="@string/poses_12"
                         android:textColor="@color/text_gray"
                         android:textSize="@dimen/_11sdp" />
 
@@ -156,7 +156,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginStart="@dimen/_3sdp"
                         android:fontFamily="@font/font_bold"
-                        android:text="1.2k"
+                        android:text="0"
                         android:textColor="@color/text_gray"
                         android:textSize="@dimen/_10sp" />
 
@@ -175,7 +175,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginStart="@dimen/_3sdp"
                         android:fontFamily="@font/font_bold"
-                        android:text="4.5k"
+                        android:text="0"
                         android:textColor="@color/text_gray"
                         android:textSize="@dimen/_10sp" />
             </LinearLayout>
@@ -194,7 +194,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="@dimen/_15sdp"
                     android:fontFamily="@font/font_bold"
-                    android:text="Pose List"
+                    android:text="@string/pose_list"
                     android:textColor="@color/purple_500"
                     android:textSize="@dimen/_14sdp"
                     app:layout_constraintStart_toStartOf="parent"
@@ -222,7 +222,7 @@
             android:layout_marginBottom="@dimen/_16sdp"
             android:background="@drawable/bg_btn_create"
             android:fontFamily="@font/font_bold"
-            android:text="Start Workout"
+            android:text="@string/start_workout"
             android:textAllCaps="false"
             android:textColor="@android:color/white"
             android:textSize="@dimen/_16sdp"

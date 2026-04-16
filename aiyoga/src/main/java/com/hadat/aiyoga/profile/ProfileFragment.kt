@@ -5,6 +5,9 @@ import android.net.Uri
 import android.os.Build
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AppCompatDelegate
+import androidx.core.os.LocaleListCompat
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.timepicker.MaterialTimePicker
 import com.google.android.material.timepicker.TimeFormat
 import com.hadat.aiyoga.R
@@ -44,6 +47,7 @@ class ProfileFragment : BaseFragment<FragmentProfileBinding, ProfileViewModel>()
     override fun initView() {
         reminderTime = AppPreferences.getNotificationTime(requireContext())
         binding.tvNotificationTime.text = reminderTime
+        renderLanguage()
     }
 
     override fun initData() {
@@ -59,7 +63,7 @@ class ProfileFragment : BaseFragment<FragmentProfileBinding, ProfileViewModel>()
 
         viewModel.saveStatus.observe(viewLifecycleOwner) { ok ->
             if (ok == null) return@observe
-            showToast(if (ok) "Profile updated" else "Update failed")
+            showToast(if (ok) getString(R.string.profile_updated) else getString(R.string.update_failed))
             viewModel.resetSaveStatus()
         }
     }
@@ -68,6 +72,7 @@ class ProfileFragment : BaseFragment<FragmentProfileBinding, ProfileViewModel>()
         binding.ivBack.singleClick { popBackStack() }
         binding.ivEditAvatar.singleClick { pickImageLauncher.launch("image/*") }
         binding.layoutNotificationTime.singleClick { showTimePicker() }
+        binding.layoutLanguage.singleClick { showLanguagePicker() }
 
         binding.ivSave.singleClick {
             NotificationHelper.checkPermission(this, onGranted = {
@@ -94,7 +99,7 @@ class ProfileFragment : BaseFragment<FragmentProfileBinding, ProfileViewModel>()
             .setTimeFormat(TimeFormat.CLOCK_24H)
             .setHour(currentHour)
             .setMinute(currentMinute)
-            .setTitleText("Select Reminder Time")
+            .setTitleText(getString(R.string.select_reminder_time))
             .setTheme(R.style.CustomTimePickerTheme)
             .build()
 
@@ -109,7 +114,7 @@ class ProfileFragment : BaseFragment<FragmentProfileBinding, ProfileViewModel>()
         val userId = AppPreferences.getUserId(requireContext()) ?: return
         val newName = binding.edtDisplayName.text?.toString()?.trim().orEmpty().removeVietnameseAccents()
         if (newName.isBlank()) {
-            showToast("Name cannot be empty")
+            showToast(getString(R.string.name_cannot_be_empty))
             return
         }
 
@@ -124,6 +129,36 @@ class ProfileFragment : BaseFragment<FragmentProfileBinding, ProfileViewModel>()
                 onError = { showToast(it) }
             )
         } ?: viewModel.updateProfile(userId, newName, currentPhotoUrl)
+    }
+
+    private fun showLanguagePicker() {
+        val currentLanguage = AppPreferences.getLanguageCode(requireContext())
+        val languageCodes = arrayOf("en", "vi")
+        val languageLabels = arrayOf(
+            getString(R.string.english),
+            getString(R.string.vietnamese)
+        )
+        val checkedIndex = languageCodes.indexOf(currentLanguage).coerceAtLeast(0)
+
+        MaterialAlertDialogBuilder(requireContext())
+            .setTitle(getString(R.string.select_language))
+            .setSingleChoiceItems(languageLabels, checkedIndex) { dialog, which ->
+                val selectedCode = languageCodes[which]
+                AppPreferences.setLanguageCode(requireContext(), selectedCode)
+                AppCompatDelegate.setApplicationLocales(LocaleListCompat.forLanguageTags(selectedCode))
+                renderLanguage()
+                dialog.dismiss()
+                requireActivity().recreate()
+            }
+            .setNegativeButton(getString(R.string.title_cancel), null)
+            .show()
+    }
+
+    private fun renderLanguage() {
+        binding.tvLanguageValue.text = when (AppPreferences.getLanguageCode(requireContext())) {
+            "vi" -> getString(R.string.vietnamese)
+            else -> getString(R.string.english)
+        }
     }
 
     private fun showToast(message: String) {

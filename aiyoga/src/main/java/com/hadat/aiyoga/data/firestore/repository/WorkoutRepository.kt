@@ -9,8 +9,11 @@ import kotlinx.coroutines.withContext
 
 class WorkoutRepository {
     private val db = FirebaseFirestore.getInstance()
-    private val workoutCollection = db.collection("workout_results")
+    private val workoutCollection = db.collection(COLLECTION_WORKOUT_RESULTS)
 
+    companion object {
+        private const val COLLECTION_WORKOUT_RESULTS = "workout_results"
+    }
 
     suspend fun saveWorkoutResult(result: WorkoutResultModel): Boolean = withContext(Dispatchers.IO) {
         return@withContext try {
@@ -44,6 +47,7 @@ class WorkoutRepository {
                 .await()
                 .toObjects(WorkoutResultModel::class.java)
         } catch (e: Exception) {
+            e.printStackTrace()
             emptyList()
         }
     }
@@ -59,6 +63,7 @@ class WorkoutRepository {
                 .await()
                 .toObjects(WorkoutResultModel::class.java)
         } catch (e: Exception) {
+            e.printStackTrace()
             emptyList()
         }
     }

@@ -40,7 +40,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="6dp"
-                    android:text="English"
+                    android:text="@string/english"
                     android:textColor="@color/white"
                     android:textSize="11sp"
                     android:textStyle="bold" />
@@ -65,7 +65,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
                 android:letterSpacing="0.2"
-                android:text="YOGA AI"
+                android:text="@string/login_title"
                 android:textColor="@color/white"
                 android:textSize="36sp"
                 android:textStyle="bold" />

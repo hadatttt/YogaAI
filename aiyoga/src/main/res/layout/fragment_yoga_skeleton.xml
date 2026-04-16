@@ -65,7 +65,7 @@
                 android:layout_height="wrap_content"
                 android:paddingHorizontal="@dimen/_20sdp"
                 android:paddingVertical="@dimen/_8sdp"
-                android:text="Hãy đứng lùi lại để thấy toàn thân"
+                android:text="@string/stand_back_full_body"
                 android:textColor="@color/white"
                 android:textSize="@dimen/_12ssp"
                 android:fontFamily="sans-serif-medium"

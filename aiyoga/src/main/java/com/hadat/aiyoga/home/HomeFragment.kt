@@ -22,7 +22,7 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
                 val bundle = Bundle().apply {
                     putParcelable("detail_sequence", sequence)
                 }
-                navigate(R.id.detailSequenceFragment,bundle, isPop = true)
+                navigate(R.id.detailSequenceFragment,bundle)
             }
         )
     }
@@ -52,6 +52,11 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
     }
 
     override fun initListener() {
+        binding.tvViewAll.singleClick {
+            val bundle = Bundle().apply { putInt("initial_tab", 1) }
+            navigate(R.id.communityMySequenceFragment, bundle)
+        }
+
         binding.cvTodayPick.singleClick {
             viewModel.todayPickPose.value?.let { pose ->
                 val bundle = Bundle().apply { putParcelable("yogaPoseItem", pose) }

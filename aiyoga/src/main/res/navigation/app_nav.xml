@@ -39,6 +39,16 @@
             android:name="com.hadat.aiyoga.singlemode.SingleModeFragment"
             android:label="SingleModeFragment" />
     <fragment
+            android:id="@+id/multiModeYogaFragment"
+            android:name="com.hadat.aiyoga.multimodeyoga.MultiModeYogaFragment"
+            android:label="MultiModeYogaFragment" >
+        <argument
+                android:name="detail_sequence"
+                app:argType="com.hadat.aiyoga.sequence.WorkoutSequenceModel"
+                app:nullable="true"
+                android:defaultValue="@null" />
+    </fragment>
+    <fragment
             android:id="@+id/choosePoseFragment"
             android:name="com.hadat.aiyoga.createposes.ChoosePoseFragment"
             android:label="ChoosePoseFragment" />
@@ -102,6 +112,21 @@
             android:id="@+id/communityFragment"
             android:name="com.hadat.aiyoga.community.CommunityFragment"
             android:label="CommunityFragment" />
+
+    <fragment
+            android:id="@+id/communityMySequenceFragment"
+            android:name="com.hadat.aiyoga.community_mysequence.CommunityMySequenceFragment"
+            android:label="CommunityMySequenceFragment" >
+        <argument
+                android:name="initial_tab"
+                app:argType="integer"
+                android:defaultValue="0" />
+    </fragment>
+
+    <fragment
+            android:id="@+id/mySequenceFragment"
+            android:name="com.hadat.aiyoga.mysequence.MySequenceFragment"
+            android:label="MySequenceFragment" />
 
     <fragment
             android:id="@+id/profileFragment"

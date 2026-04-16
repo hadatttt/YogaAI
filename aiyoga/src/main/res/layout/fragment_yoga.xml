@@ -76,7 +76,7 @@
                 android:letterSpacing="0.02"
                 android:paddingHorizontal="@dimen/_20sdp"
                 android:paddingVertical="@dimen/_8sdp"
-                android:text="Hãy đứng lùi lại để thấy toàn thân"
+                android:text="@string/stand_back_full_body"
                 android:textColor="@color/primary"
                 android:textSize="@dimen/_12ssp" />
     </com.google.android.material.card.MaterialCardView>
@@ -89,7 +89,7 @@
             android:letterSpacing="0.02"
             android:paddingHorizontal="@dimen/_20sdp"
             android:paddingVertical="@dimen/_8sdp"
-            android:text="Hãy đứng lùi lại để thấy toàn thân"
+            android:text="@string/stand_back_full_body"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             android:textColor="@color/primary"
@@ -130,7 +130,7 @@
                         android:id="@+id/tv_timer"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="00:00"
+                        android:text="@string/timer_placeholder"
                         android:textColor="#FF956FF9"
                         android:textSize="@dimen/_14ssp"
                         android:textStyle="bold"
