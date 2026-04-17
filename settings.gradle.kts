@@ -24,5 +24,5 @@ dependencyResolutionManagement {
 rootProject.name = "YogaAI"
 include(":aiyoga")
 include(":base")
-include(":dailycheckin")
-include(":slotmachinegame")
+//include(":dailycheckin")
+//include(":slotmachinegame")

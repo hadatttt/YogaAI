@@ -114,8 +114,10 @@ object YogaDataUtils {
             if (task.isSuccessful) {
                 val json = remoteConfig.getString(CONFIG_DETAIL_KEY)
                 if (json.isNotEmpty()) {
-                    val detailMap = parseDetailMapJson(json)
-                    val detail = detailMap?.get(id.toString())
+                    // Sửa chỗ này: Parse thành List thay vì Map
+                    val detailList = parseDetailListJson(json)
+                    // Tìm kiếm tư thế có ID trùng với ID truyền vào
+                    val detail = detailList?.find { it.id == id }
                     onResult(detail)
                 } else {
                     Log.e(TAG, "Nội dung Key '$CONFIG_DETAIL_KEY' bị trống")
@@ -124,6 +126,16 @@ object YogaDataUtils {
             } else {
                 onResult(null)
             }
+        }
+    }
+
+    private fun parseDetailListJson(json: String): List<YogaPoseDetailModel>? {
+        return try {
+            val listType = object : TypeToken<List<YogaPoseDetailModel>>() {}.type
+            gson.fromJson<List<YogaPoseDetailModel>>(json, listType)
+        } catch (e: Exception) {
+            Log.e(TAG, "❌ Lỗi Parse Detail List GSON: ${e.message}")
+            null
         }
     }
 

@@ -60,8 +60,8 @@ android {
 
 dependencies {
     implementation(project(":base"))
-    implementation(project(":dailycheckin"))
-    implementation(project(":slotmachinegame"))
+//    implementation(project(":dailycheckin"))
+//    implementation(project(":slotmachinegame"))
     implementation("com.airbnb.android:lottie:6.0.0")
 
     // Android Core
