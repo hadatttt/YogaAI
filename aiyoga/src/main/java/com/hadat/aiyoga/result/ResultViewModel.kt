@@ -42,26 +42,28 @@ class ResultViewModel: BaseViewModel() {
         }
     }
 
+    // ResultViewModel.kt
+
     fun sharePlace(
         context: Context,
         userId: String,
         userName: String,
         userAvatar: String,
         description: String,
-        imageUris: List<String>,
+        imageUri: String, // Đã đổi thành 1 String duy nhất
         lat: Double,
-        lng: Double,
-        workout: WorkoutResultModel?
+        lng: Double
     ) {
-        if (userId.isBlank() || imageUris.isEmpty()) {
+        if (userId.isBlank() || imageUri.isBlank()) {
             shareStatus.value = false
             return
         }
 
         shareLoading.value = true
         viewModelScope.launch {
-            val uploaded = uploadAll(context, imageUris.map { Uri.parse(it) })
-            if (uploaded.isEmpty()) {
+            val uploadedUrl = uploadOne(context, Uri.parse(imageUri))
+
+            if (uploadedUrl == null) {
                 shareLoading.postValue(false)
                 shareStatus.postValue(false)
                 return@launch
@@ -72,12 +74,9 @@ class ResultViewModel: BaseViewModel() {
                 userName = userName,
                 userAvatar = userAvatar,
                 description = description,
-                imageUrls = uploaded,
+                imageUrls = uploadedUrl, // String URL từ Cloudinary
                 lat = lat,
                 lng = lng,
-                placeName = "",
-                workoutId = "${workout?.poseId ?: 0}_${workout?.date.orEmpty()}",
-                workoutTitle = workout?.poseName.orEmpty(),
                 createdAt = null
             )
 
@@ -86,7 +85,6 @@ class ResultViewModel: BaseViewModel() {
             shareStatus.postValue(ok)
         }
     }
-
     fun resetShareStatus() {
         shareStatus.value = null
     }

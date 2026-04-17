@@ -84,7 +84,14 @@ class SequencesViewModel : BaseViewModel() {
             }
         }
     }
-    fun updateSequence(id: String, title: String, level: Int, coverUrl: String, userId: String) {
+    fun updateSequence(
+        id: String,
+        title: String,
+        level: Int,
+        coverUrl: String,
+        userId: String,
+        isPublic: Boolean
+    ) {
         val currentPoses = sequenceList.value ?: emptyList()
 
         val totalSeconds = currentPoses.sumOf {
@@ -101,7 +108,7 @@ class SequencesViewModel : BaseViewModel() {
             coverImageUrl = coverUrl,
             totalDuration = String.format("%02d:%02d", totalSeconds / 60, totalSeconds % 60),
             level = level,
-            isPublic = true,
+            isPublic = isPublic,
             poses = currentPoses,
             createdAt = null
         )

@@ -36,16 +36,22 @@ class CommunityViewModel : BaseViewModel() {
         loading.value = true
         viewModelScope.launch {
             val list = when (category) {
-                CommunityCategory.LATEST -> sequenceRepository.getAllSequences()
-                CommunityCategory.TOP_LIKED -> sequenceRepository.getTopLikedSequences(limit = 50)
-                CommunityCategory.TOP_VIEWED -> sequenceRepository.getTrendingSequences(limit = 50)
+                CommunityCategory.LATEST -> sequenceRepository.getCommunitySequences(excludeUserId = userId)
+                CommunityCategory.TOP_LIKED -> sequenceRepository.getTopLikedCommunitySequences(
+                    excludeUserId = userId,
+                    limit = 50
+                )
+                CommunityCategory.TOP_VIEWED -> sequenceRepository.getTrendingCommunitySequences(
+                    excludeUserId = userId,
+                    limit = 50
+                )
                 CommunityCategory.LIKED_BY_ME -> {
                     if (userId.isBlank() || userId == "guest") {
                         emptyList()
                     } else {
                         val likedIds = likeRepository.getLikedSequenceIds(userId).toSet()
                         if (likedIds.isEmpty()) emptyList()
-                        else sequenceRepository.getAllSequences().filter { it.id in likedIds }
+                        else sequenceRepository.getCommunitySequences(excludeUserId = userId).filter { it.id in likedIds }
                     }
                 }
             }

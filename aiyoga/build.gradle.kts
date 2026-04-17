@@ -52,16 +52,16 @@ android {
 
     packaging {
         resources {
-            excludes.add("lib/**/libtensorflowlite_gpu_jni.so")
             pickFirsts.add("lib/**/libtensorflowlite_jni.so")
+            pickFirsts.add("lib/**/libtensorflowlite_gpu_jni.so")
         }
     }
 }
 
 dependencies {
     implementation(project(":base"))
-    implementation(project(":dailycheckin"))
-    implementation(project(":slotmachinegame"))
+//    implementation(project(":dailycheckin"))
+//    implementation(project(":slotmachinegame"))
     implementation("com.airbnb.android:lottie:6.0.0")
 
     // Android Core
@@ -112,9 +112,12 @@ dependencies {
     implementation("androidx.camera:camera-view:$cameraxVersion")
 
     val tfliteVersion = "2.14.0"
+
     implementation("org.tensorflow:tensorflow-lite:$tfliteVersion")
     implementation("org.tensorflow:tensorflow-lite-support:0.4.4")
     implementation("org.tensorflow:tensorflow-lite-metadata:0.4.4")
+    implementation("org.tensorflow:tensorflow-lite-gpu:$tfliteVersion")
+    implementation("org.tensorflow:tensorflow-lite-gpu-api:$tfliteVersion")
 
     // MediaPipe (Dùng để lấy Pose Landmarks)
     implementation("com.google.mediapipe:tasks-vision:0.10.14")
@@ -135,4 +138,9 @@ dependencies {
     implementation("com.mikhaellopez:circularprogressbar:3.1.0")
     //cloudiary
     implementation("com.cloudinary:cloudinary-android:2.3.1")
+    //char
+    implementation("com.github.PhilJay:MPAndroidChart:v3.1.0")
+    implementation("androidx.viewpager2:viewpager2:1.1.0")
+
+    implementation("com.tbuonomo:dotsindicator:4.3")
 }

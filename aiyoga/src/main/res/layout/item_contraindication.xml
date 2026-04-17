@@ -24,7 +24,7 @@
             android:id="@+id/tv_contra_title"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Cảnh báo chấn thương"
+            android:text="@string/injury_warning"
             android:textColor="#FFBF00"
             android:textSize="@dimen/_14sp"
             android:fontFamily="@font/font_bold" />
@@ -33,7 +33,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="@dimen/_2sdp"
-        android:text="Tránh tập nếu bạn đang bị đau hoặc có chấn thương vùng cổ."
+        android:text="@string/injury_warning_desc"
         android:textColor="#666666"
         android:textSize="@dimen/_12sp"
         android:fontFamily="sans-serif" />

@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:background="@drawable/bg_round_map"
+        android:orientation="vertical"
+        android:paddingBottom="@dimen/_24sdp">
+
+    <View
+            android:layout_width="@dimen/_40sdp"
+            android:layout_height="5dp"
+            android:layout_gravity="center"
+            android:background="#E0E0E0" />
+
+    <TextView
+            android:layout_marginTop="@dimen/_5sdp"
+            android:id="@+id/tvLocationTitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingHorizontal="20dp"
+            android:text="Yoga Spots Nearby"
+            android:fontFamily="@font/font_bold"
+            android:textSize="20sp"
+            android:textColor="@color/text_gray" />
+
+    <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rvMarkerPosts"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:clipToPadding="false"
+            android:orientation="horizontal"
+            tools:listitem="@layout/item_map_post"
+            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
+
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingHorizontal="20dp"
+            android:orientation="horizontal">
+
+        <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnDirection"
+                android:layout_width="0dp"
+                android:layout_height="@dimen/_50sdp"
+                android:layout_weight="1"
+                android:layout_marginEnd="10dp"
+                android:text="Direction"
+                android:textAllCaps="false"
+                android:fontFamily="@font/font_bold"
+                android:background="@drawable/bg_today_pick"
+                app:backgroundTint="@null"
+                app:cornerRadius="15dp"
+                app:icon="@drawable/ic_map_pin_drop"
+                app:iconGravity="textStart"
+                app:iconPadding="8dp"
+                app:iconSize="@dimen/_18sdp"
+                android:textColor="@color/white" />
+
+        <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnShare"
+                android:layout_width="0dp"
+                android:layout_height="@dimen/_50sdp"
+                android:layout_weight="1"
+                android:text="Share Spot"
+                android:textAllCaps="false"
+                android:fontFamily="@font/font_bold"
+                android:background="@drawable/bg_today_pick"
+                app:backgroundTint="@null"
+                app:cornerRadius="15dp"
+                app:icon="@drawable/ic_share"
+                app:iconGravity="textStart"
+                app:iconPadding="8dp"
+                app:iconSize="@dimen/_18sdp"
+                android:textColor="@color/white" />
+    </LinearLayout>
+</LinearLayout>

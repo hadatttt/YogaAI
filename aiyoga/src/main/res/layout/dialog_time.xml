@@ -18,7 +18,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:fontFamily="@font/font_bold"
-                android:text="Set Duration"
+                android:text="@string/set_duration"
                 android:textColor="@color/text_gray"
                 android:textSize="@dimen/_18ssp"
                 app:layout_constraintEnd_toEndOf="parent"
@@ -76,7 +76,7 @@
             android:layout_marginTop="@dimen/_24sdp"
             android:background="@drawable/bg_btn_create"
             android:fontFamily="@font/font_bold"
-            android:text="Confirm"
+            android:text="@string/confirm"
             android:textAllCaps="false"
             android:textColor="@color/white"
             android:textSize="@dimen/_14ssp" />

@@ -44,7 +44,7 @@
                     android:fontFamily="@font/font_bold"
                     android:gravity="center"
                     android:layout_marginHorizontal="@dimen/_2sdp"
-                    android:text="Easy"
+                    android:text="@string/easy"
                     android:textColor="@color/white"
                     android:textSize="@dimen/_9sdp" />
         </androidx.appcompat.widget.LinearLayoutCompat>
@@ -70,7 +70,7 @@
                 android:fontFamily="@font/font_bold"
                 android:gravity="center"
                 android:maxLines="2"
-                android:text="adasdasdsaasda"
+                android:text="@string/pose_name"
                 android:textColor="#808080"
                 android:textSize="@dimen/_12sdp"
                 app:layout_constraintBottom_toBottomOf="parent"

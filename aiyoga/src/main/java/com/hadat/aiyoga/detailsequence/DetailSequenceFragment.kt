@@ -1,12 +1,14 @@
 package com.hadat.aiyoga.detailsequence
 
 import android.os.Bundle
+import android.view.View
 import androidx.navigation.fragment.navArgs
 import com.hadat.aiyoga.R
 import com.hadat.aiyoga.databinding.FragmentSequenceDetailBinding
 import com.hadat.aiyoga.utils.loadImageFromNetwork
 import hoang.dqm.codebase.base.activity.BaseFragment
 import hoang.dqm.codebase.base.activity.navigate
+import hoang.dqm.codebase.base.activity.onBackPressed
 import hoang.dqm.codebase.base.activity.popBackStack
 import hoang.dqm.codebase.utils.singleClick
 
@@ -23,6 +25,7 @@ class DetailSequenceFragment : BaseFragment<FragmentSequenceDetailBinding, Detai
     override fun initData() {
         args.detailSequence?.let {
             viewModel.setDetailData(it)
+            viewModel.refreshSequence()
         }
     }
 
@@ -41,6 +44,15 @@ class DetailSequenceFragment : BaseFragment<FragmentSequenceDetailBinding, Detai
             popBackStack()
         }
 
+        binding.ivVisibility.singleClick {
+            val current = viewModel.sequenceData.value ?: return@singleClick
+            if (viewModel.visibilityUpdating.value == true) return@singleClick
+            viewModel.setIsPublic(!current.isPublic)
+        }
+        onBackPressed {
+            popBackStack()
+        }
+
         viewModel.sequenceData.observe(viewLifecycleOwner) { sequence ->
             binding.apply {
                 tvDetailName.text = sequence.title
@@ -54,10 +66,23 @@ class DetailSequenceFragment : BaseFragment<FragmentSequenceDetailBinding, Detai
                 ivVisibility.setImageResource(
                     if (sequence.isPublic) R.drawable.ic_public else R.drawable.ic_lock
                 )
+                tvLikeCount.text = sequence.likeCount.toString()
+                tvViewCount.text = sequence.viewCount.toString()
+
+                val showStats = sequence.isPublic
+                ivLike.visibility = if (showStats) View.VISIBLE else View.GONE
+                tvLikeCount.visibility = if (showStats) View.VISIBLE else View.GONE
+                ivView.visibility = if (showStats) View.VISIBLE else View.GONE
+                tvViewCount.visibility = if (showStats) View.VISIBLE else View.GONE
             }
         }
 
         binding.btnStartWorkout.singleClick {
+            val sequence = viewModel.sequenceData.value ?: return@singleClick
+            val bundle = Bundle().apply {
+                putParcelable("detail_sequence", sequence)
+            }
+            navigate(R.id.multiModeYogaFragment, bundle)
         }
     }
 

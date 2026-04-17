@@ -49,7 +49,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:fontFamily="@font/font_bold"
-                    android:text="Yogi Buddy"
+                    android:text="@string/yogi_buddy"
                     android:textColor="@color/primary"
                     android:textSize="@dimen/_17sdp"
                     android:textStyle="bold" />
@@ -57,7 +57,7 @@
             <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="● AI Yoga Expert"
+                    android:text="@string/ai_yoga_expert"
                     android:textColor="#4CAF50"
                     android:textSize="@dimen/_9sdp" />
         </LinearLayout>
@@ -78,7 +78,7 @@
         <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="How can I help you today?"
+                android:text="@string/chatbot_hint"
                 android:textColor="#B0B0C3"
                 android:textSize="@dimen/_14sdp"
                 android:layout_marginBottom="@dimen/_15sdp"

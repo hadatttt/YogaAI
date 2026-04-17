@@ -64,7 +64,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="@dimen/_4sdp"
-                    android:text="00:00"
+                    android:text="@string/timer_placeholder"
                     android:textColor="@color/white"
                     android:textSize="@dimen/_16ssp"
                     android:textStyle="bold" />
@@ -103,6 +103,23 @@
                 android:layout_height="match_parent"
                 android:scaleType="centerCrop" />
     </com.google.android.material.card.MaterialCardView>
+    <TextView
+            android:id="@+id/tv_yoga_name"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/_4sdp"
+            android:textColor="@color/white"
+            android:textSize="@dimen/_10ssp"
+            android:textStyle="bold"
+            android:gravity="center"
+            android:text="@string/pose_name"
+            android:shadowColor="@color/primary"
+            android:shadowDx="2"
+            android:shadowDy="2"
+            android:shadowRadius="2"
+            app:layout_constraintTop_toBottomOf="@id/card_preview"
+            app:layout_constraintStart_toStartOf="@id/card_preview"
+            app:layout_constraintEnd_toEndOf="@id/card_preview" />
 
     <com.google.android.material.card.MaterialCardView
             android:id="@+id/card_guide"
@@ -127,7 +144,7 @@
                 android:letterSpacing="0.01"
                 android:paddingHorizontal="@dimen/_15sdp"
                 android:paddingVertical="@dimen/_12sdp"
-                android:text="Hãy đứng lùi lại để thấy toàn thân"
+                android:text="@string/stand_back_full_body"
                 android:textColor="@color/primary"
                 android:textSize="@dimen/_12ssp" />
     </com.google.android.material.card.MaterialCardView>

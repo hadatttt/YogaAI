@@ -9,8 +9,11 @@ import kotlinx.coroutines.withContext
 
 class WorkoutRepository {
     private val db = FirebaseFirestore.getInstance()
-    private val workoutCollection = db.collection("workout_results")
+    private val workoutCollection = db.collection(COLLECTION_WORKOUT_RESULTS)
 
+    companion object {
+        private const val COLLECTION_WORKOUT_RESULTS = "workout_results"
+    }
 
     suspend fun saveWorkoutResult(result: WorkoutResultModel): Boolean = withContext(Dispatchers.IO) {
         return@withContext try {
@@ -25,7 +28,7 @@ class WorkoutRepository {
         return@withContext try {
             workoutCollection
                 .whereEqualTo("userId", userId)
-                .orderBy("timestamp", Query.Direction.DESCENDING)
+                .orderBy("workoutTimestamp", Query.Direction.DESCENDING)
                 .get()
                 .await()
                 .toObjects(WorkoutResultModel::class.java)
@@ -39,11 +42,28 @@ class WorkoutRepository {
             workoutCollection
                 .whereEqualTo("userId", userId)
                 .whereEqualTo("poseId", poseId)
-                .orderBy("timestamp", Query.Direction.DESCENDING)
+                .orderBy("workoutTimestamp", Query.Direction.DESCENDING)
                 .get()
                 .await()
                 .toObjects(WorkoutResultModel::class.java)
         } catch (e: Exception) {
+            e.printStackTrace()
+            emptyList()
+        }
+    }
+
+    suspend fun getHistoryInRange(userId: String, fromMillis: Long, toMillis: Long): List<WorkoutResultModel> = withContext(Dispatchers.IO) {
+        return@withContext try {
+            workoutCollection
+                .whereEqualTo("userId", userId)
+                .whereGreaterThanOrEqualTo("workoutTimestamp", fromMillis)
+                .whereLessThanOrEqualTo("workoutTimestamp", toMillis)
+                .orderBy("workoutTimestamp", Query.Direction.DESCENDING)
+                .get()
+                .await()
+                .toObjects(WorkoutResultModel::class.java)
+        } catch (e: Exception) {
+            e.printStackTrace()
             emptyList()
         }
     }

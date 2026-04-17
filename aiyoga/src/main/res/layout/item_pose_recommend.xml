@@ -35,7 +35,7 @@
             android:fontFamily="@font/font_bold"
             android:gravity="center"
             android:maxLines="2"
-            android:text="Tree Pose"
+            android:text="@string/tree_pose"
             android:textColor="@color/text_gray"
             android:textSize="@dimen/_9sdp"
             app:layout_constraintEnd_toEndOf="@id/card"

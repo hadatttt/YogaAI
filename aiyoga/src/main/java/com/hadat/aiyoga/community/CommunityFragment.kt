@@ -54,6 +54,12 @@ class CommunityFragment : BaseFragment<FragmentCommunityBinding, CommunityViewMo
         viewModel.fetchSequences(userId = userId)
     }
 
+    override fun onResume() {
+        super.onResume()
+        val userId = AppPreferences.getUserId(requireContext()) ?: "guest"
+        viewModel.fetchSequences(userId = userId)
+    }
+
     override fun initListener() {
         binding.ivBack.singleClick { popBackStack() }
 

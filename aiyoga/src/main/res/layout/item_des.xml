@@ -24,7 +24,7 @@
                 android:id="@+id/tv_benefit_title"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Overview"
+                android:text="@string/overview"
                 android:textColor="@color/primary"
                 android:textSize="@dimen/_16sp"
                 android:fontFamily="@font/font_bold" />
@@ -34,7 +34,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="@dimen/_6sdp"
-                android:text="This pose resembles an archer about to release an arrow. It is a powerful seated posture that focuses on building extreme focus and deep hip flexibility."
+                android:text="@string/overview_desc"
                 android:textColor="#7A7A7A"
                 android:textSize="@dimen/_14sp"
                 android:fontFamily="sans-serif"

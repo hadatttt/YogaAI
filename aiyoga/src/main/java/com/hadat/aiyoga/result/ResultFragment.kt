@@ -50,15 +50,20 @@ class ResultFragment : BaseFragment<FragmentResultBinding, ResultViewModel>() {
     }
 
     override fun initData() {
-        args.workoutResultList?.firstOrNull()?.let { bindWorkoutData(it) }
+        val resultList = args.workoutResultList?.toList().orEmpty()
+        if (resultList.isNotEmpty()) {
+            bindWorkoutSummary(resultList)
+            historyAdapter.setList(resultList)
+            val mergedImages = resultList.flatMap { it.capturedImages }.distinct()
+            capturedAdapter.setList(mergedImages)
+        }
 
         val userId = AppPreferences.getUserId(requireContext()) ?: "guest"
         viewModel.fetchWorkoutHistory(userId)
         viewModel.loadCurrentUser(userId)
-        viewModel.workoutHistory.observe(viewLifecycleOwner) { historyAdapter.setList(it) }
-
-        val captured = args.workoutResultList?.firstOrNull()?.capturedImages.orEmpty()
-        capturedAdapter.setList(captured)
+        viewModel.workoutHistory.observe(viewLifecycleOwner) {
+            if (resultList.isEmpty()) historyAdapter.setList(it)
+        }
 
         fetchLastLocation()
 
@@ -69,10 +74,12 @@ class ResultFragment : BaseFragment<FragmentResultBinding, ResultViewModel>() {
         }
     }
 
-    private fun bindWorkoutData(data: WorkoutResultModel) {
+    private fun bindWorkoutSummary(list: List<WorkoutResultModel>) {
         val animationDuration = 1500L
+        val totalSeconds = list.sumOf { it.durationInSeconds }
+        val totalError = list.sumOf { it.errorCount }
 
-        val caloriesBurned = data.durationInSeconds * 0.15f
+        val caloriesBurned = totalSeconds * 0.15f
         val maxCaloriesGoal = 30f
         binding.progressCalories.apply {
             progressMax = maxCaloriesGoal
@@ -84,11 +91,11 @@ class ResultFragment : BaseFragment<FragmentResultBinding, ResultViewModel>() {
         val targetSeconds = 60f
         binding.progressTime.apply {
             progressMax = targetSeconds
-            setProgressWithAnimation(data.durationInSeconds.toFloat(), animationDuration)
+            setProgressWithAnimation(totalSeconds.toFloat(), animationDuration)
         }
-        binding.tvTimeValue.text = "${data.durationInSeconds}s"
+        binding.tvTimeValue.text = "${totalSeconds}s"
 
-        val accuracyPercent = (100f - (data.errorCount * 5f)).coerceIn(10f, 100f)
+        val accuracyPercent = (100f - (totalError * 5f)).coerceIn(10f, 100f)
         binding.progressAccuracy.apply {
             progressMax = 100f
             progressBarColor = when {
@@ -101,10 +108,15 @@ class ResultFragment : BaseFragment<FragmentResultBinding, ResultViewModel>() {
         binding.tvAccuracyValue.text = "${accuracyPercent.toInt()}%"
     }
 
+
     private fun openShareDialog() {
-        val captured = args.workoutResultList?.firstOrNull()?.capturedImages.orEmpty()
+        val captured = args.workoutResultList?.toList().orEmpty()
+            .flatMap { it.capturedImages }
+            .filter { it.isNotBlank() }
+            .distinct()
+
         if (captured.isEmpty()) {
-            showToast("No photos available to share")
+            showToast("Không có ảnh để chia sẻ")
             return
         }
 
@@ -112,22 +124,31 @@ class ResultFragment : BaseFragment<FragmentResultBinding, ResultViewModel>() {
         val dialog = android.app.Dialog(requireContext()).apply {
             setContentView(dialogBinding.root)
             window?.setBackgroundDrawable(android.graphics.drawable.ColorDrawable(android.graphics.Color.TRANSPARENT))
-            window?.setLayout((resources.displayMetrics.widthPixels * 0.85).toInt(), android.view.ViewGroup.LayoutParams.WRAP_CONTENT)
+            window?.setLayout(
+                (resources.displayMetrics.widthPixels * 0.9).toInt(),
+                android.view.ViewGroup.LayoutParams.WRAP_CONTENT
+            )
         }
 
-        val selectableAdapter = CapturedImagesAdapter(selectable = true)
+        val selectableAdapter = CapturedImagesAdapter(
+            selectable = true,
+            onSelectionChanged = { selectedList ->
+            }
+        ).apply {
+            setList(captured)
+            setSelected(listOf(captured.first()))
+        }
+
         dialogBinding.rvImages.apply {
             layoutManager = LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
             adapter = selectableAdapter
         }
-        selectableAdapter.setList(captured)
-        selectableAdapter.setSelected(listOf(captured.first()))
 
         updateLocationStatus(dialogBinding)
 
         dialogBinding.btnCancel.singleClick { dialog.dismiss() }
+
         dialogBinding.btnShare.singleClick {
-            val userId = AppPreferences.getUserId(requireContext()) ?: "guest"
             val lat = lastLat
             val lng = lastLng
             if (lat == null || lng == null) {
@@ -137,24 +158,26 @@ class ResultFragment : BaseFragment<FragmentResultBinding, ResultViewModel>() {
                         android.Manifest.permission.ACCESS_COARSE_LOCATION
                     )
                 )
+                showToast("Vui lòng cấp quyền vị trí để chia sẻ bài tập!")
                 updateLocationStatus(dialogBinding)
                 return@singleClick
             }
-
+            val selectedImage = selectableAdapter.getSelected().firstOrNull()
+            if (selectedImage == null) {
+                showToast("Vui lòng chọn một tấm ảnh đẹp nhất!")
+                return@singleClick
+            }
+            val userId = AppPreferences.getUserId(requireContext()) ?: "guest"
             val desc = dialogBinding.edtDescription.text?.toString().orEmpty().trim()
-            val selectedImages = selectableAdapter.getSelected()
-            val workout = args.workoutResultList?.firstOrNull()
-
             viewModel.sharePlace(
                 context = requireContext(),
                 userId = userId,
                 userName = viewModel.currentUser.value?.displayName ?: userId,
                 userAvatar = viewModel.currentUser.value?.photoUrl.orEmpty(),
                 description = desc,
-                imageUris = selectedImages,
+                imageUri = selectedImage,
                 lat = lat,
-                lng = lng,
-                workout = workout
+                lng = lng
             )
             dialog.dismiss()
         }
