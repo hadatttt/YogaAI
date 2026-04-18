@@ -3,6 +3,7 @@ package com.hadat.aiyoga
 import android.os.Bundle
 import android.util.Log
 import android.view.View
+import android.view.WindowManager
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
@@ -33,6 +34,7 @@ class MainActivity : AppCompatActivity() {
         AppCompatDelegate.setApplicationLocales(
             LocaleListCompat.forLanguageTags(AppPreferences.getLanguageCode(this))
         )
+        window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
         super.onCreate(savedInstanceState)
         FirebaseApp.initializeApp(applicationContext)
         Log.d("FCM", "Init OK")
@@ -87,6 +89,7 @@ class MainActivity : AppCompatActivity() {
             val fragmentsToHideNavigation = setOf(
                 R.id.loginFragment,
                 R.id.singleYogaFragment,
+                R.id.informationFragment,
                 R.id.yogaFragment
             )
 

@@ -15,8 +15,9 @@ import kotlinx.coroutines.launch
 class LoginViewModel : BaseViewModel() {
 
     val loginSuccess = MutableLiveData<Boolean>()
+    val isProfileComplete = MutableLiveData<Boolean>()
     val errorMessage = MutableLiveData<String>()
-
+    private val healthRepository by lazy { com.hadat.aiyoga.data.firestore.repository.HealthProfileRepository() }
     private val auth: FirebaseAuth by lazy { FirebaseAuth.getInstance() }
     private val userRepository by lazy { UserRepository() }
     fun signInWithFirebase(
@@ -52,7 +53,9 @@ class LoginViewModel : BaseViewModel() {
                 if (!exists) {
                     val newUser = mapFirebaseUserToModel(firebaseUser)
                     val isSaved = userRepository.saveUser(newUser)
-
+                    val profile = healthRepository.getProfile(uid)
+                    val isDone = profile != null
+                    AppPreferences.setHealthProfileCompleted(context, isDone)
                     if (!isSaved) {
                         handleError("Save user failed")
                         return@launch

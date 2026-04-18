@@ -14,6 +14,7 @@ import com.hadat.aiyoga.yogamain.YogaPoseModel
 
 object YogaDataUtils {
     private const val TAG = "YogaDataUtils"
+    private const val CONFIG_YOGA_MET_KEY = "data_yoga_met"
     private const val CONFIG_YOGA_KEY = "data_yoga_image"
     private const val CONFIG_CATEGORY_KEY = "data_yoga_categories"
     private const val CONFIG_DETAIL_KEY = "data_yoga_details"
@@ -29,6 +30,23 @@ object YogaDataUtils {
         }
         remoteConfig.setConfigSettingsAsync(configSettings)
     }
+    fun getRemoteYogaMet(id: Int, onResult: (Double) -> Unit) {
+        remoteConfig.fetchAndActivate().addOnCompleteListener { task ->
+            if (task.isSuccessful) {
+                val json = remoteConfig.getString(CONFIG_YOGA_MET_KEY)
+                if (json.isNotEmpty()) {
+                    val metList = parseMetJson(json)
+                    val metValue = metList?.find { it.id == id }?.met ?: 3.0
+                    onResult(metValue)
+                } else {
+                    Log.e(TAG, "Key '$CONFIG_YOGA_MET_KEY' trống")
+                    onResult(3.0)
+                }
+            } else {
+                onResult(3.0)
+            }
+        }
+    }
     fun getRemoteYogaAngles(onResult: (List<YogaPoseAngleModel>?) -> Unit) {
         remoteConfig.fetchAndActivate().addOnCompleteListener { task ->
             if (task.isSuccessful) {
@@ -42,6 +60,20 @@ object YogaDataUtils {
             } else {
                 onResult(null)
             }
+        }
+    }
+    fun getAllRemoteMet(onResult: (Map<Int, Double>) -> Unit) {
+        remoteConfig.fetchAndActivate().addOnCompleteListener { task ->
+            val metMap = mutableMapOf<Int, Double>()
+            if (task.isSuccessful) {
+                val json = remoteConfig.getString(CONFIG_YOGA_MET_KEY)
+                if (json.isNotEmpty()) {
+                    parseMetJson(json)?.forEach {
+                        metMap[it.id] = it.met
+                    }
+                }
+            }
+            onResult(metMap)
         }
     }
     private fun parseAngleJson(json: String): List<YogaPoseAngleModel>? {
@@ -70,6 +102,15 @@ object YogaDataUtils {
             } else {
                 onResult(null)
             }
+        }
+    }
+    private fun parseMetJson(json: String): List<YogaMetModel>? {
+        return try {
+            val listType = object : TypeToken<List<YogaMetModel>>() {}.type
+            gson.fromJson<List<YogaMetModel>>(json, listType)
+        } catch (e: Exception) {
+            Log.e(TAG, "❌ Lỗi Parse MET GSON: ${e.message}")
+            null
         }
     }
     fun getRemoteYogaCategories(onResult: (List<CategoryModel>?) -> Unit) {

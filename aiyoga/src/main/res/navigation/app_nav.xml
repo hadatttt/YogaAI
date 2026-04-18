@@ -137,5 +137,13 @@
             android:id="@+id/workoutOverviewFragment"
             android:name="com.hadat.aiyoga.workoutoverview.WorkoutOverviewFragment"
             android:label="WorkoutOverviewFragment" />
+    <fragment
+            android:id="@+id/chatbotFragment"
+            android:name="com.hadat.aiyoga.chatbot.ChatbotFragment"
+            android:label="ChatbotFragment" />
+    <fragment
+            android:id="@+id/informationFragment"
+            android:name="com.hadat.aiyoga.information.InformationFragment"
+            android:label="InformationFragment" />
 
 </navigation>

@@ -31,7 +31,7 @@ class SequenceRepository {
                 "poses" to sequence.poses,
                 "likeCount" to 0,
                 "viewCount" to 0,
-                "createdAt" to FieldValue.serverTimestamp() // 🔥 QUAN TRỌNG
+                "createdAt" to FieldValue.serverTimestamp()
             )
 
             docRef.set(data).await()
@@ -56,21 +56,6 @@ class SequenceRepository {
         }
     }
 
-    suspend fun getMySequencesInRange(userId: String, fromMillis: Long, toMillis: Long): List<WorkoutSequenceModel> = withContext(Dispatchers.IO) {
-        return@withContext try {
-            sequenceCollection
-                .whereEqualTo("userId", userId)
-                .whereGreaterThanOrEqualTo("createdAt", Date(fromMillis))
-                .whereLessThanOrEqualTo("createdAt", Date(toMillis))
-                .orderBy("createdAt", Query.Direction.ASCENDING)
-                .get()
-                .await()
-                .toObjects(WorkoutSequenceModel::class.java)
-        } catch (e: Exception) {
-            e.printStackTrace()
-            emptyList()
-        }
-    }
 
     suspend fun getAllSequences(): List<WorkoutSequenceModel> = withContext(Dispatchers.IO) {
         return@withContext try {

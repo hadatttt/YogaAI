@@ -76,6 +76,7 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
         }
 
         binding.llChatbotWrapper.setDraggableWithClick {
+            navigate(R.id.chatbotFragment)
         }
     }
 

@@ -141,5 +141,19 @@
     <string name="sequences">Sequences</string>
     <string name="map">Map</string>
     <string name="next_pose">Next Pose</string>
+    <string name="gender_male">Male</string>
+    <string name="gender_female">Female</string>
+    <string name="gender_other">Other</string>
+
+    <string name="activity_sedentary">Sedentary (Little/no exercise)</string>
+    <string name="activity_lightly">Lightly Active (1–3 days/week)</string>
+    <string name="activity_moderately">Moderately Active (3–5 days/week)</string>
+    <string name="activity_very">Very Active (6–7 days/week)</string>
+
+    <string name="msg_save_success">Health Profile Saved!</string>
+    <string name="msg_save_failed">Error saving data</string>
+    <string name="msg_fill_all">Please fill all information</string>
+    <string name="btn_calculating">Calculating…</string>
+    <string name="btn_save">Save Information</string>
 
 </resources>

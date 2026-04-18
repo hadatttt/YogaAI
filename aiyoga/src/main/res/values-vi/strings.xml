@@ -129,4 +129,17 @@
     <string name="home">Trang chu</string>
     <string name="sequences">Chuoi bai tap</string>
     <string name="next_pose">Sang bai khac</string>
+    <string name="gender_male">Nam</string>
+    <string name="gender_female">Nu</string>
+    <string name="gender_other">Khac</string>
+    <string name="activity_sedentary">It van dong (It hoac khong tap the duc)</string>
+    <string name="activity_lightly">Van dong nhe (1–3 ngay/tuan)</string>
+    <string name="activity_moderately">Van dong vua phai (3–5 ngay/tuan)</string>
+    <string name="activity_very">Van dong manh (6–7 ngay/tuan)</string>
+    <string name="msg_save_success">Ho so suc khoe da duoc luu!</string>
+    <string name="msg_save_failed">Loi luu du lieu</string>
+    <string name="msg_fill_all">Vui long dien day du thong tin</string>
+    <string name="btn_calculating">Dang tinh toan…</string>
+    <string name="btn_save">Luu thong tin</string>
+    <string name="map">Ban do</string>
 </resources>

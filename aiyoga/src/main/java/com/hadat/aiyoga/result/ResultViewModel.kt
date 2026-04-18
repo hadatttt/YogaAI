@@ -2,10 +2,13 @@ package com.hadat.aiyoga.result
 
 import android.content.Context
 import android.net.Uri
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
+import com.hadat.aiyoga.data.firestore.model.HealthProfileModel
 import com.hadat.aiyoga.data.firestore.model.MapPostModel
 import com.hadat.aiyoga.data.firestore.model.User
+import com.hadat.aiyoga.data.firestore.repository.HealthProfileRepository
 import com.hadat.aiyoga.data.firestore.repository.MapRepository
 import com.hadat.aiyoga.data.firestore.repository.UserRepository
 import com.hadat.aiyoga.data.firestore.repository.WorkoutRepository
@@ -18,17 +21,38 @@ import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
 import kotlin.coroutines.resume
 
-class ResultViewModel: BaseViewModel() {
+class ResultViewModel : BaseViewModel() {
 
     private val workoutRepository = WorkoutRepository()
     private val mapRepository = MapRepository()
     private val userRepository = UserRepository()
+    private val healthRepository = HealthProfileRepository()
+    private val _healthProfile = MutableLiveData<HealthProfileModel>()
+    val healthProfile: LiveData<HealthProfileModel> = _healthProfile
 
     val workoutHistory = MutableLiveData<List<WorkoutResultModel>>(emptyList())
     val currentUser = MutableLiveData<User?>()
     val shareStatus = MutableLiveData<Boolean?>(null)
     val shareLoading = MutableLiveData(false)
 
+
+    fun loadHealthProfile(userId: String) {
+        viewModelScope.launch {
+            val data = healthRepository.getProfile(userId)
+            if (data != null) {
+                _healthProfile.postValue(data)
+            }
+        }
+    }
+    fun saveWorkoutResults(list: List<WorkoutResultModel>, userId: String) {
+        viewModelScope.launch {
+            list.forEach { result ->
+                workoutRepository.saveWorkoutResult(
+                    result.copy(userId = userId)
+                )
+            }
+        }
+    }
     fun fetchWorkoutHistory(userId: String) {
         viewModelScope.launch {
             workoutHistory.postValue(workoutRepository.getWorkoutHistory(userId))
@@ -42,15 +66,13 @@ class ResultViewModel: BaseViewModel() {
         }
     }
 
-    // ResultViewModel.kt
-
     fun sharePlace(
         context: Context,
         userId: String,
         userName: String,
         userAvatar: String,
         description: String,
-        imageUri: String, // Đã đổi thành 1 String duy nhất
+        imageUri: String,
         lat: Double,
         lng: Double
     ) {
@@ -74,7 +96,7 @@ class ResultViewModel: BaseViewModel() {
                 userName = userName,
                 userAvatar = userAvatar,
                 description = description,
-                imageUrls = uploadedUrl, // String URL từ Cloudinary
+                imageUrls = uploadedUrl,
                 lat = lat,
                 lng = lng,
                 createdAt = null
@@ -85,17 +107,9 @@ class ResultViewModel: BaseViewModel() {
             shareStatus.postValue(ok)
         }
     }
+
     fun resetShareStatus() {
         shareStatus.value = null
-    }
-
-    private suspend fun uploadAll(context: Context, uris: List<Uri>): List<String> = withContext(Dispatchers.IO) {
-        val result = mutableListOf<String>()
-        for (uri in uris) {
-            val url = uploadOne(context, uri) ?: continue
-            result.add(url)
-        }
-        result
     }
 
     private suspend fun uploadOne(context: Context, uri: Uri): String? =

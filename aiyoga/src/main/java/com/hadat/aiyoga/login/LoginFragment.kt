@@ -51,7 +51,12 @@ class LoginFragment : BaseFragment<FragmentLoginBinding, LoginViewModel>() {
 
         viewModel.loginSuccess.observe(viewLifecycleOwner) { success ->
             if (success == true) {
-                navigate(R.id.homeFragment)
+                val isComplete = viewModel.isProfileComplete.value ?: false
+                if (isComplete) {
+                    navigate(R.id.homeFragment)
+                } else {
+                    navigate(R.id.informationFragment)
+                }
             }
         }
 
