@@ -82,6 +82,13 @@ object AppPreferences {
     }
 
     fun getLanguageCode(context: Context): String {
-        return getPrefs(context).getString(KEY_LANGUAGE_CODE, "en") ?: "en"
+        val prefs = getPrefs(context)
+        if (!prefs.contains(KEY_LANGUAGE_CODE)) {
+            val systemLang = java.util.Locale.getDefault().language
+            val defaultLang = if (systemLang == "vi") "vi" else "en"
+            setLanguageCode(context, defaultLang)
+            return defaultLang
+        }
+        return prefs.getString(KEY_LANGUAGE_CODE, "en") ?: "en"
     }
 }

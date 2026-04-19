@@ -5,6 +5,7 @@ import android.view.MotionEvent
 import androidx.recyclerview.widget.RecyclerView
 import com.hadat.aiyoga.databinding.ItemPoseSequenceBinding
 import com.hadat.aiyoga.utils.loadImageFromNetwork
+import com.hadat.aiyoga.utils.yogautils.YogaDataUtils
 import hoang.dqm.codebase.base.adapter.BaseRecyclerViewAdapter
 import java.util.Collections
 
@@ -31,7 +32,7 @@ class PoseSequenceAdapter(
     override fun bindData(binding: ItemPoseSequenceBinding, item: SequenceModel, position: Int) {
         binding.apply {
             tvName.text = item.name
-            tvCategory.text = item.category
+            tvCategory.text = YogaDataUtils.getLocalizedCategory(binding.root.context, item.category)
             tvDuration.text = item.duration
             ivThump.loadImageFromNetwork(item.photoUrl)
 

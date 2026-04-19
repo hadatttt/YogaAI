@@ -402,10 +402,13 @@ class YogaFragment : BaseFragment<FragmentSingleYogaBinding, YogaViewModel>(),
                 bitmap.compress(Bitmap.CompressFormat.JPEG, 100, out)
             }
             viewModel.addCapturedImage(it.toString())
-            Toast.makeText(requireContext(), "Save Photo", Toast.LENGTH_SHORT).show()
+            Toast.makeText(
+                requireContext(),
+                getString(com.hadat.aiyoga.R.string.save_photo),
+                Toast.LENGTH_SHORT
+            ).show()
         }
     }
-
     private fun triggerFlashEffect() {
         binding.viewFlash.visibility = View.VISIBLE
         binding.viewFlash.alpha = 1f

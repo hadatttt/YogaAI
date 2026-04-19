@@ -79,14 +79,14 @@ class SingleModeFragment : BaseFragment<FragmentSingleModeBinding, SingleModeVie
         navigate(R.id.detailYogaFragment, bundle)
     }
     private fun handleExpertiseLevel(level: Int) {
-        val levelText = when (level) {
-            1 -> "Beginner"
-            2 -> "Intermediate"
-            3 -> "Advanced"
-            else -> "Unknown"
+        val levelResId = when (level) {
+            1 -> R.string.beginner
+            2 -> R.string.intermediate
+            3 -> R.string.advanced
+            else -> R.string.beginner
         }
 
-        binding.tvLevel.text = levelText
+        binding.tvLevel.text = getString(levelResId)
     }
     override fun initData() {
         viewModel.fetchData(requireContext())

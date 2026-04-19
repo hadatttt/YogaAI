@@ -5,24 +5,13 @@
     <string name="notification_permission_title">Notifications</string>
     <string name="notification_permission_message">Enable notifications to stay updated!</string>
     <string name="notification_permission_denied">Please enable notifications in Settings.</string>
-    <string-array name="daily_notification_messages">
-        <item>✨ Time to flow! Open Yoga AI and start your daily practice.</item>
-        <item>🔥 Stay consistent! Your body will thank you for today\'s session.</item>
-        <item>🧘 Ready for a stretch? Tap to explore a new sequence for today.</item>
-        <item>💡 Inner peace awaits: Take a 15-minute break to breathe and move.</item>
-        <item>⏰ Don\'t break the streak! Your mat is waiting for you tonight.</item>
-        <item>🚨 Challenge Alert! Try an advanced pose today to test your balance.</item>
-        <item>💸 Health is wealth! Invest in yourself with a quick yoga flow.</item>
-        <item>📦 New sequence unlocked! Check out our latest AI-guided routines.</item>
-        <item>💖 Listen to your body: A little practice every day makes a huge difference.</item>
-        <item>👋 We miss you! Come back and see how much your flexibility has improved.</item>
-    </string-array>
     <string name="i_got_it_text">Got it</string>
     <string name="permission_denied_text">Permission denied!</string>
     <string name="title_cancel">Cancel</string>
     <string name="text_day">Day %d</string>
     <string name="spin_left">Rotate left %d</string>
     <string name="find_your_inner_peace">Find your inner peace</string>
+    <string name="find_your_pose">Find your pose…</string>
     <string name="get_started">Get Started</string>
     <string name="choose_your_login_method">Login method</string>
     <string name="continue_with_google">Continue with Google</string>
@@ -111,34 +100,12 @@
     <string name="pose_categories">Pose Categories</string>
     <string name="all_poses">All Poses</string>
     <string name="selected_poses">Selected</string>
-    <string name="category_all">All</string>
-    <string name="category_standing">Standing</string>
-    <string name="category_seated">Seated</string>
-    <string name="category_prone">Prone</string>
-    <string name="category_supine">Supine</string>
-    <string name="category_inversion">Inversion</string>
-    <string name="category_arm_balance">Arm Balance</string>
-    <string name="category_arm_leg_support">Arm Leg Support</string>
     <string name="create_sequences">Create Sequences</string>
     <string name="set_duration">Set Duration</string>
     <string name="confirm">Confirm</string>
     <string name="location_not_granted">Location denied</string>
     <string name="select_photos">Select Photos</string>
     <string name="share">Share</string>
-    <string name="save_photo">Save Photo</string>
-    <string name="google_account_is_null">Google account is null</string>
-    <string name="google_sign_in_failed">Google sign-in failed: %1$d</string>
-    <string name="copied_successfully">Copied!</string>
-    <string name="copy_failed">Copy failed</string>
-    <string name="updated_successfully">Updated successfully!</string>
-    <string name="created_successfully">Created successfully!</string>
-    <string name="failed_to_save_sequence">Failed to save sequence</string>
-    <string name="please_enter_sequence_name">Please enter sequence name</string>
-    <string name="shared_to_map_successfully">Shared to map successfully!</string>
-    <string name="share_failed">Share failed</string>
-    <string name="no_image_to_share">No image to share</string>
-    <string name="request_location_permission_share">Please allow location permission to share workout!</string>
-    <string name="please_select_best_photo">Please select the best photo!</string>
     <string name="yogi_buddy">Yogi Buddy</string>
     <string name="ai_yoga_expert">● AI Expert</string>
     <string name="chatbot_hint">How can I help you today?</string>
@@ -162,7 +129,6 @@
     <string name="map">Map</string>
     <string name="format_minutes">%1$d min</string>
     <string name="format_poses_count">%1$d Poses</string>
-    <string name="find_your_pose">Find your pose…</string>
     <string name="cat_description">Description</string>
     <string name="cat_benefits">Benefits</string>
     <string name="cat_steps">Steps</string>
@@ -185,5 +151,4 @@
     <string name="btn_save_info">Save Information</string>
     <string name="selected_poses_count">Selected Poses (%1$d)</string>
     <string name="by_author">by %1$s</string>
-
 </resources>

@@ -98,6 +98,16 @@ fun Fragment.showDialog(dialogFragment: DialogFragment, tag: String? = null) {
         }
     }
 }
+fun Fragment.navigateWithPopAll(
+    destination: Int, extraData: Bundle? = null
+) {
+    if (!isAdded || view == null) return
+    viewLifecycleOwner.lifecycleScope.launch {
+        viewLifecycleOwner.lifecycle.repeatOnLifecycle(Lifecycle.State.RESUMED) {
+            activity?.navigate(destination, extraData, isPop = false, isPopAll = true)
+        }
+    }
+}
 // Hàm cho Fragment
 fun Fragment.navigateWithoutAnimation(
     destination: Int, extraData: Bundle? = null, isPop: Boolean = false

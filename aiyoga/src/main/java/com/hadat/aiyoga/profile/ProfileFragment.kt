@@ -10,6 +10,7 @@ import androidx.core.os.LocaleListCompat
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.timepicker.MaterialTimePicker
 import com.google.android.material.timepicker.TimeFormat
+import com.hadat.aiyoga.MainActivity
 import com.hadat.aiyoga.R
 import com.hadat.aiyoga.databinding.FragmentProfileBinding
 import com.hadat.aiyoga.service.AppPreferences
@@ -19,7 +20,7 @@ import com.hadat.aiyoga.utils.CloudinaryUtils
 import com.hadat.aiyoga.utils.ViewUtils.removeVietnameseAccents
 import com.hadat.aiyoga.utils.loadImageFromNetwork
 import hoang.dqm.codebase.base.activity.BaseFragment
-import hoang.dqm.codebase.base.activity.navigate
+import hoang.dqm.codebase.base.activity.navigateWithPopAll
 import hoang.dqm.codebase.base.activity.popBackStack
 import hoang.dqm.codebase.utils.singleClick
 
@@ -86,7 +87,11 @@ class ProfileFragment : BaseFragment<FragmentProfileBinding, ProfileViewModel>()
         binding.btnLogout.singleClick {
             viewModel.logout(requireContext()) {
                 AppPreferences.logout(requireContext())
-                navigate(R.id.loginFragment, isPop = true)
+
+                val intent = android.content.Intent(requireContext(), MainActivity::class.java)
+                intent.flags = android.content.Intent.FLAG_ACTIVITY_NEW_TASK or android.content.Intent.FLAG_ACTIVITY_CLEAR_TASK
+                startActivity(intent)
+                requireActivity().finish()
             }
         }
     }

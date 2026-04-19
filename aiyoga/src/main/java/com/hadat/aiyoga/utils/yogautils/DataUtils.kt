@@ -7,6 +7,7 @@ import com.google.firebase.remoteconfig.ktx.remoteConfig
 import com.google.firebase.remoteconfig.ktx.remoteConfigSettings
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
+import com.hadat.aiyoga.R
 import com.hadat.aiyoga.detailyoga.YogaPoseAngleModel
 import com.hadat.aiyoga.detailyoga.YogaPoseDetailModel
 import com.hadat.aiyoga.home.CategoryModel
@@ -128,6 +129,20 @@ object YogaDataUtils {
             } else {
                 onResult(null)
             }
+        }
+    }
+
+    fun getLocalizedCategory(context: android.content.Context, rawValue: String): String {
+        return when (rawValue.trim()) {
+            "All" -> context.getString(R.string.category_all)
+            "Standing" -> context.getString(R.string.category_standing)
+            "Seated" -> context.getString(R.string.category_seated)
+            "Prone" -> context.getString(R.string.category_prone)
+            "Supine" -> context.getString(R.string.category_supine)
+            "Inversion" -> context.getString(R.string.category_inversion)
+            "Arm Balance" -> context.getString(R.string.category_arm_balance)
+            "Arm Leg Support" -> context.getString(R.string.category_arm_leg_support)
+            else -> rawValue
         }
     }
 

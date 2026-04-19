@@ -44,7 +44,7 @@ class SequenceCommunityDetailFragment :
             binding.apply {
                 tvDetailName.text = sequence.title
                 tvDetailDuration.text = formatDurationToMin(sequence.totalDuration)
-                tvDetailPosesCount.text = "${sequence.poses.size} Poses"
+                tvDetailPosesCount.text = getString(R.string.format_poses_count, sequence.poses.size)
                 ivSequenceCover.loadImageFromNetwork(sequence.coverImageUrl)
                 poseAdapter.setList(sequence.poses)
             }
@@ -54,34 +54,32 @@ class SequenceCommunityDetailFragment :
         viewModel.viewCount.observe(viewLifecycleOwner) { binding.tvViewCount.text = it.toString() }
 
         viewModel.isLiked.observe(viewLifecycleOwner) { liked ->
-            binding.btnLikeAction.setIconResource(
-                if (liked) R.drawable.ic_heart_filled else R.drawable.ic_heart_outline
-            )
-
-            binding.ivLike.setImageResource(
-                if (liked) R.drawable.ic_heart_filled else R.drawable.ic_heart_outline
-            )
+            val heartIcon = if (liked) R.drawable.ic_heart_filled else R.drawable.ic_heart_outline
+            binding.btnLikeAction.setIconResource(heartIcon)
+            binding.ivLike.setImageResource(heartIcon)
         }
 
         viewModel.copyStatus.observe(viewLifecycleOwner) { ok ->
             if (ok == null) return@observe
-            showToast(if (ok) "Copied!" else "Copy failed")
+            showToast(
+                if (ok) getString(R.string.copied_successfully)
+                else getString(R.string.copy_failed)
+            )
             viewModel.resetCopyStatus()
         }
     }
 
     private fun formatDurationToMin(duration: String): String {
-        return try {
+        val minutes = try {
             val parts = duration.split(":")
-            val minutes = parts.getOrNull(0)?.toIntOrNull() ?: 0
-            "$minutes min"
+            parts.getOrNull(0)?.toIntOrNull() ?: 0
         } catch (_: Exception) {
-            "0 min"
+            0
         }
+        return getString(R.string.format_minutes, minutes)
     }
 
     private fun showToast(message: String) {
         Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show()
     }
 }
-

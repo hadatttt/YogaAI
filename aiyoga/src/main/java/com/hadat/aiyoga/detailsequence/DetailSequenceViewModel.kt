@@ -17,29 +17,27 @@ class DetailSequenceViewModel : BaseViewModel() {
         sequenceData.value = data
     }
 
-    fun refreshSequence() {
-        val current = sequenceData.value ?: return
-        if (current.id.isBlank()) return
+    fun refreshSequence(id: String) {
+        if (id.isBlank()) return
 
         viewModelScope.launch {
-            sequenceRepository.getSequenceById(current.id)?.let {
-                sequenceData.postValue(it)
+            sequenceRepository.getSequenceById(id)?.let { updatedSequence ->
+                sequenceData.postValue(updatedSequence)
             }
         }
     }
 
-    fun setIsPublic(isPublic: Boolean) {
+    fun setIsPublic(newStatus: Boolean) {
         val current = sequenceData.value ?: return
         if (current.id.isBlank()) return
-        if (current.isPublic == isPublic) return
-
         visibilityUpdating.value = true
-        val updated = current.copy(isPublic = isPublic)
-
         viewModelScope.launch {
-            val ok = sequenceRepository.updateSequence(updated)
-            if (ok) {
+            val updated = current.copy(isPublic = newStatus)
+            val isSuccess = sequenceRepository.updateSequence(updated)
+            if (isSuccess) {
                 sequenceData.postValue(updated)
+            } else {
+                sequenceData.postValue(current)
             }
             visibilityUpdating.postValue(false)
         }

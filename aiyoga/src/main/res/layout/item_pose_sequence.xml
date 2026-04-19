@@ -30,7 +30,6 @@
                 android:id="@+id/tv_name"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:text="@string/boat_pose"
                 android:textColor="@color/purple_300"
                 android:textSize="@dimen/_18sdp"
                 android:fontFamily="@font/font_bold"
@@ -41,12 +40,10 @@
                 app:layout_constraintTop_toTopOf="@id/iv_thump"
                 android:layout_marginStart="@dimen/_10sdp"/>
 
-        <!-- CATEGORY -->
         <TextView
                 android:id="@+id/tv_category"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/seated"
                 android:textColor="#8E8E93"
                 android:textSize="@dimen/_11sdp"
                 app:layout_constraintStart_toStartOf="@id/tv_name"

@@ -31,12 +31,16 @@ class MySequenceFragment : BaseFragment<FragmentMySequenceBinding, MySequenceVie
         }
     }
 
-    override fun initData() {
+    override fun onResume() {
+        super.onResume()
         val userId = AppPreferences.getUserId(requireContext()) ?: "guest"
+        viewModel.fetchMySequences(userId)
+    }
+
+    override fun initData() {
         viewModel.mySequences.observe(viewLifecycleOwner) {
             mySequenceAdapter.setList(it)
         }
-        viewModel.fetchMySequences(userId)
     }
 
     override fun initListener() {

@@ -42,14 +42,14 @@ class ChoosePoseFragment : BaseFragment<FragmentChoosePosesBinding, ChoosePoseVi
         }
         viewModel.selectedPoses.observe(viewLifecycleOwner) { list ->
             selectedAdapter.setList(list)
-            binding.tvSelectedTitle.text = "Selected Poses (${list.size})"
+            binding.tvSelectedTitle.text = getString(R.string.selected_poses_count, list.size)
 
             val isEnable = list.isNotEmpty()
 
             binding.btnCreate.isEnabled = isEnable
             binding.btnCreate.isSelected = isEnable
         }
-        viewModel.fetchData()
+        viewModel.fetchData(requireContext())
         viewModel.categoryList.observe(viewLifecycleOwner) { categoryAdapter.setList(it) }
         viewModel.yogaPoseList.observe(viewLifecycleOwner) { allPoseAdapter.setList(it) }
     }

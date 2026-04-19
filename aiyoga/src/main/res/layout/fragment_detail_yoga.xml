@@ -161,25 +161,21 @@
                     android:layout_height="wrap_content"
                     android:layout_marginStart="@dimen/_16sdp"
                     android:layout_marginTop="16dp"
-                    android:text="@string/center_splits_pose"
                     android:textColor="@color/primary"
                     android:textSize="@dimen/_22sdp"
                     android:textStyle="bold"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toBottomOf="@id/card_image" />
-
             <TextView
                     android:id="@+id/tv_sanskrit_name"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="@dimen/_4sdp"
                     android:fontStyle="italic"
-                    android:text="@string/samakonasana"
                     android:textColor="#8E8E93"
                     android:textSize="@dimen/_15sdp"
                     app:layout_constraintStart_toStartOf="@id/tv_pose_name"
                     app:layout_constraintTop_toBottomOf="@id/tv_pose_name" />
-
             <ImageView
                     android:id="@+id/ic_level"
                     android:layout_width="@dimen/_14sdp"
@@ -189,7 +185,6 @@
                     app:layout_constraintStart_toStartOf="@id/tv_sanskrit_name"
                     app:layout_constraintTop_toBottomOf="@id/tv_sanskrit_name"
                     app:tint="@color/primary"/>
-
             <TextView
                     android:id="@+id/tv_level_label"
                     android:layout_width="wrap_content"
@@ -201,7 +196,6 @@
                     android:textSize="@dimen/_14sdp"
                     app:layout_constraintStart_toEndOf="@id/ic_level"
                     app:layout_constraintTop_toBottomOf="@id/tv_sanskrit_name" />
-
             <TextView
                     android:id="@+id/tv_level_value"
                     android:layout_width="wrap_content"
@@ -227,7 +221,6 @@
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toBottomOf="@id/tv_level_label"
                     tools:listitem="@layout/item_category" />
-
             <androidx.recyclerview.widget.RecyclerView
                     android:id="@+id/rv_yoga_content"
                     android:layout_width="0dp"

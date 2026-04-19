@@ -132,7 +132,7 @@
                 android:layout_marginStart="10dp"
                 android:background="@android:color/transparent"
                 android:fontFamily="@font/font_bold"
-                android:hint="Find your pose..."
+                android:hint="@string/find_your_pose"
                 android:textColor="@color/text_primary"
                 android:textColorHint="@color/text_hint"
                 android:textSize="14sp"

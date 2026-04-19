@@ -21,11 +21,19 @@ class ChoosePoseViewModel : BaseViewModel() {
         selectedPoses.value = mutableListOf()
         selectedIds.value = mutableListOf()
     }
-    fun fetchData() {
+    fun fetchData(context: android.content.Context) {
         if (fullYogaList.isNotEmpty()) return
 
         YogaDataUtils.getRemoteYogaCategories { categories ->
-            categories?.let { categoryList.postValue(it) }
+            categories?.let {
+                categoryList.postValue(
+                    it.map { category ->
+                        category.copy(
+                            displayValue = YogaDataUtils.getLocalizedCategory(context, category.value)
+                        )
+                    }
+                )
+            }
         }
 
         YogaDataUtils.getRemoteYogaPoses { poses ->

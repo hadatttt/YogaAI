@@ -79,7 +79,10 @@ class ResultFragment : BaseFragment<FragmentResultBinding, ResultViewModel>() {
 
         viewModel.shareStatus.observe(viewLifecycleOwner) { ok ->
             if (ok == null) return@observe
-            showToast(if (ok) "Shared to map successfully!" else "Share failed")
+            showToast(
+                if (ok) getString(R.string.shared_to_map_successfully)
+                else getString(R.string.share_failed)
+            )
             viewModel.resetShareStatus()
         }
     }
@@ -150,7 +153,7 @@ class ResultFragment : BaseFragment<FragmentResultBinding, ResultViewModel>() {
             .distinct()
 
         if (captured.isEmpty()) {
-            showToast("Không có ảnh để chia sẻ")
+            showToast(getString(R.string.no_image_to_share))
             return
         }
 
@@ -192,13 +195,13 @@ class ResultFragment : BaseFragment<FragmentResultBinding, ResultViewModel>() {
                         android.Manifest.permission.ACCESS_COARSE_LOCATION
                     )
                 )
-                showToast("Vui lòng cấp quyền vị trí để chia sẻ bài tập!")
+                showToast(getString(R.string.request_location_permission_share))
                 updateLocationStatus(dialogBinding)
                 return@singleClick
             }
             val selectedImage = selectableAdapter.getSelected().firstOrNull()
             if (selectedImage == null) {
-                showToast("Vui lòng chọn một tấm ảnh đẹp nhất!")
+                showToast(getString(R.string.please_select_best_photo))
                 return@singleClick
             }
             val userId = AppPreferences.getUserId(requireContext()) ?: "guest"

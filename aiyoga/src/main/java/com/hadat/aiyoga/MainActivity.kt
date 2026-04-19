@@ -31,8 +31,9 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        val currentLang = AppPreferences.getLanguageCode(this)
         AppCompatDelegate.setApplicationLocales(
-            LocaleListCompat.forLanguageTags(AppPreferences.getLanguageCode(this))
+            LocaleListCompat.forLanguageTags(currentLang)
         )
         window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
         super.onCreate(savedInstanceState)
@@ -57,7 +58,11 @@ class MainActivity : AppCompatActivity() {
 
         val navGraph = navController.navInflater.inflate(R.navigation.app_nav)
         val startDestination = if (AppPreferences.isLoggedIn(this)) {
-            R.id.homeFragment
+            if (AppPreferences.isHealthProfileCompleted(this)) {
+                R.id.homeFragment
+            } else {
+                R.id.informationFragment
+            }
         } else {
             R.id.loginFragment
         }

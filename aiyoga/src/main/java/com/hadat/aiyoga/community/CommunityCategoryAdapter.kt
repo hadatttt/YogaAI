@@ -24,8 +24,7 @@ class CommunityCategoryAdapter : BaseRecyclerViewAdapter<CommunityCategory, Item
     }
 
     override fun bindData(binding: ItemCategoryBinding, item: CommunityCategory, position: Int) {
-        binding.txtCategory.text = item.title
-
+        binding.txtCategory.setText(item.titleRes)
         if (position == selectedPosition) {
             binding.txtCategory.setBackgroundResource(R.drawable.ic_category_selected)
             binding.txtCategory.setTextColor(context.getColor(R.color.white))
@@ -44,7 +43,6 @@ class CommunityCategoryAdapter : BaseRecyclerViewAdapter<CommunityCategory, Item
             if (position != -1) {
                 val item = getItem(position)
                 setSelectedPosition(position)
-                // Gọi callback khi click
                 setOnClickItemListener?.invoke(item, position)
             }
         }

@@ -44,13 +44,18 @@ class ProfileViewModel : BaseViewModel() {
 
     fun logout(context: Context, onLogoutSuccess: () -> Unit) {
         FirebaseAuth.getInstance().signOut()
+
+        AppPreferences.logout(context)
+
         val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
             .requestIdToken(context.getString(R.string.default_web_client_id))
             .requestEmail()
             .build()
 
-        GoogleSignIn.getClient(context, gso).signOut().addOnCompleteListener {
-            AppPreferences.logout(context)
+        val googleClient = GoogleSignIn.getClient(context, gso)
+        googleClient.signOut().addOnCompleteListener {
+            onLogoutSuccess()
+        }.addOnFailureListener {
             onLogoutSuccess()
         }
     }

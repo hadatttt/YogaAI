@@ -86,7 +86,10 @@ class SequencesFragment : BaseFragment<FragmentSequencesBinding, SequencesViewMo
         viewModel.saveStatus.observe(viewLifecycleOwner) { isSuccess ->
             if (isSuccess == null) return@observe
             if (isSuccess) {
-                val message = if (args.isEdit) "Updated successfully!" else "Created successfully!"
+                val message = if (args.isEdit)
+                    getString(R.string.updated_successfully)
+                else
+                    getString(R.string.created_successfully)
                 showToast(message)
                 val sequence = viewModel.lastSavedSequence.value
                 if (sequence != null) {
@@ -99,7 +102,7 @@ class SequencesFragment : BaseFragment<FragmentSequencesBinding, SequencesViewMo
                     popBackStack()
                 }
             } else {
-                showToast("Failed to save sequence")
+                showToast(getString(R.string.failed_to_save_sequence))
                 binding.btnCreate.isEnabled = true
             }
         }
@@ -129,7 +132,7 @@ class SequencesFragment : BaseFragment<FragmentSequencesBinding, SequencesViewMo
     private fun handleCreateFlow() {
         val name = binding.edtSequenceName.text.toString().trim()
         if (name.isEmpty()) {
-            showToast("Please enter sequence name")
+            showToast(getString(R.string.please_enter_sequence_name))
             return
         }
 

@@ -6,6 +6,7 @@ import androidx.viewbinding.ViewBinding
 import com.hadat.aiyoga.databinding.ItemAddMySequenceBinding
 import com.hadat.aiyoga.databinding.ItemMySequenceBinding
 import com.hadat.aiyoga.R
+import com.hadat.aiyoga.databinding.ItemSequencesCommunityBinding
 import com.hadat.aiyoga.sequence.WorkoutSequenceModel
 import com.hadat.aiyoga.utils.loadImageFromNetwork
 import hoang.dqm.codebase.base.adapter.BaseRecyclerViewAdapter
@@ -48,26 +49,37 @@ class MySequenceAdapter(
 
         val item = dataList[position]
         val binding = holder.binding as ItemMySequenceBinding
+        val context = binding.root.context
 
         binding.root.singleClick { onItemClick(item) }
+
         binding.tvSequenceName.text = item.title
         binding.ivSequenceThumb.loadImageFromNetwork(item.coverImageUrl)
-        binding.ivVisibility.setImageResource(if (item.isPublic) R.drawable.ic_public else R.drawable.ic_lock)
-        binding.tvLevelValue.text = when (item.level) {
-            1 -> "Beginner"
-            2 -> "Intermediate"
-            3 -> "Advanced"
-            else -> "All Levels"
-        }
-        binding.tvDuration.text = formatDurationToMin(item.totalDuration)
+
+        val visibilityRes = if (item.isPublic) R.drawable.ic_public else R.drawable.ic_lock
+        binding.ivVisibility.setImageResource(visibilityRes)
+
+        binding.tvLevelValue.setText(
+            when (item.level) {
+                1 -> R.string.beginner
+                2 -> R.string.intermediate
+                3 -> R.string.advanced
+                else -> R.string.beginner
+            }
+        )
+
+        binding.tvDuration.text = formatDurationToMin(context, item.totalDuration)
     }
 
-    private fun formatDurationToMin(duration: String): String {
+    private fun formatDurationToMin(context: android.content.Context, duration: String): String {
         return try {
-            val minutes = duration.split(":").firstOrNull()?.toIntOrNull() ?: 0
-            "$minutes min"
+            val parts = duration.split(":")
+            val minutes = if (parts.isNotEmpty()) {
+                parts[0].toIntOrNull() ?: 0
+            } else 0
+            context.getString(R.string.format_minutes, minutes)
         } catch (_: Exception) {
-            "0 min"
+            context.getString(R.string.format_minutes, 0)
         }
     }
 }

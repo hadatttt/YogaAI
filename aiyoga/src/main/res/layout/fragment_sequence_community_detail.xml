@@ -59,7 +59,6 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:fontFamily="@font/font_bold"
-                android:text="@string/sequence_name_placeholder"
                 android:textColor="@color/purple_500"
                 android:textSize="@dimen/_20sdp"
                 app:layout_constraintEnd_toEndOf="parent"
@@ -86,7 +85,6 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="@dimen/_4sdp"
-                    android:text="@string/fifteen_mins"
                     android:textColor="@color/text_gray"
                     android:textSize="@dimen/_11sdp" />
 
@@ -105,7 +103,6 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="@dimen/_4sdp"
-                    android:text="@string/poses_12"
                     android:textColor="@color/text_gray"
                     android:textSize="@dimen/_11sdp" />
 

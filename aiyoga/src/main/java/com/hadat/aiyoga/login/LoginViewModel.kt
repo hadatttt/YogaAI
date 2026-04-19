@@ -40,27 +40,23 @@ class LoginViewModel : BaseViewModel() {
                 handleUser(firebaseUser, context)
             }
     }
-    private fun handleUser(
-        firebaseUser: FirebaseUser,
-        context: Context
-    ) {
+    private fun handleUser(firebaseUser: FirebaseUser, context: Context) {
         viewModelScope.launch {
             try {
                 val uid = firebaseUser.uid
-
                 val exists = userRepository.isUserExists(uid)
 
                 if (!exists) {
                     val newUser = mapFirebaseUserToModel(firebaseUser)
-                    val isSaved = userRepository.saveUser(newUser)
-                    val profile = healthRepository.getProfile(uid)
-                    val isDone = profile != null
-                    AppPreferences.setHealthProfileCompleted(context, isDone)
-                    if (!isSaved) {
-                        handleError("Save user failed")
-                        return@launch
-                    }
+                    userRepository.saveUser(newUser)
                 }
+
+                val profile = healthRepository.getProfile(uid)
+                val isDone = profile != null
+
+                AppPreferences.setHealthProfileCompleted(context, isDone)
+
+                isProfileComplete.postValue(isDone)
 
                 saveLoginSession(context, uid)
                 loginSuccess.postValue(true)
