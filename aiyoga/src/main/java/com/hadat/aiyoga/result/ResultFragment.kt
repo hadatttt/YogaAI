@@ -14,7 +14,7 @@ import com.hadat.aiyoga.databinding.FragmentResultBinding
 import com.hadat.aiyoga.service.AppPreferences
 import com.hadat.aiyoga.singleyoga.WorkoutResultModel
 import com.hadat.aiyoga.utils.yogautils.HealthCalculatorUtils
-import com.hadat.aiyoga.utils.yogautils.YogaDataUtils
+import com.hadat.aiyoga.data.remoteconfig.YogaDataUtils
 import hoang.dqm.codebase.base.activity.BaseFragment
 import hoang.dqm.codebase.base.activity.popBackStack
 import hoang.dqm.codebase.utils.singleClick
@@ -55,6 +55,7 @@ class ResultFragment : BaseFragment<FragmentResultBinding, ResultViewModel>() {
 
     override fun initData() {
         val resultList = args.workoutResultList?.toList().orEmpty()
+
         if (resultList.isNotEmpty()) {
             bindWorkoutSummary(resultList)
             historyAdapter.setList(resultList)

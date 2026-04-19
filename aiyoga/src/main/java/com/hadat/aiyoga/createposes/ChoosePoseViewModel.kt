@@ -3,7 +3,7 @@ package com.hadat.aiyoga.createposes
 import androidx.lifecycle.MutableLiveData
 import com.hadat.aiyoga.home.CategoryModel
 import com.hadat.aiyoga.yogamain.YogaPoseModel
-import com.hadat.aiyoga.utils.yogautils.YogaDataUtils
+import com.hadat.aiyoga.data.remoteconfig.YogaDataUtils
 import hoang.dqm.codebase.base.viewmodel.BaseViewModel
 
 class ChoosePoseViewModel : BaseViewModel() {
@@ -24,17 +24,14 @@ class ChoosePoseViewModel : BaseViewModel() {
     fun fetchData(context: android.content.Context) {
         if (fullYogaList.isNotEmpty()) return
 
-        YogaDataUtils.getRemoteYogaCategories { categories ->
-            categories?.let {
-                categoryList.postValue(
-                    it.map { category ->
-                        category.copy(
-                            displayValue = YogaDataUtils.getLocalizedCategory(context, category.value)
-                        )
-                    }
+        val localCategories = YogaDataUtils.getLocalYogaCategories()
+        categoryList.postValue(
+            localCategories.map { category ->
+                category.copy(
+                    displayValue = YogaDataUtils.getLocalizedCategory(context, category.value)
                 )
             }
-        }
+        )
 
         YogaDataUtils.getRemoteYogaPoses { poses ->
             poses?.let {

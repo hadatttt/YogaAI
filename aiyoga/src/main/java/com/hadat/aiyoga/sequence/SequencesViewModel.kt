@@ -3,7 +3,8 @@ package com.hadat.aiyoga.sequence
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.hadat.aiyoga.data.firestore.repository.SequenceRepository
-import com.hadat.aiyoga.utils.yogautils.YogaDataUtils
+import com.hadat.aiyoga.data.firestore.repository.UserRepository
+import com.hadat.aiyoga.data.remoteconfig.YogaDataUtils
 import com.hadat.aiyoga.utils.yogautils.YogaRecommender
 import com.hadat.aiyoga.yogamain.YogaPoseModel
 import hoang.dqm.codebase.base.viewmodel.BaseViewModel
@@ -13,7 +14,7 @@ class SequencesViewModel : BaseViewModel() {
     private val repository = SequenceRepository()
     private val recommender = YogaRecommender()
     val lastSavedSequence = MutableLiveData<WorkoutSequenceModel>()
-
+    private val userRepository = UserRepository()
     val sequenceList = MutableLiveData<MutableList<SequenceModel>>(mutableListOf())
     val recommendationList = MutableLiveData<List<YogaPoseModel>>()
     val saveStatus = MutableLiveData<Boolean?>()
@@ -63,18 +64,22 @@ class SequencesViewModel : BaseViewModel() {
             (mins * 60) + secs
         }
 
-        val finalSequence = WorkoutSequenceModel(
-            userId = userId,
-            title = title,
-            coverImageUrl = coverUrl,
-            totalDuration = String.format("%02d:%02d", totalSeconds / 60, totalSeconds % 60),
-            level = level,
-            isPublic = true,
-            poses = currentPoses,
-            createdAt = null
-        )
-
         viewModelScope.launch {
+            val user = userRepository.getUser(userId)
+            val authorName = user?.displayName ?: ""
+
+            val finalSequence = WorkoutSequenceModel(
+                userId = userId,
+                authorName = authorName,
+                title = title,
+                coverImageUrl = coverUrl,
+                totalDuration = String.format("%02d:%02d", totalSeconds / 60, totalSeconds % 60),
+                level = level,
+                isPublic = true,
+                poses = currentPoses,
+                createdAt = null
+            )
+
             val result = repository.saveSequence(finalSequence)
             if (result) {
                 lastSavedSequence.postValue(finalSequence)

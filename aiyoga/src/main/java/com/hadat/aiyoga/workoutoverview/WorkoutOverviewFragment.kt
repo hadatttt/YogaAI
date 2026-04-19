@@ -60,6 +60,7 @@ class WorkoutOverviewFragment : BaseFragment<FragmentWorkoutOverviewBinding, Wor
         fetchData()
 
         viewModel.sequences.observe(viewLifecycleOwner) { listResults ->
+            toggleChartsVisibility(!listResults.isNullOrEmpty())
             if (listResults.isNullOrEmpty()) {
                 resetUI()
                 return@observe
@@ -81,7 +82,11 @@ class WorkoutOverviewFragment : BaseFragment<FragmentWorkoutOverviewBinding, Wor
 
         viewModel.fetchRange(userId, start, end)
     }
-
+    private fun toggleChartsVisibility(isVisible: Boolean) {
+        val visibility = if (isVisible) android.view.View.VISIBLE else android.view.View.GONE
+        binding.viewPagerCharts.visibility = visibility
+        binding.dotsIndicator.visibility = visibility
+    }
     private fun processWorkoutData(list: List<WorkoutResultModel>) {
 
         val weight = viewModel.userWeight.value ?: 60f

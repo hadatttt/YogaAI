@@ -1,5 +1,6 @@
 package com.hadat.aiyoga.multimodeyoga
 
+import android.content.Context
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.google.mediapipe.tasks.vision.poselandmarker.PoseLandmarkerResult
@@ -27,7 +28,6 @@ class MultiModeYogaViewModel : BaseViewModel() {
     val currentPose: LiveData<SequenceModel?> = _currentPose
 
     private val _currentPoseIndex = MutableLiveData(0)
-    val currentPoseIndex: LiveData<Int> = _currentPoseIndex
 
     private val _poseCountText = MutableLiveData("1/1")
     val poseCountText: LiveData<String> = _poseCountText
@@ -66,7 +66,7 @@ class MultiModeYogaViewModel : BaseViewModel() {
     private var isPreviousFrameCorrect = true
     private var isAdvancingPose = false
 
-    fun startWorkout(sequence: WorkoutSequenceModel) {
+    fun startWorkout(context: android.content.Context, sequence: WorkoutSequenceModel) {
         sequencePoses = sequence.poses
         completedResults.clear()
         sessionImagePaths.clear()
@@ -76,7 +76,7 @@ class MultiModeYogaViewModel : BaseViewModel() {
             return
         }
 
-        openPose(0)
+        openPose(context, 0)
     }
 
     fun toggleCaptureWait() {
@@ -89,12 +89,12 @@ class MultiModeYogaViewModel : BaseViewModel() {
 
     fun getCapturedImages(): List<String> = sessionImagePaths.toList()
 
-    fun processCoachLogic(result: PoseLandmarkerResult) {
+    fun processCoachLogic(context: android.content.Context, result: PoseLandmarkerResult) {
         val current = _currentPose.value ?: return
         val poseId = current.id.toIntOrNull() ?: -1
         if (poseId == -1 || _isTrackingStarted.value != true || isAdvancingPose) return
 
-        val (isCorrect, feedback) = YogaCoachUtils.getCoachFeedback(poseId, result)
+        val (isCorrect, feedback) = YogaCoachUtils.getCoachFeedback(context, poseId, result)
 
         if (isCorrect) {
             hasStartedCorrectPose = true
@@ -111,16 +111,17 @@ class MultiModeYogaViewModel : BaseViewModel() {
         }
 
         if (isCorrect) {
-            _currentGuideText.postValue("✅ Tư thế chuẩn! Đang đếm giờ...")
+            val perfectMsg = context.getString(com.hadat.aiyoga.R.string.guide_perfect_counting)
+            _currentGuideText.postValue(perfectMsg)
         } else {
             _currentGuideText.postValue("⚠️ $feedback")
             _speakCommand.postValue(feedback)
         }
     }
 
-    fun moveToNextPose() {
+    fun moveToNextPose(context: Context) {
         if (isAdvancingPose) return
-        completeCurrentPoseAndAdvance()
+        completeCurrentPoseAndAdvance(context)
     }
 
     fun stopTracking() {
@@ -147,7 +148,7 @@ class MultiModeYogaViewModel : BaseViewModel() {
         }.toTypedArray()
     }
 
-    private fun openPose(index: Int) {
+    private fun openPose(context: android.content.Context, index: Int) {
         val pose = sequencePoses.getOrNull(index)
         if (pose == null) {
             _sessionCompleted.postValue(Unit)
@@ -167,13 +168,13 @@ class MultiModeYogaViewModel : BaseViewModel() {
         _poseCountText.postValue("${index + 1}/${sequencePoses.size}")
         _timerText.postValue("00:00")
         _isTrackingStarted.postValue(true)
-        _currentGuideText.postValue("Vào tư thế để bắt đầu tính giờ!")
-        _speakCommand.postValue("Bắt đầu ${pose.name}")
-
-        startLogicalTimer()
+        _currentGuideText.postValue(context.getString(com.hadat.aiyoga.R.string.guide_get_ready))
+        val startMsg = "${context.getString(com.hadat.aiyoga.R.string.start_command)} ${pose.name}"
+        _speakCommand.postValue(startMsg)
+        startLogicalTimer(context)
     }
 
-    private fun completeCurrentPoseAndAdvance() {
+    private fun completeCurrentPoseAndAdvance(context: android.content.Context) {
         val current = _currentPose.value ?: return
         isAdvancingPose = true
 
@@ -192,11 +193,11 @@ class MultiModeYogaViewModel : BaseViewModel() {
             stopTracking()
             _sessionCompleted.postValue(Unit)
         } else {
-            openPose(nextIndex)
+            openPose(context, nextIndex)
         }
     }
 
-    private fun startLogicalTimer() {
+    private fun startLogicalTimer(context: Context) {
         exerciseTimer?.cancel()
         exerciseTimer = Timer()
         exerciseTimer?.scheduleAtFixedRate(object : TimerTask() {
@@ -205,7 +206,7 @@ class MultiModeYogaViewModel : BaseViewModel() {
                     currentPoseSeconds++
                     updateTimerUI()
                     if (currentTargetSeconds > 0 && currentPoseSeconds >= currentTargetSeconds) {
-                        completeCurrentPoseAndAdvance()
+                        completeCurrentPoseAndAdvance(context)
                     }
                 }
             }
@@ -228,6 +229,29 @@ class MultiModeYogaViewModel : BaseViewModel() {
     override fun onCleared() {
         exerciseTimer?.cancel()
         super.onCleared()
+    }
+    fun resetData() {
+        stopTracking()
+
+        sequencePoses = emptyList()
+        sessionImagePaths.clear()
+        completedResults.clear()
+
+        currentPoseSeconds = 0
+        currentTargetSeconds = 0
+        currentErrorCount = 0
+        isCurrentlyCorrect = false
+        hasStartedCorrectPose = false
+        isPreviousFrameCorrect = false
+        isAdvancingPose = false
+
+        _currentPose.value = null
+        _currentPoseIndex.value = 0
+        _poseCountText.value = "1/1"
+        _timerText.value = "00:00"
+        _currentGuideText.value = ""
+        _isTrackingStarted.value = false
+        _isWaitingForCapture.value = false
     }
 }
 

@@ -1,6 +1,7 @@
-package com.hadat.aiyoga.utils.yogautils
+package com.hadat.aiyoga.data.remoteconfig
 
 import android.annotation.SuppressLint
+import android.content.Context
 import android.util.Log
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.remoteconfig.ktx.remoteConfig
@@ -11,13 +12,14 @@ import com.hadat.aiyoga.R
 import com.hadat.aiyoga.detailyoga.YogaPoseAngleModel
 import com.hadat.aiyoga.detailyoga.YogaPoseDetailModel
 import com.hadat.aiyoga.home.CategoryModel
+import com.hadat.aiyoga.utils.yogautils.YogaMetModel
 import com.hadat.aiyoga.yogamain.YogaPoseModel
+import kotlin.collections.forEach
 
 object YogaDataUtils {
     private const val TAG = "YogaDataUtils"
     private const val CONFIG_YOGA_MET_KEY = "data_yoga_met"
     private const val CONFIG_YOGA_KEY = "data_yoga_image"
-    private const val CONFIG_CATEGORY_KEY = "data_yoga_categories"
     private const val CONFIG_DETAIL_KEY = "data_yoga_details"
     private const val CONFIG_YOGA_ANGLES_KEY = "data_yoga_angles"
 
@@ -114,25 +116,8 @@ object YogaDataUtils {
             null
         }
     }
-    fun getRemoteYogaCategories(onResult: (List<CategoryModel>?) -> Unit) {
-        remoteConfig.fetchAndActivate().addOnCompleteListener { task ->
-            if (task.isSuccessful) {
-                val json = remoteConfig.getString(CONFIG_CATEGORY_KEY)
-                Log.d(TAG, "JSON Categories nhận được: '$json'")
 
-                if (json.isNotEmpty()) {
-                    onResult(parseCategoryJson(json))
-                } else {
-                    Log.e(TAG, "Nội dung Key '$CONFIG_CATEGORY_KEY' bị trống")
-                    onResult(null)
-                }
-            } else {
-                onResult(null)
-            }
-        }
-    }
-
-    fun getLocalizedCategory(context: android.content.Context, rawValue: String): String {
+    fun getLocalizedCategory(context: Context, rawValue: String): String {
         return when (rawValue.trim()) {
             "All" -> context.getString(R.string.category_all)
             "Standing" -> context.getString(R.string.category_standing)
@@ -145,6 +130,18 @@ object YogaDataUtils {
             else -> rawValue
         }
     }
+    fun getLocalYogaCategories(): List<CategoryModel> {
+        return listOf(
+            CategoryModel(value = "All", displayValue = "All"),
+            CategoryModel(value = "Standing", displayValue = "Standing"),
+            CategoryModel(value = "Seated", displayValue = "Seated"),
+            CategoryModel(value = "Prone", displayValue = "Prone"),
+            CategoryModel(value = "Supine", displayValue = "Supine"),
+            CategoryModel(value = "Inversion", displayValue = "Inversion"),
+            CategoryModel(value = "Arm Balance", displayValue = "Arm Balance"),
+            CategoryModel(value = "Arm Leg Support", displayValue = "Arm Leg Support")
+        )
+    }
 
     private fun parseJsonToModel(json: String): List<YogaPoseModel>? {
         return try {
@@ -156,23 +153,12 @@ object YogaDataUtils {
         }
     }
 
-    private fun parseCategoryJson(json: String): List<CategoryModel>? {
-        return try {
-            val listType = object : TypeToken<List<CategoryModel>>() {}.type
-            gson.fromJson<List<CategoryModel>>(json, listType)
-        } catch (e: Exception) {
-            Log.e(TAG, "❌ Lỗi Parse Category GSON: ${e.message}")
-            null
-        }
-    }
     fun getRemoteYogaDetail(id: Int, onResult: (YogaPoseDetailModel?) -> Unit) {
         remoteConfig.fetchAndActivate().addOnCompleteListener { task ->
             if (task.isSuccessful) {
                 val json = remoteConfig.getString(CONFIG_DETAIL_KEY)
                 if (json.isNotEmpty()) {
-                    // Sửa chỗ này: Parse thành List thay vì Map
                     val detailList = parseDetailListJson(json)
-                    // Tìm kiếm tư thế có ID trùng với ID truyền vào
                     val detail = detailList?.find { it.id == id }
                     onResult(detail)
                 } else {

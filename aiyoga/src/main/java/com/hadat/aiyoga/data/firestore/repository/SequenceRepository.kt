@@ -23,6 +23,7 @@ class SequenceRepository {
             val data = hashMapOf(
                 "id" to docRef.id,
                 "userId" to sequence.userId,
+                "authorName" to sequence.authorName,
                 "title" to sequence.title,
                 "coverImageUrl" to sequence.coverImageUrl,
                 "totalDuration" to sequence.totalDuration,
@@ -160,6 +161,20 @@ class SequenceRepository {
         } catch (e: Exception) {
             e.printStackTrace()
             emptyList()
+        }
+    }
+    suspend fun deleteSequence(sequenceId: String): Boolean = withContext(Dispatchers.IO) {
+        return@withContext try {
+            if (sequenceId.isBlank()) return@withContext false
+
+            sequenceCollection.document(sequenceId)
+                .delete()
+                .await()
+
+            true
+        } catch (e: Exception) {
+            e.printStackTrace()
+            false
         }
     }
 }

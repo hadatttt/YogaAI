@@ -21,7 +21,15 @@ class CommunityMySequenceViewModel : BaseViewModel() {
         fetchMySequences(userId = userId)
         fetchCommunitySequences(userId = userId)
     }
-
+    fun deleteSequence(sequenceId: String, userId: String) {
+        viewModelScope.launch {
+            val success = sequenceRepository.deleteSequence(sequenceId)
+            if (success) {
+                fetchAll(userId)
+            } else {
+            }
+        }
+    }
     fun selectCategory(category: CommunityCategory, userId: String) {
         if (selectedCategory.value == category && communitySequences.value?.isNotEmpty() == true) return
         selectedCategory.value = category

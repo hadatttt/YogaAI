@@ -18,6 +18,7 @@ import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.content.ContextCompat
 import com.google.mediapipe.tasks.vision.core.RunningMode
 import com.hadat.aiyoga.databinding.FragmentSingleYogaBinding
+import com.hadat.aiyoga.service.AppPreferences
 import com.hadat.aiyoga.singleyoga.WorkoutResultModel
 import com.hadat.aiyoga.utils.ModelDownloader
 import com.hadat.aiyoga.utils.PoseLandmarkerHelper
@@ -67,7 +68,7 @@ class YogaFragment : BaseFragment<FragmentSingleYogaBinding, YogaViewModel>(),
 
         ModelDownloader.downloadAllModels(requireContext(),
             onProgress = { progress ->
-                activity?.runOnUiThread { binding.tvGuide.text = "Loading: $progress%" }
+                activity?.runOnUiThread { binding.tvGuide.text = "$progress%" }
             },
             onComplete = { success ->
                 if (success) initializeAiResources()
@@ -133,7 +134,7 @@ class YogaFragment : BaseFragment<FragmentSingleYogaBinding, YogaViewModel>(),
             binding.overlayView.invalidate()
             val now = System.currentTimeMillis()
             if (now - lastCoachTime >= COACH_INTERVAL) {
-                viewModel.processCoachLogic(resultBundle.results.first())
+                viewModel.processCoachLogic(requireContext(), resultBundle.results.first())
                 lastCoachTime = now
             }
         }
@@ -204,7 +205,7 @@ class YogaFragment : BaseFragment<FragmentSingleYogaBinding, YogaViewModel>(),
         if (confidence > 0.65f) {
             if (maxIdx == lastPendingPoseId) poseCounter++ else { lastPendingPoseId = maxIdx; poseCounter = 0 }
             if (poseCounter >= STABLE_THRESHOLD) {
-                activity?.runOnUiThread { viewModel.handlePoseInference(maxIdx) }
+                activity?.runOnUiThread { viewModel.handlePoseInference(requireContext(), maxIdx) }
             }
         }
         bitmap.recycle(); scaled.recycle()
@@ -223,6 +224,7 @@ class YogaFragment : BaseFragment<FragmentSingleYogaBinding, YogaViewModel>(),
     }
 
     override fun initData() {
+        viewModel.resetData()
         viewModel.currentPoseName.observe(viewLifecycleOwner) { name ->
             binding.tvYogaName.text = name
         }
@@ -230,7 +232,7 @@ class YogaFragment : BaseFragment<FragmentSingleYogaBinding, YogaViewModel>(),
             if (isWaiting) {
                 binding.ivPhoto.backgroundTintList = android.content.res.ColorStateList.valueOf(android.graphics.Color.RED)
                 binding.ivPhoto.imageTintList = android.content.res.ColorStateList.valueOf(android.graphics.Color.WHITE)
-                binding.tvGuide.text = "Giữ đúng tư thế để chụp ảnh!"
+                binding.tvGuide.text = getString(com.hadat.aiyoga.R.string.guide_hold_to_capture)
             } else {
                 binding.ivPhoto.backgroundTintList = android.content.res.ColorStateList.valueOf(android.graphics.Color.parseColor("#E4E3F3"))
                 binding.ivPhoto.imageTintList = android.content.res.ColorStateList.valueOf(ContextCompat.getColor(requireContext(), com.hadat.aiyoga.R.color.primary))
@@ -309,7 +311,17 @@ class YogaFragment : BaseFragment<FragmentSingleYogaBinding, YogaViewModel>(),
 
     private fun initTextToSpeech() {
         tts = TextToSpeech(requireContext()) { status ->
-            if (status == TextToSpeech.SUCCESS) tts?.language = Locale("vi", "VN")
+            if (status == TextToSpeech.SUCCESS) {
+                val langCode = AppPreferences.getLanguageCode(requireContext())
+                val locale = if (langCode == "vi") {
+                    Locale("vi", "VN")
+                } else {
+                    Locale.ENGLISH
+                }
+                val result = tts?.setLanguage(locale)
+                if (result == TextToSpeech.LANG_MISSING_DATA || result == TextToSpeech.LANG_NOT_SUPPORTED) {
+                }
+            }
         }
     }
 
@@ -352,7 +364,7 @@ class YogaFragment : BaseFragment<FragmentSingleYogaBinding, YogaViewModel>(),
         val bundle = Bundle().apply {
             putParcelableArray("workout_result_list", results)
         }
-        navigate(com.hadat.aiyoga.R.id.resultFragment, bundle)
+        navigate(com.hadat.aiyoga.R.id.resultFragment, bundle,isPop = true)
         viewModel.clearData()
     }
 

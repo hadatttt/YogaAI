@@ -20,6 +20,7 @@ import com.hadat.aiyoga.utils.CloudinaryUtils
 import com.hadat.aiyoga.utils.ViewUtils.removeVietnameseAccents
 import com.hadat.aiyoga.utils.loadImageFromNetwork
 import hoang.dqm.codebase.base.activity.BaseFragment
+import hoang.dqm.codebase.base.activity.navigate
 import hoang.dqm.codebase.base.activity.navigateWithPopAll
 import hoang.dqm.codebase.base.activity.popBackStack
 import hoang.dqm.codebase.utils.singleClick
@@ -54,14 +55,19 @@ class ProfileFragment : BaseFragment<FragmentProfileBinding, ProfileViewModel>()
     override fun initData() {
         val userId = AppPreferences.getUserId(requireContext()) ?: return
         viewModel.loadUser(userId)
-
+        viewModel.loadHealthProfile(userId)
         viewModel.userData.observe(viewLifecycleOwner) { user ->
             user ?: return@observe
             binding.edtDisplayName.setText(user.displayName.removeVietnameseAccents())
             currentPhotoUrl = user.photoUrl
             binding.imgAvatar.loadImageFromNetwork(user.photoUrl)
         }
-
+        viewModel.healthProfileData.observe(viewLifecycleOwner) { profile ->
+            profile?.let {
+                binding.tvHeightValue.text = "${it.height.toInt()} cm"
+                binding.tvWeightValue.text = "${it.weight.toInt()} kg"
+            }
+        }
         viewModel.saveStatus.observe(viewLifecycleOwner) { ok ->
             if (ok == null) return@observe
             showToast(if (ok) getString(R.string.profile_updated) else getString(R.string.update_failed))
@@ -74,7 +80,9 @@ class ProfileFragment : BaseFragment<FragmentProfileBinding, ProfileViewModel>()
         binding.ivEditAvatar.singleClick { pickImageLauncher.launch("image/*") }
         binding.layoutNotificationTime.singleClick { showTimePicker() }
         binding.layoutLanguage.singleClick { showLanguagePicker() }
-
+        binding.layoutBodyStats.singleClick {
+            navigateWithPopAll(R.id.informationFragment)
+        }
         binding.ivSave.singleClick {
             NotificationHelper.checkPermission(this, onGranted = {
                 NotificationWorker.scheduleDailyNotifications(requireContext(), listOf(reminderTime))

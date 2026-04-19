@@ -5,7 +5,7 @@ import android.view.MotionEvent
 import androidx.recyclerview.widget.RecyclerView
 import com.hadat.aiyoga.databinding.ItemPoseSequenceBinding
 import com.hadat.aiyoga.utils.loadImageFromNetwork
-import com.hadat.aiyoga.utils.yogautils.YogaDataUtils
+import com.hadat.aiyoga.data.remoteconfig.YogaDataUtils
 import hoang.dqm.codebase.base.adapter.BaseRecyclerViewAdapter
 import java.util.Collections
 

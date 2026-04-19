@@ -6,7 +6,7 @@ import com.hadat.aiyoga.data.firestore.repository.HealthProfileRepository
 import com.hadat.aiyoga.data.firestore.repository.WorkoutRepository
 import com.hadat.aiyoga.singleyoga.WorkoutResultModel
 import com.hadat.aiyoga.utils.yogautils.HealthCalculatorUtils
-import com.hadat.aiyoga.utils.yogautils.YogaDataUtils
+import com.hadat.aiyoga.data.remoteconfig.YogaDataUtils
 import hoang.dqm.codebase.base.viewmodel.BaseViewModel
 import kotlinx.coroutines.launch
 class WorkoutOverviewViewModel : BaseViewModel() {

@@ -7,7 +7,9 @@ import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.firebase.auth.FirebaseAuth
 import com.hadat.aiyoga.R
+import com.hadat.aiyoga.data.firestore.model.HealthProfileModel
 import com.hadat.aiyoga.data.firestore.model.User
+import com.hadat.aiyoga.data.firestore.repository.HealthProfileRepository
 import com.hadat.aiyoga.data.firestore.repository.UserRepository
 import com.hadat.aiyoga.service.AppPreferences
 import hoang.dqm.codebase.base.viewmodel.BaseViewModel
@@ -15,10 +17,16 @@ import kotlinx.coroutines.launch
 
 class ProfileViewModel : BaseViewModel() {
     private val userRepository = UserRepository()
-
+    private val healthRepo= HealthProfileRepository()
+    val healthProfileData = MutableLiveData<HealthProfileModel?>()
     val userData = MutableLiveData<User?>()
     val saveStatus = MutableLiveData<Boolean?>(null)
-
+    fun loadHealthProfile(userId: String) {
+        viewModelScope.launch {
+            val profile = healthRepo.getProfile(userId)
+            healthProfileData.postValue(profile)
+        }
+    }
     fun loadUser(userId: String) {
         if (userId.isBlank()) return
         viewModelScope.launch {

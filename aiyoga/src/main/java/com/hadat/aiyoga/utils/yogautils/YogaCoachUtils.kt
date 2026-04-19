@@ -1,8 +1,11 @@
 package com.hadat.aiyoga.utils.yogautils
 
+import android.content.Context
 import android.util.Log
 import com.google.mediapipe.tasks.vision.poselandmarker.PoseLandmarkerResult
 import com.google.mediapipe.tasks.components.containers.NormalizedLandmark
+import com.hadat.aiyoga.R
+import com.hadat.aiyoga.data.remoteconfig.YogaDataUtils
 import com.hadat.aiyoga.detailyoga.YogaPoseAngleModel
 import kotlin.math.*
 
@@ -95,15 +98,15 @@ object YogaCoachUtils {
         return smooth
     }
 
-    fun getCoachFeedback(poseId: Int, result: PoseLandmarkerResult): Pair<Boolean, String> {
+    fun getCoachFeedback(context: Context, poseId: Int, result: PoseLandmarkerResult): Pair<Boolean, String> {
         val landmarks = result.landmarks()
         if (landmarks.isNullOrEmpty()) {
             smoothedAngles.clear()
-            return false to "Hãy đứng rõ vào khung hình"
+            return false to context.getString(R.string.guide_stand_clear)
         }
         val lm = landmarks[0]
-        val rawRefModel = referenceData?.get(poseId) ?: return true to "Đang phân tích..."
-        val poseName = rawRefModel.name
+        val rawRefModel = referenceData?.get(poseId) ?: return true to context.getString(R.string.guide_analyzing)
+
         val u = mapOf(
             "knee_L" to getSmoothAngle("knee_L", calculateAngleVector(lm[L_HIP], lm[L_KNEE], lm[L_ANKLE])),
             "knee_R" to getSmoothAngle("knee_R", calculateAngleVector(lm[R_HIP], lm[R_KNEE], lm[R_ANKLE])),
@@ -124,17 +127,6 @@ object YogaCoachUtils {
 
         val shouldSwap = calcTotalDiff(u, swapRefMap) < calcTotalDiff(u, rawRefMap)
         val ref = if (shouldSwap) swapRefMap else rawRefMap
-
-        Log.d("YogaCoach", "--- [$poseName] So sánh góc (ShouldSwap: $shouldSwap) ---")
-        u.forEach { (key, userAngle) ->
-            val targetAngle = ref[key] ?: 0.0
-            val diff = angleDiff(userAngle, targetAngle)
-            Log.d("YogaCoach",
-                "Góc $key: Máy đo = ${"%.1f".format(userAngle)}° | " +
-                        "Firebase = ${"%.1f".format(targetAngle)}° | " +
-                        "Lệch = ${"%.1f".format(diff)}°"
-            )
-        }
 
         val weights = mapOf(
             "knee_L" to 1.0, "knee_R" to 1.0, "hip_L" to 1.5, "hip_R" to 1.5,
@@ -159,32 +151,35 @@ object YogaCoachUtils {
         val percent = (finalScore * 100).toInt()
         val errors = mutableListOf<Pair<Double, String>>()
 
-        fun check(current: Double, key: String, side: String, low: String, high: String) {
+        fun check(current: Double, key: String, sideIsLeft: Boolean, lowResId: Int, highResId: Int) {
             val target = ref[key] ?: return
             val diff = angleDiff(current, target)
 
             if (diff > 25) {
-                val displaySide = if (shouldSwap) (if (side == "trái") "phải" else "trái") else side
-                val msg = if (current < target) low else high
-                errors.add(diff to "$msg $displaySide")
+                val actualSideIsLeft = if (shouldSwap) !sideIsLeft else sideIsLeft
+                val sideStr = context.getString(if (actualSideIsLeft) R.string.side_left else R.string.side_right)
+                val actionStr = context.getString(if (current < target) lowResId else highResId)
+
+                errors.add(diff to "$actionStr $sideStr")
             }
         }
 
-        check(u["knee_L"]!!, "knee_L", "trái", "Mở gối", "Khép gối")
-        check(u["knee_R"]!!, "knee_R", "phải", "Mở gối", "Khép gối")
-        check(u["hip_L"]!!, "hip_L", "trái", "Hạ hông", "Nâng hông")
-        check(u["hip_R"]!!, "hip_R", "phải", "Hạ hông", "Nâng hông")
-        check(u["arm_body_L"]!!, "arm_body_L", "trái", "Nâng tay", "Hạ tay")
-        check(u["arm_body_R"]!!, "arm_body_R", "phải", "Nâng tay", "Hạ tay")
-        check(u["elbow_L"]!!, "elbow_L", "trái", "Duỗi tay", "Gập tay")
-        check(u["elbow_R"]!!, "elbow_R", "phải", "Duỗi tay", "Gập tay")
+        check(u["knee_L"]!!, "knee_L", true, R.string.guide_open_knee, R.string.guide_close_knee)
+        check(u["knee_R"]!!, "knee_R", false, R.string.guide_open_knee, R.string.guide_close_knee)
+        check(u["hip_L"]!!, "hip_L", true, R.string.guide_lower_hip, R.string.guide_raise_hip)
+        check(u["hip_R"]!!, "hip_R", false, R.string.guide_lower_hip, R.string.guide_raise_hip)
+        check(u["arm_body_L"]!!, "arm_body_L", true, R.string.guide_raise_arm, R.string.guide_lower_arm)
+        check(u["arm_body_R"]!!, "arm_body_R", false, R.string.guide_raise_arm, R.string.guide_lower_arm)
+        check(u["elbow_L"]!!, "elbow_L", true, R.string.guide_straighten_arm, R.string.guide_bend_arm)
+        check(u["elbow_R"]!!, "elbow_R", false, R.string.guide_straighten_arm, R.string.guide_bend_arm)
 
         val worst = errors.maxByOrNull { it.first }
 
         return if (percent > 85) {
-            true to "Chuẩn rồi! ($percent%)"
+            true to "${context.getString(R.string.guide_perfect)} ($percent%)"
         } else {
-            false to (worst?.second ?: "Giữ vững! ($percent%)")
+            val fallback = "${context.getString(R.string.guide_keep_steady)} ($percent%)"
+            false to (worst?.second ?: fallback)
         }
     }
 
@@ -232,10 +227,5 @@ object YogaCoachUtils {
         Log.d("YogaCoach", "📸 Static Image Score: ${finalPercent.toInt()}%")
         return finalPercent > 80.0
     }
-    fun getPoseLabels(): List<String> {
-        return referenceData?.values
-            ?.sortedBy { it.id }
-            ?.map { it.name }
-            ?: emptyList()
-    }
+
 }

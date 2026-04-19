@@ -10,6 +10,7 @@ import android.speech.tts.TextToSpeech
 import android.view.MotionEvent
 import android.view.Surface
 import android.view.View
+import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.camera.core.AspectRatio
 import androidx.camera.core.CameraSelector
@@ -83,7 +84,7 @@ class MultiModeYogaFragment : BaseFragment<FragmentMultiModeYogaBinding, MultiMo
             YogaCoachUtils.loadReferenceData { isSuccess ->
                 if (isSuccess) {
                     activity?.runOnUiThread {
-                        args.detailSequence?.let { viewModel.startWorkout(it) }
+                        args.detailSequence?.let { viewModel.startWorkout(requireContext(),it) }
                     }
                 }
             }
@@ -125,6 +126,7 @@ class MultiModeYogaFragment : BaseFragment<FragmentMultiModeYogaBinding, MultiMo
     }
 
     override fun initData() {
+        viewModel.resetData()
         viewModel.currentGuideText.observe(viewLifecycleOwner) { binding.tvGuide.text = it }
         viewModel.timerText.observe(viewLifecycleOwner) { binding.tvTimer.text = it }
         viewModel.poseCountText.observe(viewLifecycleOwner) { binding.tvPoseIndex.text = it }
@@ -140,7 +142,7 @@ class MultiModeYogaFragment : BaseFragment<FragmentMultiModeYogaBinding, MultiMo
                     android.content.res.ColorStateList.valueOf(android.graphics.Color.RED)
                 binding.ivPhoto.imageTintList =
                     android.content.res.ColorStateList.valueOf(android.graphics.Color.WHITE)
-                binding.tvGuide.text = "Giữ đúng tư thế để chụp ảnh!"
+                binding.tvGuide.text = getString(com.hadat.aiyoga.R.string.guide_hold_to_capture)
             } else {
                 binding.ivPhoto.backgroundTintList =
                     android.content.res.ColorStateList.valueOf(android.graphics.Color.parseColor("#E4E3F3"))
@@ -176,7 +178,7 @@ class MultiModeYogaFragment : BaseFragment<FragmentMultiModeYogaBinding, MultiMo
             }
             bindCameraUseCases()
         }
-        binding.btnNextPose.singleClick { viewModel.moveToNextPose() }
+        binding.btnNextPose.singleClick { viewModel.moveToNextPose(requireContext()) }
 
         binding.progressAround.apply {
             progressMax = 100f
@@ -290,7 +292,7 @@ class MultiModeYogaFragment : BaseFragment<FragmentMultiModeYogaBinding, MultiMo
 
             val now = System.currentTimeMillis()
             if (now - lastCoachTime >= coachInterval) {
-                viewModel.processCoachLogic(resultBundle.results.first())
+                viewModel.processCoachLogic(requireContext(), resultBundle.results.first())
                 lastCoachTime = now
             }
         }
@@ -313,7 +315,18 @@ class MultiModeYogaFragment : BaseFragment<FragmentMultiModeYogaBinding, MultiMo
     private fun initTextToSpeech() {
         tts = TextToSpeech(requireContext()) { status ->
             if (status == TextToSpeech.SUCCESS) {
-                tts?.language = Locale("vi", "VN")
+                val langCode = AppPreferences.getLanguageCode(requireContext())
+
+                val locale = if (langCode == "vi") {
+                    Locale("vi", "VN")
+                } else {
+                    Locale.ENGLISH
+                }
+
+                val result = tts?.setLanguage(locale)
+
+                if (result == TextToSpeech.LANG_MISSING_DATA || result == TextToSpeech.LANG_NOT_SUPPORTED) {
+                }
             }
         }
     }
@@ -340,36 +353,31 @@ class MultiModeYogaFragment : BaseFragment<FragmentMultiModeYogaBinding, MultiMo
             .setDuration(800)
             .withEndAction { (binding.root as android.view.ViewGroup).removeView(photoView) }
             .start()
-        saveScreenshot()
+        saveScreenshot(bitmap)
     }
 
-    private fun saveScreenshot() {
-        val bitmap = binding.viewFinder.bitmap ?: return
-        val filename = "Yoga_${System.currentTimeMillis()}.jpg"
+    private fun saveScreenshot(bitmap: Bitmap) {
+        val filename = "Yoga_Sequence_${System.currentTimeMillis()}.jpg"
         val contentValues = android.content.ContentValues().apply {
             put(android.provider.MediaStore.MediaColumns.DISPLAY_NAME, filename)
             put(android.provider.MediaStore.MediaColumns.MIME_TYPE, "image/jpeg")
-            put(
-                android.provider.MediaStore.Images.Media.RELATIVE_PATH,
-                android.os.Environment.DIRECTORY_PICTURES + "/AI_Yoga"
-            )
+            put(android.provider.MediaStore.Images.Media.RELATIVE_PATH, android.os.Environment.DIRECTORY_PICTURES + "/AI_Yoga")
         }
+
         val uri = requireContext().contentResolver.insert(
-            android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
-            contentValues
+            android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI, contentValues
         )
+
         uri?.let {
             requireContext().contentResolver.openOutputStream(it)?.use { out ->
                 bitmap.compress(Bitmap.CompressFormat.JPEG, 100, out)
             }
             viewModel.addCapturedImage(it.toString())
-            activity?.runOnUiThread {
-                android.widget.Toast.makeText(
-                    requireContext(),
-                    "Đã lưu ảnh vào thư viện!",
-                    android.widget.Toast.LENGTH_SHORT
-                ).show()
-            }
+            Toast.makeText(
+                requireContext(),
+                getString(com.hadat.aiyoga.R.string.save_photo),
+                Toast.LENGTH_SHORT
+            ).show()
         }
     }
 
@@ -389,7 +397,7 @@ class MultiModeYogaFragment : BaseFragment<FragmentMultiModeYogaBinding, MultiMo
         val bundle = Bundle().apply {
             putParcelableArray("workout_result_list", results)
         }
-        navigate(R.id.resultFragment, bundle)
+        navigate(R.id.resultFragment, bundle,isPop = true)
     }
 }
 

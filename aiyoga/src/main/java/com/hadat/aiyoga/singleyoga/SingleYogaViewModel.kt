@@ -5,7 +5,7 @@ import androidx.lifecycle.MutableLiveData
 import com.google.mediapipe.tasks.vision.poselandmarker.PoseLandmarkerResult
 import com.hadat.aiyoga.yogamain.YogaPoseModel
 import com.hadat.aiyoga.utils.yogautils.YogaCoachUtils
-import com.hadat.aiyoga.utils.yogautils.YogaDataUtils
+import com.hadat.aiyoga.data.remoteconfig.YogaDataUtils
 import hoang.dqm.codebase.base.viewmodel.BaseViewModel
 import java.util.*
 
@@ -57,7 +57,7 @@ class SingleYogaViewModel : BaseViewModel() {
     fun getErrorCount(): Int {
         return errorCount
     }
-    fun startSinglePoseTracking(poseId: Int) {
+    fun startSinglePoseTracking(context: android.content.Context, poseId: Int) {
         exerciseTimer?.cancel()
         exerciseTimer = null
         totalSecondsAccumulated = 0
@@ -69,37 +69,36 @@ class SingleYogaViewModel : BaseViewModel() {
         _timerText.postValue("00:00")
         _isTrackingStarted.postValue(true)
         startLogicalTimer()
-        _currentGuideText.postValue("Vào tư thế để bắt đầu tính giờ!")
-        _speakCommand.postValue("Bắt đầu")
+        _currentGuideText.postValue(context.getString(com.hadat.aiyoga.R.string.guide_get_ready))
+        _speakCommand.postValue(context.getString(com.hadat.aiyoga.R.string.start_command))
     }
     fun stopTracking() {
         exerciseTimer?.cancel()
         exerciseTimer = null
         _isTrackingStarted.postValue(false)
     }
-    fun processCoachLogic(result: PoseLandmarkerResult, poseId: Int) {
+    fun processCoachLogic(context: android.content.Context, result: PoseLandmarkerResult, poseId: Int) {
         if (poseId != -1 && _isTrackingStarted.value == true) {
-            val (isCorrect, feedback) = YogaCoachUtils.getCoachFeedback(poseId, result)
+            val (isCorrect, feedback) = YogaCoachUtils.getCoachFeedback(context, poseId, result)
 
             if (isCorrect) {
                 hasStartedCorrectPose = true
             } else {
                 if (hasStartedCorrectPose && isPreviousFrameCorrect) {
                     errorCount++
-                    android.util.Log.d("YogaCoach", "❌ Lỗi phát sinh! Tổng lỗi: $errorCount")
                 }
             }
 
             isPreviousFrameCorrect = isCorrect
             isCurrentlyCorrect = isCorrect
-
             if (isCorrect && _isWaitingForCapture.value == true) {
                 _captureTrigger.postValue(Unit)
                 _isWaitingForCapture.postValue(false)
             }
 
             if (isCorrect) {
-                _currentGuideText.postValue("✅ Tư thế chuẩn! Đang đếm giờ...")
+                val perfectMsg = context.getString(com.hadat.aiyoga.R.string.guide_perfect_counting)
+                _currentGuideText.postValue(perfectMsg)
             } else {
                 _currentGuideText.postValue("⚠️ $feedback")
                 _speakCommand.postValue(feedback)
@@ -134,5 +133,19 @@ class SingleYogaViewModel : BaseViewModel() {
     override fun onCleared() {
         exerciseTimer?.cancel()
         super.onCleared()
+    }
+    fun resetData() {
+        exerciseTimer?.cancel()
+        exerciseTimer = null
+        totalSecondsAccumulated = 0
+        errorCount = 0
+        isCurrentlyCorrect = false
+        hasStartedCorrectPose = false
+        isPreviousFrameCorrect = true
+        sessionImagePaths.clear()
+        _timerText.value = "00:00"
+        _currentGuideText.value = ""
+        _isTrackingStarted.value = false
+        _isWaitingForCapture.value = false
     }
 }

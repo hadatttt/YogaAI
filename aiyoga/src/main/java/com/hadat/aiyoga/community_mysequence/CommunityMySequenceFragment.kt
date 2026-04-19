@@ -1,5 +1,8 @@
 package com.hadat.aiyoga.community_mysequence
 
+import android.app.Dialog
+import android.graphics.Color
+import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -12,7 +15,9 @@ import com.hadat.aiyoga.community.CommunityCategory
 import com.hadat.aiyoga.community.CommunityCategoryAdapter
 import com.hadat.aiyoga.community.SequencesCommunityAdapter
 import com.hadat.aiyoga.databinding.FragmentCommunityMySequenceBinding
-import com.hadat.aiyoga.mysequence.MySequenceAdapter
+import com.hadat.aiyoga.community_mysequence.MySequenceAdapter
+import com.hadat.aiyoga.databinding.DialogDeleteBinding
+import com.hadat.aiyoga.sequence.WorkoutSequenceModel
 import com.hadat.aiyoga.service.AppPreferences
 import hoang.dqm.codebase.base.activity.BaseFragment
 import hoang.dqm.codebase.base.activity.navigate
@@ -39,6 +44,9 @@ class CommunityMySequenceFragment : BaseFragment<FragmentCommunityMySequenceBind
                     putParcelable("detail_sequence", sequence)
                 }
                 navigate(R.id.detailSequenceFragment, bundle)
+            },
+            onDeleteClick = { sequence, position ->
+                showDeleteDialog(sequence, position)
             }
         )
     }
@@ -87,11 +95,6 @@ class CommunityMySequenceFragment : BaseFragment<FragmentCommunityMySequenceBind
     private val pagerAdapter by lazy { PagerAdapter() }
 
     override fun initView() {
-        binding.vpCommunityMySequences.adapter = pagerAdapter
-        binding.vpCommunityMySequences.offscreenPageLimit = 1
-    }
-
-    override fun initData() {
         val userId = AppPreferences.getUserId(requireContext()) ?: "guest"
 
         categoryAdapter.setList(CommunityCategory.entries)
@@ -114,9 +117,16 @@ class CommunityMySequenceFragment : BaseFragment<FragmentCommunityMySequenceBind
 
         viewModel.fetchAll(userId = userId)
 
+        binding.vpCommunityMySequences.adapter = pagerAdapter
+        binding.vpCommunityMySequences.offscreenPageLimit = 1
+        binding.vpCommunityMySequences.isUserInputEnabled = false
         val initialTab = arguments?.getInt(ARG_INITIAL_TAB) ?: TAB_COMMUNITY
         binding.vpCommunityMySequences.setCurrentItem(initialTab, false)
         updateTabUI(initialTab)
+    }
+
+    override fun initData() {
+
     }
 
     override fun initListener() {
@@ -130,14 +140,37 @@ class CommunityMySequenceFragment : BaseFragment<FragmentCommunityMySequenceBind
         })
 
         binding.vpCommunityMySequences.getChildAt(0)?.let {
-            // noop: just keeps recycler initialization stable for some devices
         }
     }
+    private fun showDeleteDialog(item: WorkoutSequenceModel, position: Int) {
+        val dialog = Dialog(requireContext())
+        val bindingDialog = DialogDeleteBinding.inflate(layoutInflater)
 
-    override fun onResume() {
-        super.onResume()
-        val userId = AppPreferences.getUserId(requireContext()) ?: "guest"
-        viewModel.fetchAll(userId = userId)
+        dialog.apply {
+            setContentView(bindingDialog.root)
+            window?.apply {
+                setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+                setLayout(
+                    (resources.displayMetrics.widthPixels * 0.85).toInt(),
+                    ViewGroup.LayoutParams.WRAP_CONTENT
+                )
+            }
+        }
+
+        bindingDialog.apply {
+
+            ivClose.singleClick { dialog.dismiss() }
+
+            btnConfirm.singleClick {
+                val userId = AppPreferences.getUserId(requireContext()) ?: ""
+                viewModel.deleteSequence(item.id, userId)
+                mySequenceAdapter.notifyItemRemoved(position)
+
+                dialog.dismiss()
+            }
+        }
+
+        dialog.show()
     }
 
     private fun updateTabUI(selectedTab: Int) {

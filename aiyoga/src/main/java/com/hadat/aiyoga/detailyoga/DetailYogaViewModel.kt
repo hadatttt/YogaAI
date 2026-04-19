@@ -6,7 +6,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.hadat.aiyoga.data.room.AppDatabase
 import com.hadat.aiyoga.data.room.PoseMetadataEntity
-import com.hadat.aiyoga.utils.yogautils.YogaDataUtils
+import com.hadat.aiyoga.data.remoteconfig.YogaDataUtils
 import com.hadat.aiyoga.yogamain.YogaPoseModel
 import hoang.dqm.codebase.base.viewmodel.BaseViewModel
 import kotlinx.coroutines.Dispatchers

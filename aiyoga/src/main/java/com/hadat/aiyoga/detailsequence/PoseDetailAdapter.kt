@@ -3,7 +3,7 @@ package com.hadat.aiyoga.detailsequence
 import com.hadat.aiyoga.databinding.ItemPoseDetailBinding
 import com.hadat.aiyoga.sequence.SequenceModel
 import com.hadat.aiyoga.utils.loadImageFromNetwork
-import com.hadat.aiyoga.utils.yogautils.YogaDataUtils
+import com.hadat.aiyoga.data.remoteconfig.YogaDataUtils
 import hoang.dqm.codebase.base.adapter.BaseRecyclerViewAdapter
 
 class PoseDetailAdapter : BaseRecyclerViewAdapter<SequenceModel, ItemPoseDetailBinding>() {

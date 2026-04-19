@@ -1,12 +1,12 @@
-package com.hadat.aiyoga.mysequence
+package com.hadat.aiyoga.community_mysequence
 
+import android.content.Context
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.viewbinding.ViewBinding
+import com.hadat.aiyoga.R
 import com.hadat.aiyoga.databinding.ItemAddMySequenceBinding
 import com.hadat.aiyoga.databinding.ItemMySequenceBinding
-import com.hadat.aiyoga.R
-import com.hadat.aiyoga.databinding.ItemSequencesCommunityBinding
 import com.hadat.aiyoga.sequence.WorkoutSequenceModel
 import com.hadat.aiyoga.utils.loadImageFromNetwork
 import hoang.dqm.codebase.base.adapter.BaseRecyclerViewAdapter
@@ -15,7 +15,8 @@ import hoang.dqm.codebase.utils.singleClick
 
 class MySequenceAdapter(
     private val onAddClick: () -> Unit,
-    private val onItemClick: (WorkoutSequenceModel) -> Unit
+    private val onItemClick: (WorkoutSequenceModel) -> Unit,
+    private val onDeleteClick: (WorkoutSequenceModel, Int) -> Unit
 ) : BaseRecyclerViewAdapter<WorkoutSequenceModel, ViewBinding>() {
 
     companion object {
@@ -52,7 +53,9 @@ class MySequenceAdapter(
         val context = binding.root.context
 
         binding.root.singleClick { onItemClick(item) }
-
+        binding.ivDelete.singleClick {
+            onDeleteClick(item, holder.bindingAdapterPosition)
+        }
         binding.tvSequenceName.text = item.title
         binding.ivSequenceThumb.loadImageFromNetwork(item.coverImageUrl)
 
@@ -71,7 +74,7 @@ class MySequenceAdapter(
         binding.tvDuration.text = formatDurationToMin(context, item.totalDuration)
     }
 
-    private fun formatDurationToMin(context: android.content.Context, duration: String): String {
+    private fun formatDurationToMin(context: Context, duration: String): String {
         return try {
             val parts = duration.split(":")
             val minutes = if (parts.isNotEmpty()) {

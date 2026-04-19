@@ -38,7 +38,7 @@ class DetailSequenceFragment : BaseFragment<FragmentSequenceDetailBinding, Detai
                 putBoolean("isEdit", true)
                 putParcelableArray("selected_poses_list", null)
             }
-            navigate(R.id.sequencesFragment, bundle)
+            navigate(R.id.sequencesFragment, bundle,isPop = true)
         }
         binding.ivBack.singleClick {
             popBackStack()
@@ -82,7 +82,7 @@ class DetailSequenceFragment : BaseFragment<FragmentSequenceDetailBinding, Detai
             val bundle = Bundle().apply {
                 putParcelable("detail_sequence", sequence)
             }
-            navigate(R.id.multiModeYogaFragment, bundle)
+            navigate(R.id.multiModeYogaFragment, bundle, isPop = true)
         }
     }
 

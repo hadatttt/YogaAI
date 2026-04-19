@@ -185,5 +185,31 @@
     <string name="btn_save_info">Save Information</string>
     <string name="selected_poses_count">Selected Poses (%1$d)</string>
     <string name="by_author">by %1$s</string>
+    <string name="delete_confirmation_title">Confirmation</string>
+    <string name="delete_confirmation_message">Are you sure you want to delete?</string>
+    <string name="undone_action_warning">This action cannot be undone</string>
+    <string name="guide_stand_clear">Please stand clearly in the frame</string>
+    <string name="guide_analyzing">Analyzing...</string>
+    <string name="guide_perfect">Perfect!</string>
+    <string name="guide_keep_steady">Steady!</string>
+    <string name="guide_open_knee">Open knee</string>
+    <string name="guide_close_knee">Close knee</string>
+    <string name="guide_lower_hip">Lower hip</string>
+    <string name="guide_raise_hip">Raise hip</string>
+    <string name="guide_raise_arm">Raise arm</string>
+    <string name="guide_lower_arm">Lower arm</string>
+    <string name="guide_straighten_arm">Straighten arm</string>
+    <string name="guide_bend_arm">Bend arm</string>
+    <string name="side_left">left</string>
+    <string name="side_right">right</string>
+    <string name="guide_perfect_counting">✅ Perfect pose! Counting time...</string>
+    <string name="guide_hold_to_capture">Hold your pose to take a photo!</string>
+    <string name="start_practicing">Start practicing</string>
+    <string name="hold_pose">Hold</string>
+    <string name="prepare_pose">Prepare</string>
+    <string name="status_waiting">Waiting...</string>
+    <string name="guide_get_ready">Get into position to start the timer!</string>
+    <string name="start_command">Start</string>
+    <string name="body_stats">Body Stats</string>
 
 </resources>

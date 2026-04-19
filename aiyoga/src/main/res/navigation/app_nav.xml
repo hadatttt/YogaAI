@@ -123,10 +123,6 @@
                 android:defaultValue="0" />
     </fragment>
 
-    <fragment
-            android:id="@+id/mySequenceFragment"
-            android:name="com.hadat.aiyoga.mysequence.MySequenceFragment"
-            android:label="MySequenceFragment" />
 
     <fragment
             android:id="@+id/profileFragment"
