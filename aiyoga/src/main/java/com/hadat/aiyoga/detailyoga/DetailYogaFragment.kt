@@ -26,6 +26,7 @@ import hoang.dqm.codebase.utils.singleClick
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import com.yalantis.ucrop.UCrop
 
 class DetailYogaFragment : BaseFragment<FragmentDetailYogaBinding, DetailYogaViewModel>(), PoseLandmarkerHelper.LandmarkerListener {
 
@@ -37,9 +38,19 @@ class DetailYogaFragment : BaseFragment<FragmentDetailYogaBinding, DetailYogaVie
     private val benefitAdapter by lazy { BenefitAdapter() }
     private val stepAdapter by lazy { StepAdapter() }
     private val contraAdapter by lazy { ContraindicationAdapter() }
-
+    private val cropImageLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+        if (result.resultCode == android.app.Activity.RESULT_OK) {
+            val resultUri = UCrop.getOutput(result.data!!)
+            resultUri?.let {
+                analyzeAndDrawSkeleton(it)
+            }
+        } else if (result.resultCode == UCrop.RESULT_ERROR) {
+            val error = UCrop.getError(result.data!!)
+            error?.printStackTrace()
+        }
+    }
     private val pickImageLauncher = registerForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
-        uri?.let { analyzeAndDrawSkeleton(it) }
+        uri?.let { startCrop(it) }
     }
 
     override fun initView() {
@@ -48,7 +59,17 @@ class DetailYogaFragment : BaseFragment<FragmentDetailYogaBinding, DetailYogaVie
         setupObservers()
         initPoseLandmarker()
     }
+    private fun startCrop(sourceUri: Uri) {
+        val destinationUri = Uri.fromFile(
+            java.io.File(requireContext().cacheDir, "cropped_${System.currentTimeMillis()}.jpg")
+        )
 
+        val intent = UCrop.of(sourceUri, destinationUri)
+            .withAspectRatio(1f, 1f)
+            .getIntent(requireContext())
+
+        cropImageLauncher.launch(intent)
+    }
     private fun setupStaticUI() {
         val item = args.yogaPoseItem
         binding.apply {

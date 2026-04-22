@@ -1,0 +1,15 @@
+<resources>
+    <string name="ucrop_label_original">Gốc</string>
+    <string name="ucrop_label_edit_photo">Chỉnh sửa ảnh</string>
+    <string name="ucrop_menu_crop">Cắt</string>
+
+    <string name="ucrop_rotate">Xoay</string>
+    <string name="ucrop_scale">Tỷ lệ</string>
+    <string name="ucrop_crop">Cắt</string>
+
+    <string name="ucrop_error_input_data_is_absent" translatable="false">Cần phải có cả Uri đầu vào và đầu ra</string>
+    <string name="ucrop_mutate_exception_hint" translatable="false">Ghi đè tài nguyên màu (ucrop_color_toolbar_widget) trong ứng dụng của bạn để hoạt động trên các thiết bị cũ</string>
+
+    <string name="ucrop_label_text_scale_by_default">0%</string>
+    <string name="ucrop_label_text_rotate_by_default">0°</string>
+</resources>

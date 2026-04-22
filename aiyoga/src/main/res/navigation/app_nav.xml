@@ -146,5 +146,15 @@
             android:id="@+id/informationFragment"
             android:name="com.hadat.aiyoga.information.InformationFragment"
             android:label="InformationFragment" />
+    <fragment
+            android:id="@+id/sharePlaceFragment"
+            android:name="com.hadat.aiyoga.shareplace.SharePlaceFragment"
+            android:label="SharePlaceFragment" >
+        <argument
+                android:name="captured_images_list"
+                app:argType="string[]"
+                app:nullable="true"
+                android:defaultValue="@null" />
+    </fragment>
 
 </navigation>

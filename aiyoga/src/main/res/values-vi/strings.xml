@@ -220,4 +220,5 @@
     <string name="text_connection_lost">Mất kết nối Internet</string>
     <string name="text_check_your_internet_connection_and_try_again">Vui lòng kiểm tra lại kết nối mạng và thử lại sau.</string>
     <string name="text_setting">Cài đặt</string>
+    <string name="tell_us_about_your_practice_spot">Hãy chia sẻ về nơi bạn tập luyện...</string>
 </resources>

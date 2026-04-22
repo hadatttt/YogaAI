@@ -220,5 +220,5 @@
     <string name="text_connection_lost">Connection Lost</string>
     <string name="text_check_your_internet_connection_and_try_again">Please check your internet connection and try again.</string>
     <string name="text_setting">Settings</string>
-
+    <string name="tell_us_about_your_practice_spot">Tell us about your practice spot...</string>
 </resources>
