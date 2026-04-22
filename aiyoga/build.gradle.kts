@@ -143,5 +143,8 @@ dependencies {
     implementation("androidx.viewpager2:viewpager2:1.1.0")
 
     implementation("com.tbuonomo:dotsindicator:4.3")
+    //ucrop
     implementation(project(":ucrop"))
+    //photo zoom
+    implementation("com.github.chrisbanes:PhotoView:2.3.0")
 }

@@ -22,6 +22,7 @@ import com.hadat.aiyoga.utils.ModelDownloader
 import com.hadat.aiyoga.utils.PoseLandmarkerHelper
 import com.hadat.aiyoga.utils.loadImageFromNetwork
 import com.hadat.aiyoga.utils.yogautils.YogaCoachUtils
+import com.hadat.aiyoga.yogamain.DialogZoom
 import hoang.dqm.codebase.base.activity.BaseFragment
 import hoang.dqm.codebase.base.activity.navigate
 import hoang.dqm.codebase.base.activity.popBackStack
@@ -255,6 +256,13 @@ class SingleYogaFragment : BaseFragment<FragmentSingleYogaBinding, SingleYogaVie
 
     @SuppressLint("ClickableViewAccessibility")
     override fun initListener() {
+        binding.ivYogaSample.singleClick {
+            val imageUrl = args.yogaPoseItem.photo_url
+            if (!imageUrl.isNullOrEmpty()) {
+                DialogZoom.newInstance(imageUrl)
+                    .show(parentFragmentManager, "DialogZoom")
+            }
+        }
         binding.ivBack.singleClick { popBackStack() }
         binding.ivPhoto.singleClick { viewModel.toggleCaptureWait() }
         binding.progressAround.apply {

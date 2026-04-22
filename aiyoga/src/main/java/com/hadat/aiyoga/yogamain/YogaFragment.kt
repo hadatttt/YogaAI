@@ -276,6 +276,16 @@ class YogaFragment : BaseFragment<FragmentSingleYogaBinding, YogaViewModel>(),
     }
 
     override fun initListener() {
+        binding.ivYogaSample.singleClick {
+            val poseId = viewModel.previewPoseId.value
+            val poseList = viewModel.yogaPoseDataList.value
+            val currentPose = poseList?.find { it.id == poseId }
+
+            currentPose?.photo_url?.let { imageUrl ->
+                DialogZoom.newInstance(imageUrl)
+                    .show(parentFragmentManager, "DialogZoom")
+            }
+        }
         binding.ivPhoto.singleClick {
             viewModel.toggleCaptureWait()
         }
