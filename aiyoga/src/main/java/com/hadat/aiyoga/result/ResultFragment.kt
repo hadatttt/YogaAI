@@ -55,25 +55,36 @@ class ResultFragment : BaseFragment<FragmentResultBinding, ResultViewModel>() {
 
     override fun initData() {
         val resultList = args.workoutResultList?.toList().orEmpty()
-
         if (resultList.isNotEmpty()) {
-            bindWorkoutSummary(resultList)
             historyAdapter.setList(resultList)
-            val mergedImages = resultList.flatMap { it.capturedImages }.distinct()
-            capturedAdapter.setList(mergedImages)
         }
+        val capturedImages = args.capturedImagesList?.toList().orEmpty()
+        if (capturedImages.isNotEmpty()) {
+            capturedAdapter.setList(capturedImages)
+        }
+
         val userId = AppPreferences.getUserId(requireContext()) ?: "guest"
+
         if (resultList.isNotEmpty()) {
             viewModel.saveWorkoutResults(resultList, userId)
         }
+
         viewModel.loadHealthProfile(userId)
         viewModel.fetchWorkoutHistory(userId)
         viewModel.loadCurrentUser(userId)
-        viewModel.healthProfile.observe(viewLifecycleOwner) {
-            healthProfile = it
+
+        viewModel.healthProfile.observe(viewLifecycleOwner) { profile ->
+            healthProfile = profile
+
+            if (resultList.isNotEmpty()) {
+                bindWorkoutSummary(resultList)
+            }
         }
+
         viewModel.workoutHistory.observe(viewLifecycleOwner) {
-            if (resultList.isEmpty()) historyAdapter.setList(it)
+            if (resultList.isEmpty()) {
+                historyAdapter.setList(it)
+            }
         }
 
         fetchLastLocation()
@@ -94,11 +105,6 @@ class ResultFragment : BaseFragment<FragmentResultBinding, ResultViewModel>() {
 
         val totalSeconds = list.sumOf { it.durationInSeconds }
         val totalError = list.sumOf { it.errorCount }
-
-        val profile = healthProfile
-
-        val tdee = profile?.tdee ?: 2000f
-
 
         val weight = healthProfile?.weight ?: 60f
 
@@ -148,10 +154,8 @@ class ResultFragment : BaseFragment<FragmentResultBinding, ResultViewModel>() {
 
 
     private fun openShareDialog() {
-        val captured = args.workoutResultList?.toList().orEmpty()
-            .flatMap { it.capturedImages }
+        val captured = args.capturedImagesList?.toList().orEmpty()
             .filter { it.isNotBlank() }
-            .distinct()
 
         if (captured.isEmpty()) {
             showToast(getString(R.string.no_image_to_share))

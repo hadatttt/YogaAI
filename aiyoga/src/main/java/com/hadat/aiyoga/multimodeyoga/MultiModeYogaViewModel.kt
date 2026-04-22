@@ -86,9 +86,6 @@ class MultiModeYogaViewModel : BaseViewModel() {
     fun addCapturedImage(path: String) {
         sessionImagePaths.add(path)
     }
-
-    fun getCapturedImages(): List<String> = sessionImagePaths.toList()
-
     fun processCoachLogic(context: android.content.Context, result: PoseLandmarkerResult) {
         val current = _currentPose.value ?: return
         val poseId = current.id.toIntOrNull() ?: -1
@@ -141,13 +138,12 @@ class MultiModeYogaViewModel : BaseViewModel() {
                 poseName = item.poseName,
                 durationInSeconds = item.durationInSeconds,
                 date = date,
-                capturedImages = sessionImagePaths.toList(),
                 errorCount = item.errorCount,
                 workoutTimestamp = now + index
             )
         }.toTypedArray()
     }
-
+    fun getCapturedImages(): List<String> = sessionImagePaths.toList()
     private fun openPose(context: android.content.Context, index: Int) {
         val pose = sequencePoses.getOrNull(index)
         if (pose == null) {

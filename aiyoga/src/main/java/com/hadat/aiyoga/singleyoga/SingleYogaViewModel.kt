@@ -21,7 +21,7 @@ class SingleYogaViewModel : BaseViewModel() {
     fun addCapturedImage(path: String) {
         sessionImagePaths.add(path)
     }
-
+    fun getCapturedImages(): List<String> = sessionImagePaths.toList()
     private val _captureTrigger = MutableLiveData<Unit>()
     val captureTrigger: LiveData<Unit> = _captureTrigger
 
@@ -29,7 +29,6 @@ class SingleYogaViewModel : BaseViewModel() {
         _isWaitingForCapture.value = !(_isWaitingForCapture.value ?: false)
     }
     private val _yogaPoseDataList = MutableLiveData<List<YogaPoseModel>>()
-    val yogaPoseDataList: LiveData<List<YogaPoseModel>> = _yogaPoseDataList
 
     private val _currentGuideText = MutableLiveData<String>()
     val currentGuideText: LiveData<String> = _currentGuideText
@@ -47,11 +46,8 @@ class SingleYogaViewModel : BaseViewModel() {
     private var totalSecondsAccumulated = 0
     private var isCurrentlyCorrect = false
 
-    fun fetchYogaPoses() {
-        YogaDataUtils.getRemoteYogaPoses { poses -> poses?.let { _yogaPoseDataList.postValue(it) } }
-    }
-    fun getCapturedImages(): List<String> {
-        return sessionImagePaths
+    fun fetchYogaPoses(context: android.content.Context) {
+        YogaDataUtils.getRemoteYogaPoses(context.applicationContext) { poses -> poses?.let { _yogaPoseDataList.postValue(it) } }
     }
 
     fun getErrorCount(): Int {

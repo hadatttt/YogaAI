@@ -85,6 +85,11 @@
                 app:argType="com.hadat.aiyoga.singleyoga.WorkoutResultModel[]"
                 app:nullable="true"
                 android:defaultValue="@null" />
+        <argument
+                android:name="captured_images_list"
+                app:argType="string[]"
+                app:nullable="true"
+                android:defaultValue="@null" />
     </fragment>
     <fragment
             android:id="@+id/detailSequenceFragment"

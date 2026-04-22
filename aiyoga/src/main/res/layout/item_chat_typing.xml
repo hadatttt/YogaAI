@@ -3,15 +3,30 @@
         xmlns:app="http://schemas.android.com/apk/res-auto"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:gravity="start"
         android:orientation="horizontal"
-        android:padding="8dp">
+        android:paddingStart="12dp"
+        android:paddingTop="6dp"
+        android:paddingEnd="56dp"
+        android:paddingBottom="6dp">
+
+    <ImageView
+            android:layout_width="@dimen/_34sdp"
+            android:layout_height="@dimen/_34sdp"
+            android:layout_marginTop="@dimen/_2sdp"
+            android:layout_marginEnd="@dimen/_8sdp"
+            android:background="@drawable/shape_circle"
+            android:padding="@dimen/_4sdp"
+            android:src="@drawable/chatbot" />
 
     <com.airbnb.lottie.LottieAnimationView
             android:id="@+id/lottie_typing"
-            android:layout_width="@dimen/_40sdp"
-            android:layout_height="@dimen/_25sdp"
+            android:layout_width="@dimen/_72sdp"
+            android:layout_height="@dimen/_52sdp"
             android:background="@drawable/bg_bot_chat"
+            android:padding="@dimen/_6sdp"
             app:lottie_autoPlay="true"
             app:lottie_loop="true"
             app:lottie_rawRes="@raw/typing" />
+
 </LinearLayout>

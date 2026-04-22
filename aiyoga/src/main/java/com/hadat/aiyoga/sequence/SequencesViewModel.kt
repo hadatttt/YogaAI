@@ -1,5 +1,6 @@
 package com.hadat.aiyoga.sequence
 
+import android.content.Context
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.hadat.aiyoga.data.firestore.repository.SequenceRepository
@@ -23,9 +24,9 @@ class SequencesViewModel : BaseViewModel() {
     fun resetSaveStatus() {
         saveStatus.value = null
     }
-    fun fetchAllPoses() {
+    fun fetchAllPoses(context: Context) {
         if (allPoses.isNotEmpty()) return
-        YogaDataUtils.getRemoteYogaPoses { poses ->
+        YogaDataUtils.getRemoteYogaPoses(context.applicationContext) { poses ->
             poses?.let {
                 allPoses = it
                 getRecommendations()

@@ -78,7 +78,7 @@
                         android:shadowRadius="2"
                         android:textColor="@android:color/white"
                         android:textSize="15sp"
-                        tools:text="Dạt Đạt" />
+/>
 
                 <TextView
                         android:id="@+id/tvTime"
@@ -87,7 +87,7 @@
                         android:layout_marginTop="2dp"
                         android:textColor="#E0E0E0"
                         android:textSize="11sp"
-                        tools:text="Vừa xong" />
+ />
             </LinearLayout>
 
         </LinearLayout>
@@ -109,7 +109,7 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintBottom_toBottomOf="parent"
-                tools:text="Hôm nay mình vừa hoàn thành bài yoga buổi sáng, cảm thấy cơ thể nhẹ nhàng và thư giãn hơn rất nhiều." />
+                 />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

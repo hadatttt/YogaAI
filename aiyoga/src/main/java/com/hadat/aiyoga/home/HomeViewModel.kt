@@ -1,5 +1,6 @@
 package com.hadat.aiyoga.home
 
+import android.content.Context
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseAuth
@@ -23,14 +24,14 @@ class HomeViewModel : BaseViewModel() {
     val todayPickPose = MutableLiveData<YogaPoseModel?>()
     private var fullYogaList = listOf<YogaPoseModel>()
 
-    fun fetchData() {
+    fun fetchData(context: Context) {
         val uid = auth.currentUser?.uid ?: return
         viewModelScope.launch {
             val user = userRepository.getUser(uid)
             userData.postValue(user)
             val sequences = sequenceRepository.getMySequences(uid)
             recentSequences.postValue(sequences)
-            YogaDataUtils.getRemoteYogaPoses { poses ->
+            YogaDataUtils.getRemoteYogaPoses(context.applicationContext) { poses ->
                 poses?.let {
                     fullYogaList = it
                     fetchTodayPick()

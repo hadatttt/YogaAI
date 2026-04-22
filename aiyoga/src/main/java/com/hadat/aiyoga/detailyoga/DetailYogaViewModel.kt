@@ -39,10 +39,10 @@ class DetailYogaViewModel : BaseViewModel() {
         }
     }
 
-    fun fetchYogaDetail(poseId: Int) {
+    fun fetchYogaDetail(context: Context, poseId: Int) {
         if (_yogaDetail.value?.id == poseId) return
 
-        YogaDataUtils.getRemoteYogaDetail(poseId) { detail ->
+        YogaDataUtils.getRemoteYogaDetail(context.applicationContext, poseId) { detail ->
             _yogaDetail.postValue(detail)
         }
     }

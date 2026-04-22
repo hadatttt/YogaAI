@@ -58,33 +58,24 @@ class MultiModeYogaFragment : BaseFragment<FragmentMultiModeYogaBinding, MultiMo
 
     override fun initView() {
         backgroundExecutor = Executors.newSingleThreadExecutor()
-        checkAndStartCamera()
         initTextToSpeech()
-
-        ModelDownloader.downloadAllModels(
-            requireContext(),
-            onProgress = { progress ->
-                activity?.runOnUiThread { binding.tvGuide.text = "Loading: $progress%" }
-            },
-            onComplete = { success ->
-                if (success) initializePoseLandmarkerHelper()
-            }
-        )
+        initializePoseLandmarkerHelper()
     }
 
     private fun initializePoseLandmarkerHelper() {
         backgroundExecutor.execute {
+            val safeContext = context ?: return@execute
             poseLandmarkerHelper = PoseLandmarkerHelper(
-                context = requireContext(),
+                context = safeContext,
                 runningMode = RunningMode.LIVE_STREAM,
                 currentModel = PoseLandmarkerHelper.MODEL_POSE_LANDMARKER_HEAVY,
                 currentDelegate = PoseLandmarkerHelper.DELEGATE_GPU,
                 poseLandmarkerHelperListener = this
             )
             YogaCoachUtils.loadReferenceData { isSuccess ->
-                if (isSuccess) {
+                if (isSuccess && isAdded) {
                     activity?.runOnUiThread {
-                        args.detailSequence?.let { viewModel.startWorkout(requireContext(),it) }
+                        args.detailSequence?.let { viewModel.startWorkout(safeContext, it) }
                     }
                 }
             }
@@ -93,15 +84,19 @@ class MultiModeYogaFragment : BaseFragment<FragmentMultiModeYogaBinding, MultiMo
 
     override fun onResume() {
         super.onResume()
+        checkAndStartCamera()
+
         backgroundExecutor.execute {
             if (::poseLandmarkerHelper.isInitialized && poseLandmarkerHelper.isClose()) {
                 poseLandmarkerHelper.setupPoseLandmarker()
             }
         }
     }
-
     override fun onPause() {
         super.onPause()
+        cameraProvider?.unbindAll()
+        cameraProvider = null
+
         if (::poseLandmarkerHelper.isInitialized) {
             backgroundExecutor.execute { poseLandmarkerHelper.clearPoseLandmarker() }
         }
@@ -127,6 +122,11 @@ class MultiModeYogaFragment : BaseFragment<FragmentMultiModeYogaBinding, MultiMo
 
     override fun initData() {
         viewModel.resetData()
+        args.detailSequence?.poses?.firstOrNull()?.let { firstPose ->
+            binding.tvYogaName.text = firstPose.name
+            binding.ivYogaSample.loadImageFromNetwork(firstPose.photoUrl)
+            binding.tvPoseIndex.text = "1/${args.detailSequence?.poses?.size ?: 1}"
+        }
         viewModel.currentGuideText.observe(viewLifecycleOwner) { binding.tvGuide.text = it }
         viewModel.timerText.observe(viewLifecycleOwner) { binding.tvTimer.text = it }
         viewModel.poseCountText.observe(viewLifecycleOwner) { binding.tvPoseIndex.text = it }
@@ -313,20 +313,13 @@ class MultiModeYogaFragment : BaseFragment<FragmentMultiModeYogaBinding, MultiMo
     }
 
     private fun initTextToSpeech() {
-        tts = TextToSpeech(requireContext()) { status ->
+        val initContext = context ?: return
+        tts = TextToSpeech(initContext) { status ->
             if (status == TextToSpeech.SUCCESS) {
-                val langCode = AppPreferences.getLanguageCode(requireContext())
-
-                val locale = if (langCode == "vi") {
-                    Locale("vi", "VN")
-                } else {
-                    Locale.ENGLISH
-                }
-
-                val result = tts?.setLanguage(locale)
-
-                if (result == TextToSpeech.LANG_MISSING_DATA || result == TextToSpeech.LANG_NOT_SUPPORTED) {
-                }
+                val safeContext = context ?: return@TextToSpeech
+                val langCode = AppPreferences.getLanguageCode(safeContext)
+                val locale = if (langCode == "vi") Locale("vi", "VN") else Locale.ENGLISH
+                tts?.setLanguage(locale)
             }
         }
     }
@@ -394,10 +387,13 @@ class MultiModeYogaFragment : BaseFragment<FragmentMultiModeYogaBinding, MultiMo
     private fun navigateToResult() {
         val userId = AppPreferences.getUserId(requireContext()) ?: "guest"
         val results = viewModel.buildResultList(userId)
+        val capturedImagesList = ArrayList(viewModel.getCapturedImages()).toTypedArray()
+
         val bundle = Bundle().apply {
             putParcelableArray("workout_result_list", results)
+            putStringArray("captured_images_list", capturedImagesList)
         }
-        navigate(R.id.resultFragment, bundle,isPop = true)
+        navigate(R.id.resultFragment, bundle, isPop = true)
     }
 }
 

@@ -4,7 +4,6 @@
         xmlns:tools="http://schemas.android.com/tools"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:fitsSystemWindows="true"
         android:background="#F9F9FB">
 
     <androidx.appcompat.widget.AppCompatImageView
@@ -12,10 +11,10 @@
             android:layout_width="@dimen/_32sdp"
             android:layout_height="@dimen/_32sdp"
             android:layout_marginStart="@dimen/_15sdp"
-            android:layout_marginTop="@dimen/_30sdp"
+            android:layout_marginTop="@dimen/_10sdp"
             android:background="@drawable/shape_circle"
-            android:elevation="@dimen/_2sdp"
-            android:padding="@dimen/_5sdp"
+
+            android:scaleType="centerInside"
             android:src="@drawable/ic_back"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
@@ -36,7 +35,6 @@
                 android:layout_width="@dimen/_38sdp"
                 android:layout_height="@dimen/_38sdp"
                 android:background="@drawable/shape_circle"
-                android:elevation="@dimen/_2sdp"
                 android:padding="@dimen/_4sdp"
                 android:src="@drawable/chatbot" />
 
@@ -79,33 +77,37 @@
         <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/_15sdp"
+                android:fontFamily="sans-serif-medium"
                 android:text="@string/chatbot_hint"
                 android:textColor="#B0B0C3"
-                android:textSize="@dimen/_14sdp"
-                android:layout_marginBottom="@dimen/_15sdp"
-                android:fontFamily="sans-serif-medium"/>
+                android:textSize="@dimen/_14sdp" />
 
         <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/rv_suggestions"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:overScrollMode="never"
                 app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-                tools:listitem="@layout/item_suggestion_chip"
-                android:overScrollMode="never"/>
+                tools:listitem="@layout/item_suggestion_chip" />
     </LinearLayout>
 
     <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/rv_chat"
+            android:clipToPadding="false"
+            android:overScrollMode="never"
+            android:paddingBottom="100dp"
             android:layout_width="0dp"
             android:layout_height="0dp"
-            android:visibility="gone"
-            android:clipToPadding="false"
             android:paddingHorizontal="@dimen/_12sdp"
-            tools:listitem="@layout/item_chat_bot"
+            android:visibility="gone"
+            app:layout_constrainedHeight="true"
             app:layout_constraintBottom_toTopOf="@id/input_card"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/iv_back" />
+            app:layout_constraintTop_toBottomOf="@id/header_info"
+            tools:listitem="@layout/item_chat_bot"
+            tools:visibility="visible" />
 
     <com.google.android.material.card.MaterialCardView
             android:id="@+id/input_card"
@@ -119,13 +121,14 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:strokeColor="#DCCFFF"
             app:strokeWidth="1.2dp">
+
         <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:gravity="center_vertical"
                 android:orientation="horizontal"
                 android:paddingHorizontal="@dimen/_12sdp"
-                android:paddingVertical="@dimen/_12sdp">
+                android:paddingVertical="@dimen/_8sdp">
 
             <EditText
                     android:id="@+id/edt_message"

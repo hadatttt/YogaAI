@@ -9,12 +9,21 @@
         android:paddingEnd="56dp"
         android:paddingBottom="6dp">
 
+    <ImageView
+            android:layout_width="@dimen/_34sdp"
+            android:layout_height="@dimen/_34sdp"
+            android:layout_marginTop="@dimen/_2sdp"
+            android:layout_marginEnd="@dimen/_8sdp"
+            android:background="@drawable/shape_circle"
+            android:padding="@dimen/_4sdp"
+            android:src="@drawable/chatbot" />
+
     <com.google.android.material.card.MaterialCardView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             app:cardBackgroundColor="@color/white"
             app:cardCornerRadius="22dp"
-            app:strokeWidth="1dp">
+  >
 
         <TextView
                 android:id="@+id/tv_message"
@@ -22,12 +31,12 @@
                 android:layout_height="wrap_content"
                 android:maxWidth="@dimen/_240sdp"
                 android:minWidth="@dimen/_50sdp"
+                android:fontFamily="@font/font_bold"
                 android:paddingHorizontal="16dp"
                 android:paddingVertical="12dp"
                 android:text="Bot message"
                 android:textColor="@color/text_gray"
-                android:textSize="@dimen/_13sdp"
-                android:fontFamily="@font/font_bold" />
+                android:textSize="@dimen/_13sdp" />
 
     </com.google.android.material.card.MaterialCardView>
 

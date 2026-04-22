@@ -1,5 +1,6 @@
 package com.hadat.aiyoga.yogamain
 
+import android.content.Context
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.google.mediapipe.tasks.vision.poselandmarker.PoseLandmarkerResult
@@ -60,7 +61,7 @@ fun toggleCaptureWait() {
         sessionImagePaths.add(path)
     }
 
-    fun getCapturedImages(): List<String> = sessionImagePaths
+    fun getCapturedImages(): List<String> = sessionImagePaths.toList()
 
     fun processCoachLogic(context: android.content.Context, result: PoseLandmarkerResult) {
         val poseId = _detectedPoseId.value ?: -1
@@ -84,17 +85,16 @@ fun toggleCaptureWait() {
         }
     }
 
-    // Cập nhật hàm clearData
     fun clearData() {
         workoutSequenceMap.clear()
-        sessionImagePaths.clear() // Xóa ảnh khi kết thúc
+        sessionImagePaths.clear()
         currentPoseTotalSeconds = 0
         _isWaitingForCapture.value = false
         lastPoseName = null
         stopExerciseTimer()
     }
-    fun fetchYogaPoses() {
-        YogaDataUtils.getRemoteYogaPoses { poses ->
+    fun fetchYogaPoses(context: Context) {
+        YogaDataUtils.getRemoteYogaPoses(context.applicationContext) { poses ->
             poses?.let { _yogaPoseDataList.postValue(it) }
         }
     }

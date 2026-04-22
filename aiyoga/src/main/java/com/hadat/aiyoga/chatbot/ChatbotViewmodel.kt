@@ -3,6 +3,7 @@ package com.hadat.aiyoga.chatbot
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
+import com.hadat.aiyoga.R
 import com.hadat.aiyoga.data.api.ChatRequest
 import com.hadat.aiyoga.data.api.RetrofitClient
 import hoang.dqm.codebase.base.viewmodel.BaseViewModel
@@ -57,10 +58,10 @@ class ChatbotViewModel : BaseViewModel() {
         _chatMessages.value = currentList
     }
 
-    fun getSuggestions() = listOf(
-        "Tác dụng của tư thế chiến binh 1?",
-        "Yoga trị đau lưng",
-        "Hướng dẫn tư thế Con Quạ",
-        "Lợi ích của việc tập Yoga hàng ngày"
+    fun getSuggestionIds() = listOf(
+        R.string.chatbot_suggestion_warrior1,
+        R.string.chatbot_suggestion_back_pain,
+        R.string.chatbot_suggestion_crow_pose,
+        R.string.chatbot_suggestion_daily_yoga
     )
 }

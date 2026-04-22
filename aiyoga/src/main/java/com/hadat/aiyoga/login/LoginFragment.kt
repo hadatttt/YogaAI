@@ -68,9 +68,9 @@ class LoginFragment : BaseFragment<FragmentLoginBinding, LoginViewModel>() {
             if (success == true) {
                 val isComplete = viewModel.isProfileComplete.value ?: false
                 if (isComplete) {
-                    navigate(R.id.homeFragment)
+                    navigate(R.id.homeFragment, isPop = true)
                 } else {
-                    navigate(R.id.informationFragment)
+                    navigate(R.id.informationFragment, isPop = true)
                 }
             }
         }

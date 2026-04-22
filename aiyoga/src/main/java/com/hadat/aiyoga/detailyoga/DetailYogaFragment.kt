@@ -142,7 +142,7 @@ class DetailYogaFragment : BaseFragment<FragmentDetailYogaBinding, DetailYogaVie
     override fun initData() {
         val poseId = args.yogaPoseItem.id
         viewModel.checkFavoriteStatus(requireContext(), poseId)
-        viewModel.fetchYogaDetail(poseId)
+        viewModel.fetchYogaDetail(requireContext(), poseId)
     }
 
     override fun initListener() {

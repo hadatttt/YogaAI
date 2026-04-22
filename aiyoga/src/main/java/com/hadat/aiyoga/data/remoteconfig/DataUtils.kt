@@ -12,6 +12,7 @@ import com.hadat.aiyoga.R
 import com.hadat.aiyoga.detailyoga.YogaPoseAngleModel
 import com.hadat.aiyoga.detailyoga.YogaPoseDetailModel
 import com.hadat.aiyoga.home.CategoryModel
+import com.hadat.aiyoga.service.AppPreferences
 import com.hadat.aiyoga.utils.yogautils.YogaMetModel
 import com.hadat.aiyoga.yogamain.YogaPoseModel
 import kotlin.collections.forEach
@@ -32,6 +33,10 @@ object YogaDataUtils {
             minimumFetchIntervalInSeconds = 0
         }
         remoteConfig.setConfigSettingsAsync(configSettings)
+    }
+    private fun getLocalizedKey(context: Context, baseKey: String): String {
+        val lang = AppPreferences.getLanguageCode(context)
+        return if (lang == "vi") "${baseKey}_vi" else baseKey
     }
     fun getRemoteYogaMet(id: Int, onResult: (Double) -> Unit) {
         remoteConfig.fetchAndActivate().addOnCompleteListener { task ->
@@ -86,6 +91,49 @@ object YogaDataUtils {
         } catch (e: Exception) {
             Log.e(TAG, "❌ Lỗi Parse Angle GSON: ${e.message}")
             null
+        }
+    }
+    fun getRemoteYogaPoses(context: Context, onResult: (List<YogaPoseModel>?) -> Unit) {
+        remoteConfig.fetchAndActivate().addOnCompleteListener { task ->
+            if (task.isSuccessful) {
+                val localizedKey = getLocalizedKey(context, CONFIG_YOGA_KEY)
+                val json = remoteConfig.getString(localizedKey)
+                val finalJson = if (json.isEmpty() && localizedKey.endsWith("_vi")) {
+                    remoteConfig.getString(CONFIG_YOGA_KEY)
+                } else json
+
+                if (finalJson.isNotEmpty()) {
+                    onResult(parseJsonToModel(finalJson))
+                } else {
+                    Log.e(TAG, "Nội dung Key '$localizedKey' bị trống")
+                    onResult(null)
+                }
+            } else {
+                onResult(null)
+            }
+        }
+    }
+    fun getRemoteYogaDetail(context: Context, id: Int, onResult: (YogaPoseDetailModel?) -> Unit) {
+        remoteConfig.fetchAndActivate().addOnCompleteListener { task ->
+            if (task.isSuccessful) {
+                val localizedKey = getLocalizedKey(context, CONFIG_DETAIL_KEY)
+                val json = remoteConfig.getString(localizedKey)
+
+                val finalJson = if (json.isEmpty() && localizedKey.endsWith("_vi")) {
+                    remoteConfig.getString(CONFIG_DETAIL_KEY)
+                } else json
+
+                if (finalJson.isNotEmpty()) {
+                    val detailList = parseDetailListJson(finalJson)
+                    val detail = detailList?.find { it.id == id }
+                    onResult(detail)
+                } else {
+                    Log.e(TAG, "Nội dung Key '$localizedKey' bị trống")
+                    onResult(null)
+                }
+            } else {
+                onResult(null)
+            }
         }
     }
     fun getRemoteYogaPoses(onResult: (List<YogaPoseModel>?) -> Unit) {
