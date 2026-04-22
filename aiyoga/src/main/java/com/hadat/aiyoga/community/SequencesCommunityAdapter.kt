@@ -3,6 +3,7 @@ package com.hadat.aiyoga.community
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.core.view.isVisible
+import com.hadat.aiyoga.R
 import com.hadat.aiyoga.databinding.ItemSequencesCommunityBinding
 import com.hadat.aiyoga.sequence.WorkoutSequenceModel
 import com.hadat.aiyoga.utils.loadImageFromNetwork
@@ -20,37 +21,40 @@ class SequencesCommunityAdapter(
     }
 
     override fun bindData(binding: ItemSequencesCommunityBinding, item: WorkoutSequenceModel, position: Int) {
+        val context = binding.root.context
+
         binding.root.singleClick { onItemClick(item) }
 
         binding.ivSequenceThumb.loadImageFromNetwork(item.coverImageUrl)
         binding.tvSequenceName.text = item.title
-        binding.tvDuration.text = formatDurationToMin(item.totalDuration)
-        binding.tvPosesCount.text = "${item.poses.size} Poses"
+        binding.tvDuration.text = formatDurationToMin(context, item.totalDuration)
+        binding.tvPosesCount.text = context.getString(R.string.format_poses_count, item.poses.size)
 
-        binding.tvLevelBadge.text = when (item.level) {
-            1 -> "Beginner"
-            2 -> "Intermediate"
-            3 -> "Advanced"
-            else -> "All Levels"
-        }
+        binding.tvLevelBadge.setText(
+            when (item.level) {
+                1 -> R.string.beginner
+                2 -> R.string.intermediate
+                3 -> R.string.advanced
+                else -> R.string.beginner
+            }
+        )
 
-        binding.tvAuthorName.isVisible = item.userId.isNotBlank()
+        binding.tvAuthorName.isVisible = item.authorName.isNotBlank()
         if (binding.tvAuthorName.isVisible) {
-            binding.tvAuthorName.text = "by ${item.userId}"
+            binding.tvAuthorName.text = context.getString(R.string.by_author, item.authorName)
         }
 
         binding.tvLikeCount.text = item.likeCount.toString()
         binding.tvViewCount.text = item.viewCount.toString()
     }
 
-    private fun formatDurationToMin(duration: String): String {
+    private fun formatDurationToMin(context: android.content.Context, duration: String): String {
         return try {
             val parts = duration.split(":")
             val minutes = parts.getOrNull(0)?.toIntOrNull() ?: 0
-            "$minutes min"
+            context.getString(R.string.format_minutes, minutes)
         } catch (_: Exception) {
-            "0 min"
+            context.getString(R.string.format_minutes, 0)
         }
     }
 }
-

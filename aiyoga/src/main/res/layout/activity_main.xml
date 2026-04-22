@@ -23,8 +23,8 @@
             android:id="@+id/bottomNavigation"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            app:cbn_background="@color/primary"
-            app:cbn_fabColor="@color/primary"
+            app:cbn_background="@color/purple_500"
+            app:cbn_fabColor="@color/purple_500"
             app:cbn_iconColor="@color/white"
             app:cbn_height="76dp"
             app:cbn_icon_size="24dp"
@@ -36,5 +36,12 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent" />
+    <include
+            android:visibility="gone"
+            tools:visibility="visible"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:id="@+id/layoutNoInternet"
+            layout="@layout/layout_no_internet" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

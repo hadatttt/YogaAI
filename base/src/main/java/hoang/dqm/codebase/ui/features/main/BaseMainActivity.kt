@@ -24,13 +24,5 @@ abstract class BaseMainActivity<VB : ViewBinding, VM : BaseViewModel> : BaseActi
         }
     }
 
-    override fun initListener() {
-        subscribeEventNetwork { online ->
-            runOnUiThread {
-                findViewById<View>(R.id.layoutNoInternet).isVisible = online.not()
-            }
-        }
-        findViewById<View>(R.id.buttonSetting).singleClick { openSettingNetWork() }
-    }
 
 }

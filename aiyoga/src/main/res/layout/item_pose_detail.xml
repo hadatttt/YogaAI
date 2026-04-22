@@ -33,10 +33,9 @@
 
             <TextView
                     android:id="@+id/tv_index"
-                    android:layout_width="@dimen/_18sdp"
-                    android:layout_height="@dimen/_18sdp"
+                    android:layout_width="@dimen/_23sdp"
+                    android:layout_height="@dimen/_23sdp"
                     android:layout_gravity="top|start"
-                    android:layout_margin="@dimen/_2sdp"
                     android:background="@drawable/shape_circle_index"
                     android:gravity="center"
                     android:text="1"
@@ -53,7 +52,6 @@
                 android:ellipsize="end"
                 android:fontFamily="@font/font_bold"
                 android:maxLines="1"
-                android:text="@string/boat_pose"
                 android:textColor="@color/purple_300"
                 android:textSize="@dimen/_15sdp"
                 app:layout_constraintEnd_toStartOf="@id/tv_duration"
@@ -67,7 +65,6 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="@dimen/_2sdp"
-                android:text="@string/seated"
                 android:textColor="#8E8E93"
                 android:textSize="@dimen/_10sdp"
                 app:layout_constraintStart_toStartOf="@id/tv_name"

@@ -34,7 +34,6 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="@dimen/_6sdp"
-                android:text="@string/overview_desc"
                 android:textColor="#7A7A7A"
                 android:textSize="@dimen/_14sp"
                 android:fontFamily="sans-serif"

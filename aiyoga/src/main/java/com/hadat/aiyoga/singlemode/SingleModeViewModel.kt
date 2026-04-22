@@ -8,7 +8,7 @@ import com.hadat.aiyoga.data.room.AppDatabase
 import com.hadat.aiyoga.data.room.PoseMetadataEntity
 import com.hadat.aiyoga.home.CategoryModel
 import com.hadat.aiyoga.yogamain.YogaPoseModel
-import com.hadat.aiyoga.utils.yogautils.YogaDataUtils
+import com.hadat.aiyoga.data.remoteconfig.YogaDataUtils
 import hoang.dqm.codebase.base.viewmodel.BaseViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -27,11 +27,16 @@ class SingleModeViewModel : BaseViewModel() {
     fun fetchData(context: Context) {
         if (fullYogaList.isNotEmpty()) return
 
-        YogaDataUtils.getRemoteYogaCategories { categories ->
-            categories?.let { categoryList.postValue(it) }
-        }
+        val localCategories = YogaDataUtils.getLocalYogaCategories()
+        categoryList.postValue(
+            localCategories.map { category ->
+                category.copy(
+                    displayValue = YogaDataUtils.getLocalizedCategory(context, category.value)
+                )
+            }
+        )
 
-        YogaDataUtils.getRemoteYogaPoses { poses ->
+        YogaDataUtils.getRemoteYogaPoses(context.applicationContext) { poses ->
             poses?.let {
                 fullYogaList = it
                 applyFilterAndSearch(context)

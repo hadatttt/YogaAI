@@ -3,6 +3,7 @@ package com.hadat.aiyoga.sequence
 import android.annotation.SuppressLint
 import android.view.MotionEvent
 import androidx.recyclerview.widget.RecyclerView
+import com.hadat.aiyoga.data.remoteconfig.YogaDataUtils
 import com.hadat.aiyoga.databinding.ItemPoseSequenceBinding
 import com.hadat.aiyoga.utils.loadImageFromNetwork
 import hoang.dqm.codebase.base.adapter.BaseRecyclerViewAdapter
@@ -10,7 +11,8 @@ import java.util.Collections
 
 class PoseSequenceAdapter(
     private val dragListener: OnStartDragListener,
-    private val onTimeClick: (SequenceModel, Int) -> Unit
+    private val onTimeClick: (SequenceModel, Int) -> Unit,
+    private val onDeleteClick: (SequenceModel, Int) -> Unit
 ) : BaseRecyclerViewAdapter<SequenceModel, ItemPoseSequenceBinding>() {
 
     fun onItemMove(fromPosition: Int, toPosition: Int): Boolean {
@@ -31,11 +33,12 @@ class PoseSequenceAdapter(
     override fun bindData(binding: ItemPoseSequenceBinding, item: SequenceModel, position: Int) {
         binding.apply {
             tvName.text = item.name
-            tvCategory.text = item.category
+            tvCategory.text =
+                YogaDataUtils.getLocalizedCategory(binding.root.context, item.category)
             tvDuration.text = item.duration
             ivThump.loadImageFromNetwork(item.photoUrl)
 
-            icDrag.setOnTouchListener { _, event ->
+            root.setOnTouchListener { _, event ->
                 if (event.actionMasked == MotionEvent.ACTION_DOWN) {
                     val holder = recyclerView.getChildViewHolder(binding.root)
                     holder?.let { dragListener.onStartDrag(it) }
@@ -46,6 +49,11 @@ class PoseSequenceAdapter(
             tvDuration.setOnClickListener {
                 val holder = recyclerView.getChildViewHolder(binding.root)
                 onTimeClick(item, holder.bindingAdapterPosition)
+            }
+
+            icDelete.setOnClickListener {
+                val holder = recyclerView.getChildViewHolder(binding.root)
+                onDeleteClick(item, holder.bindingAdapterPosition)
             }
         }
     }

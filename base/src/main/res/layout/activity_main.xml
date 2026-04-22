@@ -16,13 +16,6 @@
         android:focusable="true"
         app:defaultNavHost="true" />
 
-    <include
-        android:visibility="gone"
-        tools:visibility="visible"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:id="@+id/layoutNoInternet"
-        layout="@layout/layout_no_internet" />
 
     <include
         android:id="@+id/loading"

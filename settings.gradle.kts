@@ -23,6 +23,7 @@ dependencyResolutionManagement {
 
 rootProject.name = "YogaAI"
 include(":aiyoga")
+project(":aiyoga").projectDir = file("aiyoga")
+
 include(":base")
-//include(":dailycheckin")
-//include(":slotmachinegame")
+project(":base").projectDir = file("base")

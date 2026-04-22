@@ -9,6 +9,7 @@ import android.os.Bundle
 import android.view.Surface
 import android.speech.tts.TextToSpeech
 import android.view.View
+import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.camera.core.*
 import androidx.camera.lifecycle.ProcessCameraProvider
@@ -52,42 +53,33 @@ class SingleYogaFragment : BaseFragment<FragmentSingleYogaBinding, SingleYogaVie
 
     override fun initView() {
         backgroundExecutor = Executors.newSingleThreadExecutor()
-        checkAndStartCamera()
         initTextToSpeech()
-
-        ModelDownloader.downloadAllModels(requireContext(),
-            onProgress = { progress ->
-                activity?.runOnUiThread { binding.tvGuide.text = "Loading: $progress%" }
-            },
-            onComplete = { success ->
-                if (success) initializePoseLandmarkerHelper()
-            }
-        )
+        initializePoseLandmarkerHelper()
     }
     private fun initializePoseLandmarkerHelper() {
         backgroundExecutor.execute {
+            val safeContext = context ?: return@execute
             poseLandmarkerHelper = PoseLandmarkerHelper(
-                context = requireContext(),
+                context = safeContext,
                 runningMode = RunningMode.LIVE_STREAM,
                 currentModel = PoseLandmarkerHelper.MODEL_POSE_LANDMARKER_HEAVY,
                 currentDelegate = PoseLandmarkerHelper.DELEGATE_GPU,
                 poseLandmarkerHelperListener = this
             )
             YogaCoachUtils.loadReferenceData { isSuccess ->
-                if (isSuccess) {
-
+                if (isSuccess && isAdded) {
                     activity?.runOnUiThread {
-                        viewModel.fetchYogaPoses()
-                        viewModel.startSinglePoseTracking(args.yogaPoseItem.id)
+                        viewModel.fetchYogaPoses(safeContext.applicationContext)
+                        viewModel.startSinglePoseTracking(safeContext, args.yogaPoseItem.id)
                     }
-                } else {
-
                 }
             }
         }
     }
     override fun onResume() {
         super.onResume()
+        checkAndStartCamera()
+
         backgroundExecutor.execute {
             if (::poseLandmarkerHelper.isInitialized && poseLandmarkerHelper.isClose()) {
                 poseLandmarkerHelper.setupPoseLandmarker()
@@ -97,6 +89,9 @@ class SingleYogaFragment : BaseFragment<FragmentSingleYogaBinding, SingleYogaVie
 
     override fun onPause() {
         super.onPause()
+        cameraProvider?.unbindAll()
+        cameraProvider = null
+
         if (::poseLandmarkerHelper.isInitialized) {
             backgroundExecutor.execute { poseLandmarkerHelper.clearPoseLandmarker() }
         }
@@ -214,7 +209,11 @@ class SingleYogaFragment : BaseFragment<FragmentSingleYogaBinding, SingleYogaVie
             binding.overlayView.invalidate()
             val now = System.currentTimeMillis()
             if (now - lastCoachTime >= COACH_INTERVAL) {
-                viewModel.processCoachLogic(resultBundle.results.first(), args.yogaPoseItem.id)
+                viewModel.processCoachLogic(
+                    requireContext(),
+                    resultBundle.results.first(),
+                    args.yogaPoseItem.id
+                )
                 lastCoachTime = now
             }
         }
@@ -227,6 +226,13 @@ class SingleYogaFragment : BaseFragment<FragmentSingleYogaBinding, SingleYogaVie
     }
 
     override fun initData() {
+        viewModel.resetData()
+        val initialPose = args.yogaPoseItem
+        if (!initialPose.photo_url.isNullOrEmpty()) {
+            binding.ivYogaSample.visibility = View.VISIBLE
+            binding.ivYogaSample.loadImageFromNetwork(initialPose.photo_url)
+        }
+        binding.tvYogaName.text = initialPose.name
         viewModel.currentGuideText.observe(viewLifecycleOwner) { binding.tvGuide.text = it }
         viewModel.timerText.observe(viewLifecycleOwner) { binding.tvTimer.text = it }
         viewModel.speakCommand.observe(viewLifecycleOwner) { speak(it) }
@@ -234,7 +240,7 @@ class SingleYogaFragment : BaseFragment<FragmentSingleYogaBinding, SingleYogaVie
             if (isWaiting) {
                 binding.ivPhoto.backgroundTintList = android.content.res.ColorStateList.valueOf(android.graphics.Color.RED)
                 binding.ivPhoto.imageTintList = android.content.res.ColorStateList.valueOf(android.graphics.Color.WHITE)
-                binding.tvGuide.text = "Giữ đúng tư thế để chụp ảnh!"
+                binding.tvGuide.text = getString(com.hadat.aiyoga.R.string.guide_hold_to_capture)
             } else {
                 binding.ivPhoto.backgroundTintList = android.content.res.ColorStateList.valueOf(android.graphics.Color.parseColor("#E4E3F3"))
                 binding.ivPhoto.imageTintList = android.content.res.ColorStateList.valueOf(ContextCompat.getColor(requireContext(), com.hadat.aiyoga.R.color.primary))
@@ -244,17 +250,11 @@ class SingleYogaFragment : BaseFragment<FragmentSingleYogaBinding, SingleYogaVie
         viewModel.isTrackingStarted.observe(viewLifecycleOwner) { started ->
             binding.lottieStatus.visibility = if (started) View.VISIBLE else View.GONE
         }
-        viewModel.yogaPoseDataList.observe(viewLifecycleOwner) { list ->
-            list.find { it.id == args.yogaPoseItem.id }?.let {
-                binding.ivYogaSample.visibility = View.VISIBLE
-                binding.ivYogaSample.loadImageFromNetwork(it.photo_url)
-            }
-        }
+
     }
 
     @SuppressLint("ClickableViewAccessibility")
     override fun initListener() {
-        binding.tvYogaName.text=args.yogaPoseItem.name
         binding.ivBack.singleClick { popBackStack() }
         binding.ivPhoto.singleClick { viewModel.toggleCaptureWait() }
         binding.progressAround.apply {
@@ -313,9 +313,16 @@ class SingleYogaFragment : BaseFragment<FragmentSingleYogaBinding, SingleYogaVie
         tts?.speak(text, TextToSpeech.QUEUE_FLUSH, null, null)
     }
 
+
     private fun initTextToSpeech() {
-        tts = TextToSpeech(requireContext()) { status ->
-            if (status == TextToSpeech.SUCCESS) tts?.language = Locale("vi", "VN")
+        val initContext = context ?: return
+        tts = TextToSpeech(initContext) { status ->
+            if (status == TextToSpeech.SUCCESS) {
+                val safeContext = context ?: return@TextToSpeech
+                val langCode = AppPreferences.getLanguageCode(safeContext)
+                val locale = if (langCode == "vi") Locale("vi", "VN") else Locale.ENGLISH
+                tts?.setLanguage(locale)
+            }
         }
     }
 
@@ -338,33 +345,31 @@ class SingleYogaFragment : BaseFragment<FragmentSingleYogaBinding, SingleYogaVie
             .setDuration(800)
             .withEndAction { (binding.root as android.view.ViewGroup).removeView(photoView) }
             .start()
-        saveScreenshot()
+        saveScreenshot(bitmap)
     }
 
-    private fun saveScreenshot() {
-        val bitmap = binding.viewFinder.bitmap ?: return
-        val filename = "Yoga_${System.currentTimeMillis()}.jpg"
+    private fun saveScreenshot(bitmap: Bitmap) {
+        val filename = "Yoga_Sequence_${System.currentTimeMillis()}.jpg"
         val contentValues = android.content.ContentValues().apply {
             put(android.provider.MediaStore.MediaColumns.DISPLAY_NAME, filename)
             put(android.provider.MediaStore.MediaColumns.MIME_TYPE, "image/jpeg")
-            put(android.provider.MediaStore.Images.Media.RELATIVE_PATH,
-                android.os.Environment.DIRECTORY_PICTURES + "/AI_Yoga")
+            put(android.provider.MediaStore.Images.Media.RELATIVE_PATH, android.os.Environment.DIRECTORY_PICTURES + "/AI_Yoga")
         }
+
         val uri = requireContext().contentResolver.insert(
             android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI, contentValues
         )
+
         uri?.let {
             requireContext().contentResolver.openOutputStream(it)?.use { out ->
                 bitmap.compress(Bitmap.CompressFormat.JPEG, 100, out)
             }
             viewModel.addCapturedImage(it.toString())
-            activity?.runOnUiThread {
-                android.widget.Toast.makeText(
-                    requireContext(),
-                    "Đã lưu ảnh vào thư viện!",
-                    android.widget.Toast.LENGTH_SHORT
-                ).show()
-            }
+            Toast.makeText(
+                requireContext(),
+                getString(com.hadat.aiyoga.R.string.save_photo),
+                Toast.LENGTH_SHORT
+            ).show()
         }
     }
     private fun triggerFlashEffect() {
@@ -385,15 +390,16 @@ class SingleYogaFragment : BaseFragment<FragmentSingleYogaBinding, SingleYogaVie
             poseName = args.yogaPoseItem.name,
             durationInSeconds = viewModel.getTotalTimeStudied(),
             date = date,
-            capturedImages = viewModel.getCapturedImages(),
             errorCount = viewModel.getErrorCount(),
             workoutTimestamp = System.currentTimeMillis()
         )
+        val imagesList = viewModel.getCapturedImages()
 
-        val resultArray = arrayOf(result)
+        val imagesArray: Array<String> = imagesList.toTypedArray()
 
         val bundle = Bundle().apply {
-            putParcelableArray("workout_result_list", resultArray)
+            putParcelableArray("workout_result_list", arrayOf(result))
+            putStringArray("captured_images_list", imagesArray)
         }
 
         navigate(com.hadat.aiyoga.R.id.resultFragment, bundle)

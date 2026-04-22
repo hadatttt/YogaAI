@@ -14,7 +14,15 @@ object AppPreferences {
     private const val KEY_USER_ID = "user_id"
     private const val KEY_NOTIFICATION_TIME = "notification_time"
     private const val KEY_LANGUAGE_CODE = "language_code"
-
+    private const val KEY_IS_HEALTH_PROFILE_COMPLETED = "is_health_profile_completed"
+    fun setHealthProfileCompleted(context: Context, isCompleted: Boolean) {
+        getPrefs(context).edit {
+            putBoolean(KEY_IS_HEALTH_PROFILE_COMPLETED, isCompleted)
+        }
+    }
+    fun isHealthProfileCompleted(context: Context): Boolean {
+        return getPrefs(context).getBoolean(KEY_IS_HEALTH_PROFILE_COMPLETED, false)
+    }
     private fun getPrefs(context: Context): SharedPreferences {
         return context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
     }
@@ -57,6 +65,7 @@ object AppPreferences {
         getPrefs(context).edit(commit = true) {
             putBoolean(KEY_IS_LOGGED_IN, false)
             remove(KEY_USER_ID)
+            putBoolean(KEY_IS_HEALTH_PROFILE_COMPLETED, false)
         }
     }
 
@@ -73,6 +82,13 @@ object AppPreferences {
     }
 
     fun getLanguageCode(context: Context): String {
-        return getPrefs(context).getString(KEY_LANGUAGE_CODE, "en") ?: "en"
+        val prefs = getPrefs(context)
+        if (!prefs.contains(KEY_LANGUAGE_CODE)) {
+            val systemLang = java.util.Locale.getDefault().language
+            val defaultLang = if (systemLang == "vi") "vi" else "en"
+            setLanguageCode(context, defaultLang)
+            return defaultLang
+        }
+        return prefs.getString(KEY_LANGUAGE_CODE, "en") ?: "en"
     }
 }

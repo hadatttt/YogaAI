@@ -23,9 +23,9 @@ class DetailSequenceFragment : BaseFragment<FragmentSequenceDetailBinding, Detai
     }
 
     override fun initData() {
-        args.detailSequence?.let {
-            viewModel.setDetailData(it)
-            viewModel.refreshSequence()
+        args.detailSequence?.let { sequence ->
+            viewModel.setDetailData(sequence)
+            viewModel.refreshSequence(sequence.id)
         }
     }
 
@@ -38,7 +38,7 @@ class DetailSequenceFragment : BaseFragment<FragmentSequenceDetailBinding, Detai
                 putBoolean("isEdit", true)
                 putParcelableArray("selected_poses_list", null)
             }
-            navigate(R.id.sequencesFragment, bundle)
+            navigate(R.id.sequencesFragment, bundle,isPop = true)
         }
         binding.ivBack.singleClick {
             popBackStack()
@@ -57,7 +57,7 @@ class DetailSequenceFragment : BaseFragment<FragmentSequenceDetailBinding, Detai
             binding.apply {
                 tvDetailName.text = sequence.title
                 tvDetailDuration.text = formatDurationToMin(sequence.totalDuration)
-                tvDetailPosesCount.text = "${sequence.poses.size} Poses"
+                tvDetailPosesCount.text = getString(R.string.format_poses_count, sequence.poses.size)
 
                 ivSequenceCover.loadImageFromNetwork(sequence.coverImageUrl)
 
@@ -82,21 +82,19 @@ class DetailSequenceFragment : BaseFragment<FragmentSequenceDetailBinding, Detai
             val bundle = Bundle().apply {
                 putParcelable("detail_sequence", sequence)
             }
-            navigate(R.id.multiModeYogaFragment, bundle)
+            navigate(R.id.multiModeYogaFragment, bundle, isPop = true)
         }
     }
 
     private fun formatDurationToMin(duration: String): String {
         return try {
             val parts = duration.split(":")
-            if (parts.isNotEmpty()) {
-                val minutes = parts[0].toIntOrNull() ?: 0
-                "$minutes min"
-            } else {
-                "0 min"
-            }
+            val minutes = if (parts.isNotEmpty()) {
+                parts[0].toIntOrNull() ?: 0
+            } else 0
+            getString(R.string.format_minutes, minutes)
         } catch (_: Exception) {
-            "0 min"
+            getString(R.string.format_minutes, 0)
         }
     }
 }

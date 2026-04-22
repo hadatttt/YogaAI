@@ -14,6 +14,7 @@ import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.hadat.aiyoga.R
+import com.hadat.aiyoga.databinding.DialogDeleteBinding
 import com.hadat.aiyoga.databinding.DialogTimeBinding
 import com.hadat.aiyoga.databinding.FragmentSequencesBinding
 import com.hadat.aiyoga.service.AppPreferences
@@ -29,7 +30,15 @@ class SequencesFragment : BaseFragment<FragmentSequencesBinding, SequencesViewMo
     private val recommendAdapter by lazy { RecommendPoseAdapter() }
     private val args by navArgs<SequencesFragmentArgs>()
     private val poseAdapter by lazy {
-        PoseSequenceAdapter(this) { item, position -> showTimePickerDialog(item, position) }
+        PoseSequenceAdapter(
+            dragListener = this,
+            onTimeClick = { item, position ->
+                showTimePickerDialog(item, position)
+            },
+            onDeleteClick = { item, position ->
+                showDeleteDialog(item, position)
+            }
+        )
     }
     private lateinit var itemTouchHelper: ItemTouchHelper
     private var selectedImageUri: Uri? = null
@@ -86,7 +95,10 @@ class SequencesFragment : BaseFragment<FragmentSequencesBinding, SequencesViewMo
         viewModel.saveStatus.observe(viewLifecycleOwner) { isSuccess ->
             if (isSuccess == null) return@observe
             if (isSuccess) {
-                val message = if (args.isEdit) "Updated successfully!" else "Created successfully!"
+                val message = if (args.isEdit)
+                    getString(R.string.updated_successfully)
+                else
+                    getString(R.string.created_successfully)
                 showToast(message)
                 val sequence = viewModel.lastSavedSequence.value
                 if (sequence != null) {
@@ -99,7 +111,7 @@ class SequencesFragment : BaseFragment<FragmentSequencesBinding, SequencesViewMo
                     popBackStack()
                 }
             } else {
-                showToast("Failed to save sequence")
+                showToast(getString(R.string.failed_to_save_sequence))
                 binding.btnCreate.isEnabled = true
             }
         }
@@ -129,7 +141,7 @@ class SequencesFragment : BaseFragment<FragmentSequencesBinding, SequencesViewMo
     private fun handleCreateFlow() {
         val name = binding.edtSequenceName.text.toString().trim()
         if (name.isEmpty()) {
-            showToast("Please enter sequence name")
+            showToast(getString(R.string.please_enter_sequence_name))
             return
         }
 
@@ -169,7 +181,7 @@ class SequencesFragment : BaseFragment<FragmentSequencesBinding, SequencesViewMo
     }
 
     override fun initData() {
-        viewModel.fetchAllPoses()
+        viewModel.fetchAllPoses(requireContext())
         if (args.isEdit && args.detailSequence != null) {
             val data = args.detailSequence!!
 
@@ -244,7 +256,42 @@ class SequencesFragment : BaseFragment<FragmentSequencesBinding, SequencesViewMo
         }
         dialog.show()
     }
+    private fun showDeleteDialog(item: SequenceModel, position: Int) {
+        val dialog = Dialog(requireContext())
+        val bindingDialog = DialogDeleteBinding.inflate(layoutInflater)
 
+        dialog.apply {
+            setContentView(bindingDialog.root)
+            window?.apply {
+                setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+                setLayout(
+                    (resources.displayMetrics.widthPixels * 0.85).toInt(),
+                    ViewGroup.LayoutParams.WRAP_CONTENT
+                )
+            }
+        }
+
+        bindingDialog.apply {
+            ivClose.singleClick {
+                dialog.dismiss()
+            }
+
+            btnConfirm.singleClick {
+                val currentList = poseAdapter.dataList.toMutableList()
+
+                if (position in currentList.indices) {
+                    currentList.removeAt(position)
+
+                    poseAdapter.setList(currentList)
+                    viewModel.updateList(currentList)
+                }
+
+                dialog.dismiss()
+            }
+        }
+
+        dialog.show()
+    }
     private fun showToast(message: String) {
         Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show()
     }

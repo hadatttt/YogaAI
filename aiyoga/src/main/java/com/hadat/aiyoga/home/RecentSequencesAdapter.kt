@@ -3,6 +3,7 @@ package com.hadat.aiyoga.home
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.viewbinding.ViewBinding
+import com.hadat.aiyoga.R
 import com.hadat.aiyoga.databinding.ItemAddSequencesBinding
 import com.hadat.aiyoga.databinding.ItemSequencesBinding
 import com.hadat.aiyoga.sequence.WorkoutSequenceModel
@@ -59,12 +60,14 @@ class RecentSequencesAdapter(
 
                 ivSequenceThumb.loadImageFromNetwork(data.coverImageUrl)
 
-                tvLevelValue.text = when (data.level) {
-                    1 -> "Beginner"
-                    2 -> "Intermediate"
-                    3 -> "Advanced"
-                    else -> "All Levels"
-                }
+                tvLevelValue.setText(
+                    when (data.level) {
+                        1 -> R.string.beginner
+                        2 -> R.string.intermediate
+                        3 -> R.string.advanced
+                        else -> R.string.beginner
+                    }
+                )
 
                 tvDuration.text = formatDurationToMin(data.totalDuration)
             }

@@ -23,7 +23,7 @@ class CategoryDetailAdapter() : BaseRecyclerViewAdapter<CategoryDetailModel, Ite
     }
     override fun bindData(binding: ItemCategoryDetailBinding, item: CategoryDetailModel, position: Int) {
         val context = binding.root.context
-        binding.txtCategory.text = item.title
+        binding.txtCategory.setText(item.titleRes)
         val drawable = ContextCompat.getDrawable(context, item.iconRes)
         drawable?.setBounds(0, 0, context.resources.getDimensionPixelSize(hoang.dqm.codebase.R.dimen._18sdp),
             context.resources.getDimensionPixelSize(hoang.dqm.codebase.R.dimen._18sdp))

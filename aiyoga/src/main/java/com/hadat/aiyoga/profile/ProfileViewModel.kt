@@ -7,7 +7,9 @@ import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.firebase.auth.FirebaseAuth
 import com.hadat.aiyoga.R
+import com.hadat.aiyoga.data.firestore.model.HealthProfileModel
 import com.hadat.aiyoga.data.firestore.model.User
+import com.hadat.aiyoga.data.firestore.repository.HealthProfileRepository
 import com.hadat.aiyoga.data.firestore.repository.UserRepository
 import com.hadat.aiyoga.service.AppPreferences
 import hoang.dqm.codebase.base.viewmodel.BaseViewModel
@@ -15,10 +17,16 @@ import kotlinx.coroutines.launch
 
 class ProfileViewModel : BaseViewModel() {
     private val userRepository = UserRepository()
-
+    private val healthRepo= HealthProfileRepository()
+    val healthProfileData = MutableLiveData<HealthProfileModel?>()
     val userData = MutableLiveData<User?>()
     val saveStatus = MutableLiveData<Boolean?>(null)
-
+    fun loadHealthProfile(userId: String) {
+        viewModelScope.launch {
+            val profile = healthRepo.getProfile(userId)
+            healthProfileData.postValue(profile)
+        }
+    }
     fun loadUser(userId: String) {
         if (userId.isBlank()) return
         viewModelScope.launch {
@@ -44,13 +52,18 @@ class ProfileViewModel : BaseViewModel() {
 
     fun logout(context: Context, onLogoutSuccess: () -> Unit) {
         FirebaseAuth.getInstance().signOut()
+
+        AppPreferences.logout(context)
+
         val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
             .requestIdToken(context.getString(R.string.default_web_client_id))
             .requestEmail()
             .build()
 
-        GoogleSignIn.getClient(context, gso).signOut().addOnCompleteListener {
-            AppPreferences.logout(context)
+        val googleClient = GoogleSignIn.getClient(context, gso)
+        googleClient.signOut().addOnCompleteListener {
+            onLogoutSuccess()
+        }.addOnFailureListener {
             onLogoutSuccess()
         }
     }

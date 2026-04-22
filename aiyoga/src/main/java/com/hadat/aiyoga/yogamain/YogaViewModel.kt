@@ -1,11 +1,12 @@
 package com.hadat.aiyoga.yogamain
 
+import android.content.Context
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.google.mediapipe.tasks.vision.poselandmarker.PoseLandmarkerResult
 import com.hadat.aiyoga.sequence.SequenceModel
 import com.hadat.aiyoga.utils.yogautils.YogaCoachUtils
-import com.hadat.aiyoga.utils.yogautils.YogaDataUtils
+import com.hadat.aiyoga.data.remoteconfig.YogaDataUtils
 import hoang.dqm.codebase.base.viewmodel.BaseViewModel
 import java.util.*
 import kotlin.collections.ArrayList
@@ -24,7 +25,7 @@ class YogaViewModel : BaseViewModel() {
     private val _yogaPoseDataList = MutableLiveData<List<YogaPoseModel>>()
     val yogaPoseDataList: LiveData<List<YogaPoseModel>> = _yogaPoseDataList
 
-    private val _currentPoseName = MutableLiveData<String>("Đang chờ...")
+    private val _currentPoseName = MutableLiveData<String>("...")
     val currentPoseName: LiveData<String> = _currentPoseName
 
     private val _currentGuideText = MutableLiveData<String>()
@@ -47,7 +48,6 @@ class YogaViewModel : BaseViewModel() {
     private var isTrackingStarted = false
     private var exerciseTimer: Timer? = null
 
-    // Biến quan trọng giống SingleYoga
     private var isCurrentlyCorrect = false
     private var currentPoseTotalSeconds = 0
     private val PREPARATION_TIME_MS = 3000L
@@ -61,22 +61,21 @@ fun toggleCaptureWait() {
         sessionImagePaths.add(path)
     }
 
-    fun getCapturedImages(): List<String> = sessionImagePaths
+    fun getCapturedImages(): List<String> = sessionImagePaths.toList()
 
-    fun processCoachLogic(result: PoseLandmarkerResult) {
+    fun processCoachLogic(context: android.content.Context, result: PoseLandmarkerResult) {
         val poseId = _detectedPoseId.value ?: -1
         if (poseId != -1 && isTrackingStarted) {
-            val (isCorrect, feedback) = YogaCoachUtils.getCoachFeedback(poseId, result)
+            val (isCorrect, feedback) = YogaCoachUtils.getCoachFeedback(context, poseId, result)
             isCurrentlyCorrect = isCorrect
 
-            // LOGIC CHỤP ẢNH: Nếu đang đợi chụp + đứng đúng tư thế
             if (isCorrect && _isWaitingForCapture.value == true) {
                 _captureTrigger.postValue(Unit)
                 _isWaitingForCapture.postValue(false)
             }
-
             if (isCorrect) {
-                _currentGuideText.postValue("✅ Tư thế chuẩn! Đang đếm giờ...")
+                val msg = context.getString(com.hadat.aiyoga.R.string.guide_perfect_counting)
+                _currentGuideText.postValue(msg)
             } else {
                 _currentGuideText.postValue("⚠️ $feedback")
                 _speakCommand.postValue(feedback)
@@ -86,22 +85,21 @@ fun toggleCaptureWait() {
         }
     }
 
-    // Cập nhật hàm clearData
     fun clearData() {
         workoutSequenceMap.clear()
-        sessionImagePaths.clear() // Xóa ảnh khi kết thúc
+        sessionImagePaths.clear()
         currentPoseTotalSeconds = 0
         _isWaitingForCapture.value = false
         lastPoseName = null
         stopExerciseTimer()
     }
-    fun fetchYogaPoses() {
-        YogaDataUtils.getRemoteYogaPoses { poses ->
+    fun fetchYogaPoses(context: Context) {
+        YogaDataUtils.getRemoteYogaPoses(context.applicationContext) { poses ->
             poses?.let { _yogaPoseDataList.postValue(it) }
         }
     }
 
-    fun handlePoseInference(poseId: Int) {
+    fun handlePoseInference(context: android.content.Context, poseId: Int) {
         val allPoses = _yogaPoseDataList.value ?: return
         val poseData = allPoses.find { it.id == poseId } ?: return
         val currentPose = poseData.name
@@ -113,12 +111,10 @@ fun toggleCaptureWait() {
                 if (!isTrackingStarted) {
                     isTrackingStarted = true
 
-                    // Lấy thời gian cũ nếu tập lại bài này
                     currentPoseTotalSeconds = workoutSequenceMap[poseId]?.let {
                         timeStringToSeconds(it.duration)
                     } ?: 0
 
-                    // Bắt đầu Timer logic (Timer luôn chạy nhưng chỉ cộng giây khi isCurrentlyCorrect = true)
                     startLogicalTimer()
 
                     if (!workoutSequenceMap.containsKey(poseId)) {
@@ -132,21 +128,24 @@ fun toggleCaptureWait() {
 
                     _previewPoseId.postValue(poseId)
                     _currentPoseName.postValue(currentPose)
-                    _speakCommand.postValue("Bắt đầu tập $currentPose")
+                    val startMsg = "${context.getString(com.hadat.aiyoga.R.string.start_practicing)} $currentPose"
+                    _speakCommand.postValue(startMsg)
                 }
                 _detectedPoseId.postValue(poseId)
             } else {
                 val countdown = 3 - (elapsedTime / 1000)
-                _currentGuideText.postValue("Giữ nguyên $currentPose ($countdown s)")
+                val holdMsg = "${context.getString(com.hadat.aiyoga.R.string.hold_pose)} $currentPose ($countdown s)"
+                _currentGuideText.postValue(holdMsg)
             }
         } else {
             lastPoseName = currentPose
             poseStartTime = System.currentTimeMillis()
             _detectedPoseId.postValue(-1)
             _previewPoseId.postValue(-1)
-            isCurrentlyCorrect = false // Reset trạng thái đúng/sai
+            isCurrentlyCorrect = false
             if (isTrackingStarted) stopExerciseTimer()
-            _currentGuideText.postValue("Chuẩn bị: $currentPose")
+            val prepareMsg = "${context.getString(com.hadat.aiyoga.R.string.prepare_pose)}: $currentPose"
+            _currentGuideText.postValue(prepareMsg)
         }
     }
 
@@ -156,7 +155,6 @@ fun toggleCaptureWait() {
         exerciseTimer = Timer()
         exerciseTimer?.scheduleAtFixedRate(object : TimerTask() {
             override fun run() {
-                // CHỈ CỘNG GIÂY KHI TƯ THẾ ĐANG ĐÚNG
                 if (isCurrentlyCorrect) {
                     val currentId = _detectedPoseId.value ?: return
                     if (currentId == -1) return
@@ -195,5 +193,19 @@ fun toggleCaptureWait() {
     override fun onCleared() {
         clearData()
         super.onCleared()
+    }
+    fun resetData() {
+        clearData()
+        _currentPoseName.value = "..."
+        _currentGuideText.value = ""
+        _timerText.value = "00:00"
+        _detectedPoseId.value = -1
+        _previewPoseId.value = -1
+        _isWaitingForCapture.value = false
+
+        isTrackingStarted = false
+        isCurrentlyCorrect = false
+        poseStartTime = 0
+        lastPoseName = null
     }
 }

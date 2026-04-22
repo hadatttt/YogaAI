@@ -1,26 +1,26 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:layout_width="wrap_content"
-    android:layout_height="wrap_content"
-    android:layout_marginEnd="@dimen/_8sdp"
-    android:padding="@dimen/_2sdp">
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="@dimen/_8sdp"
+        android:padding="@dimen/_2sdp">
 
     <androidx.cardview.widget.CardView
-        android:id="@+id/card_root"
-        android:layout_width="@dimen/_80sdp"
-        android:layout_height="@dimen/_80sdp"
-        app:cardCornerRadius="16dp"
-        app:cardElevation="0dp"
-        app:cardPreventCornerOverlap="false"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
+            android:id="@+id/card_root"
+            android:layout_width="@dimen/_100sdp"
+            android:layout_height="@dimen/_100sdp"
+            app:cardCornerRadius="@dimen/_16sdp"
+            app:cardElevation="0dp"
+            app:cardPreventCornerOverlap="false"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
 
         <ImageView
-            android:id="@+id/iv_thumb"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:scaleType="centerCrop" />
+                android:id="@+id/iv_thumb"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:scaleType="centerCrop" />
 
     </androidx.cardview.widget.CardView>
 
@@ -28,24 +28,23 @@
             android:id="@+id/view_selected_stroke"
             android:layout_width="0dp"
             android:layout_height="0dp"
-            android:background="@drawable/bg_new_sequence"
+            android:background="@drawable/bg_image"
             app:layout_constraintTop_toTopOf="@id/card_root"
             app:layout_constraintBottom_toBottomOf="@id/card_root"
             app:layout_constraintStart_toStartOf="@id/card_root"
             app:layout_constraintEnd_toEndOf="@id/card_root" />
 
     <androidx.appcompat.widget.AppCompatImageView
-        android:id="@+id/iv_selected_check"
-        android:layout_width="@dimen/_20sdp"
-        android:layout_height="@dimen/_20sdp"
-        android:layout_marginStart="@dimen/_4sdp"
-        android:layout_marginTop="@dimen/_4sdp"
-        android:background="@drawable/bg_circle_icon"
-        android:padding="@dimen/_3sdp"
-        android:src="@drawable/ic_check_lang"
-        android:visibility="gone"
-        app:layout_constraintStart_toStartOf="@id/card_root"
-        app:layout_constraintTop_toTopOf="@id/card_root"
-        app:tint="@color/primary" />
+            android:id="@+id/iv_selected_check"
+            android:layout_width="@dimen/_24sdp"
+            android:layout_height="@dimen/_24sdp"
+            android:layout_marginStart="@dimen/_6sdp"
+            android:layout_marginTop="@dimen/_6sdp"
+            android:padding="@dimen/_4sdp"
+            android:src="@drawable/ic_check_lang"
+            android:visibility="gone"
+            app:layout_constraintStart_toStartOf="@id/card_root"
+            app:layout_constraintTop_toTopOf="@id/card_root"
+            app:tint="@color/primary" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

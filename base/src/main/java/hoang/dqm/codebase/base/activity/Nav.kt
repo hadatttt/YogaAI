@@ -25,7 +25,48 @@ fun Fragment.navigate(
         }
     }
 }
+fun Fragment.navigateWithBackAnimation(
+    destination: Int,
+    extraData: Bundle? = null,
+    isPop: Boolean = false
+) {
+    if (!isAdded || view == null) return
+    viewLifecycleOwner.lifecycleScope.launch {
+        viewLifecycleOwner.lifecycle.repeatOnLifecycle(Lifecycle.State.RESUMED) {
+            activity?.navigateWithBackAnimation(destination, extraData, isPop)
+        }
+    }
+}
+fun FragmentActivity.navigateWithBackAnimation(
+    destination: Int,
+    extraData: Bundle? = null,
+    isPop: Boolean = false,
+    isPopAll: Boolean = false
+) {
+    try {
+        val navController = findNavController(R.id.navHostFragment)
+        navController.navigate(destination, extraData, navOptions {
+            anim {
+                enter = android.R.anim.fade_in
+                exit = R.anim.slide_out_right
+                popEnter = R.anim.slide_in_right
+                popExit = android.R.anim.fade_out
+            }
 
+            if (isPopAll) {
+                popUpTo(navController.graph.startDestinationId) {
+                    inclusive = true
+                }
+            } else if (isPop) {
+                navController.currentDestination?.id?.let { currentDestination ->
+                    popUpTo(currentDestination) { inclusive = true }
+                }
+            }
+        })
+    } catch (ex: Exception) {
+        ex.printStackTrace()
+    }
+}
 fun FragmentActivity.navigate(
     destination: Int, extraData: Bundle? = null, isPop: Boolean = false, isPopAll: Boolean = false
 ) {
@@ -95,6 +136,16 @@ fun Fragment.showDialog(dialogFragment: DialogFragment, tag: String? = null) {
             dialogFragment.show(this.childFragmentManager, tag)
         } catch (ex: IllegalStateException) {
             ex.printStackTrace()
+        }
+    }
+}
+fun Fragment.navigateWithPopAll(
+    destination: Int, extraData: Bundle? = null
+) {
+    if (!isAdded || view == null) return
+    viewLifecycleOwner.lifecycleScope.launch {
+        viewLifecycleOwner.lifecycle.repeatOnLifecycle(Lifecycle.State.RESUMED) {
+            activity?.navigate(destination, extraData, isPop = false, isPopAll = true)
         }
     }
 }

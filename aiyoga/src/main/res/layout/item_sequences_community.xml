@@ -70,7 +70,6 @@
                 android:fontFamily="@font/font_bold"
                 android:paddingHorizontal="@dimen/_8sdp"
                 android:paddingVertical="@dimen/_3sdp"
-                android:text="@string/fifteen_mins"
                 android:textColor="@color/white"
                 android:textSize="@dimen/_13ssp"
                 app:layout_constraintEnd_toEndOf="@id/iv_sequence_thumb"
@@ -85,7 +84,6 @@
                 android:ellipsize="end"
                 android:fontFamily="@font/font_bold"
                 android:maxLines="1"
-                android:text="@string/power_yoga_morning"
                 android:textColor="@color/text_gray"
                 android:textSize="@dimen/_20sp"
                 app:layout_constraintEnd_toEndOf="parent"
@@ -98,7 +96,6 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="@dimen/_2sdp"
                 android:alpha="0.7"
-                android:text="@string/sample_author"
                 android:textColor="@color/text_gray"
                 android:textSize="@dimen/_10sp"
                 app:layout_constraintStart_toStartOf="@id/tv_sequence_name"
@@ -125,7 +122,6 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="@dimen/_4sdp"
-                    android:text="@string/poses_12"
                     android:textColor="#8E8E93"
                     android:textSize="@dimen/_10sp" />
         </LinearLayout>
@@ -152,7 +148,6 @@
                     android:layout_height="wrap_content"
                     android:layout_marginStart="@dimen/_3sdp"
                     android:fontFamily="@font/font_bold"
-                    android:text="@string/likes_1_2k"
                     android:textColor="@color/text_gray"
                     android:textSize="@dimen/_10sp" />
 
@@ -173,7 +168,6 @@
                     android:layout_height="wrap_content"
                     android:layout_marginStart="@dimen/_3sdp"
                     android:fontFamily="@font/font_bold"
-                    android:text="@string/views_4_5k"
                     android:textColor="@color/text_gray"
                     android:textSize="@dimen/_10sp" />
         </LinearLayout>

@@ -24,7 +24,7 @@ class CategoryAdapter : BaseRecyclerViewAdapter<CategoryModel, ItemCategoryBindi
     }
 
     override fun bindData(binding: ItemCategoryBinding, item: CategoryModel, position: Int) {
-        binding.txtCategory.text = item.value
+        binding.txtCategory.text = item.displayValue
         if (position == selectedPosition) {
             binding.txtCategory.setBackgroundResource(R.drawable.ic_category_selected)
             binding.txtCategory.setTextColor(context.getColor(R.color.white))

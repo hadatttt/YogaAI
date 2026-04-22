@@ -8,7 +8,8 @@ import com.github.mikephil.charting.data.PieEntry
 import com.hadat.aiyoga.R
 import com.hadat.aiyoga.databinding.FragmentWorkoutOverviewBinding
 import com.hadat.aiyoga.service.AppPreferences
-import com.hadat.aiyoga.sequence.WorkoutSequenceModel
+import com.hadat.aiyoga.singleyoga.WorkoutResultModel
+import com.hadat.aiyoga.utils.yogautils.HealthCalculatorUtils
 import hoang.dqm.codebase.base.activity.BaseFragment
 import hoang.dqm.codebase.base.activity.popBackStack
 import hoang.dqm.codebase.utils.singleClick
@@ -59,6 +60,7 @@ class WorkoutOverviewFragment : BaseFragment<FragmentWorkoutOverviewBinding, Wor
         fetchData()
 
         viewModel.sequences.observe(viewLifecycleOwner) { listResults ->
+            toggleChartsVisibility(!listResults.isNullOrEmpty())
             if (listResults.isNullOrEmpty()) {
                 resetUI()
                 return@observe
@@ -80,49 +82,85 @@ class WorkoutOverviewFragment : BaseFragment<FragmentWorkoutOverviewBinding, Wor
 
         viewModel.fetchRange(userId, start, end)
     }
+    private fun toggleChartsVisibility(isVisible: Boolean) {
+        val visibility = if (isVisible) android.view.View.VISIBLE else android.view.View.GONE
+        binding.viewPagerCharts.visibility = visibility
+        binding.dotsIndicator.visibility = visibility
+    }
+    private fun processWorkoutData(list: List<WorkoutResultModel>) {
 
-    private fun processWorkoutData(list: List<WorkoutSequenceModel>) {
-        // 1. Tính toán tổng số liệu (Sử dụng hệ số 0.15f của ResultFragment)
-        val totalSec = list.sumOf { parseDurationSeconds(it.totalDuration).toLong() }
-        val totalCalo = totalSec * 0.15f
+        val weight = viewModel.userWeight.value ?: 60f
+        val metMap = viewModel.metDataMap.value ?: emptyMap()
+        val dailyGoal = viewModel.dailyGoalCalories.value ?: 300
+
+        val diffMillis = toCalendar.timeInMillis - fromCalendar.timeInMillis
+        val daysSelected = (diffMillis / (1000 * 60 * 60 * 24)).toInt().coerceAtLeast(1)
+        val totalRangeGoal = dailyGoal.toFloat() * daysSelected
+
+        var totalCalo = 0f
+        var totalSec = 0L
+
+        list.forEach { item ->
+            totalSec += item.durationInSeconds
+
+            val met = metMap[item.poseId] ?: 3.0
+            totalCalo += HealthCalculatorUtils.calculateWorkoutCaloriesByMet(
+                met,
+                weight,
+                item.durationInSeconds
+            )
+        }
+
         val totalMin = totalSec / 60f
 
-        // Tính Accuracy trung bình: (likeCount / viewCount)
-        val totalAcc = list.filter { it.viewCount > 0 }.map {
-            (it.likeCount.toFloat() / it.viewCount.toFloat() * 100f).coerceIn(10f, 100f)
+        val totalAcc = list.map {
+            HealthCalculatorUtils.calculateAccuracy(
+                expectedTimeSec = it.durationInSeconds,
+                wrongCount = it.errorCount
+            )
         }.let { if (it.isEmpty()) 100f else it.average().toFloat() }
 
-        updateProgressUI(totalCalo, totalMin, totalAcc)
+        updateProgressUI(totalCalo, totalMin, totalAcc, totalRangeGoal)
 
-        // 2. Phân nhóm theo ngày để vẽ biểu đồ
-        val dailyGrouped = list.filter { it.createdAt != null }
-            .sortedBy { it.createdAt }
-            .groupBy { modelDateFormat.format(it.createdAt!!) }
+        val dailyGrouped = list.groupBy {
+            modelDateFormat.format(Date(it.workoutTimestamp))
+        }
 
         val labels = mutableListOf<String>()
         val caloEntries = mutableListOf<BarEntry>()
         val accTrendEntries = mutableListOf<Entry>()
 
         dailyGrouped.values.forEachIndexed { index, sessions ->
-            val x = index.toFloat()
-            val date = sessions.first().createdAt ?: Date()
-            labels.add(dateFormatLabel.format(date))
 
-            val dayCalo = sessions.sumOf { parseDurationSeconds(it.totalDuration).toDouble() }.toFloat() * 0.15f
-            val dayAcc = sessions.filter { it.viewCount > 0 }.map {
-                (it.likeCount.toFloat() / it.viewCount.toFloat() * 100f).coerceIn(10f, 100f)
+            val x = index.toFloat()
+            labels.add(dateFormatLabel.format(Date(sessions.first().workoutTimestamp)))
+
+            var dayCalo = 0f
+
+            sessions.forEach { item ->
+                val met = metMap[item.poseId] ?: 3.0
+                dayCalo += HealthCalculatorUtils.calculateWorkoutCaloriesByMet(
+                    met,
+                    weight,
+                    item.durationInSeconds
+                )
+            }
+
+            val dayAcc = sessions.map {
+                HealthCalculatorUtils.calculateAccuracy(
+                    it.durationInSeconds,
+                    it.errorCount
+                )
             }.let { if (it.isEmpty()) 100f else it.average().toFloat() }
 
             caloEntries.add(BarEntry(x, dayCalo))
             accTrendEntries.add(Entry(x, dayAcc))
         }
 
-        // 3. Phân bổ theo Level bài tập cho Pie Chart
-        val pieEntries = list.groupBy { it.level }.map {
-            PieEntry(it.value.size.toFloat(), "Level ${it.key}")
+        val pieEntries = list.groupBy { it.poseId }.map {
+            PieEntry(it.value.size.toFloat(), "Pose ${it.key}")
         }
 
-        // 4. Đổ dữ liệu vào Charts
         chartAdapter.updateData(
             ChartDataModel("Calories (kcal)", caloEntries, Color.parseColor("#FF6A00")),
             ChartDataModel("Accuracy Trend (%)", accTrendEntries, Color.parseColor("#00C853")),
@@ -131,20 +169,20 @@ class WorkoutOverviewFragment : BaseFragment<FragmentWorkoutOverviewBinding, Wor
         )
     }
 
-    private fun updateProgressUI(calo: Float, minutes: Float, acc: Float) {
+    private fun updateProgressUI(calo: Float, minutes: Float, acc: Float, targetCalo: Float) {
         binding.progressCalories.apply {
-            progressMax = 1000f // Target tuần
+            progressMax = targetCalo
             setProgressWithAnimation(calo, 1200)
         }
         binding.tvCaloriesValue.text = "%.0f".format(calo)
 
+        val days = (targetCalo / (viewModel.dailyGoalCalories.value ?: 300)).toInt().coerceAtLeast(1)
         binding.progressTime.apply {
-            progressMax = 300f
+            progressMax = 30f * days
             setProgressWithAnimation(minutes, 1200)
         }
         binding.tvTimeValue.text = "${minutes.toInt()} min"
 
-        // Đổi màu Progress Accuracy giống ResultFragment
         binding.progressAccuracy.apply {
             progressBarColor = when {
                 acc >= 85 -> Color.parseColor("#00C853")
@@ -178,7 +216,8 @@ class WorkoutOverviewFragment : BaseFragment<FragmentWorkoutOverviewBinding, Wor
     }
 
     private fun resetUI() {
-        updateProgressUI(0f, 0f, 0f)
+        val defaultGoal = (viewModel.dailyGoalCalories.value ?: 300).toFloat() * 7
+        updateProgressUI(0f, 0f, 0f, defaultGoal)
         chartAdapter.updateData(
             ChartDataModel("Calories", emptyList(), Color.GRAY),
             ChartDataModel("Accuracy", emptyList(), Color.GRAY),

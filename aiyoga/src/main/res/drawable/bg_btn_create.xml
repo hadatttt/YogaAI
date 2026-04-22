@@ -1,33 +1,9 @@
-<selector xmlns:android="http://schemas.android.com/apk/res/android">
-
-    <item android:state_selected="true">
-        <shape>
-            <gradient
-                    android:angle="270"
-                    android:startColor="#8E94D1"
-                    android:endColor="#7982C6"/>
-            <corners android:radius="20dp"/>
-        </shape>
-    </item>
-
-    <item android:state_pressed="true">
-        <shape>
-            <gradient
-                    android:angle="270"
-                    android:startColor="#7982C6"
-                    android:endColor="#646FB2"/>
-            <corners android:radius="20dp"/>
-        </shape>
-    </item>
-
-    <item>
-        <shape>
-            <gradient
-                    android:angle="270"
-                    android:startColor="#DADBF2"
-                    android:endColor="#C3C5E8"/>
-            <corners android:radius="20dp"/>
-        </shape>
-    </item>
-
-</selector>
+<?xml version="1.0" encoding="utf-8"?>
+<shape xmlns:android="http://schemas.android.com/apk/res/android">
+    <gradient
+            android:angle="270"
+            android:startColor="#E1D5F2"
+            android:endColor="@color/purple_700"
+            android:type="linear" />
+    <corners android:radius="20dp" />
+</shape>

@@ -1,6 +1,8 @@
 package com.hadat.aiyoga.utils
 
 import android.content.Context
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import okhttp3.*
 import java.io.File
@@ -13,6 +15,11 @@ object ModelDownloader {
         "yoga_model.tflite",
         "pose_landmarker_heavy.task"
     )
+
+    // Biến để kiểm tra xem có đang tải dở không, tránh tải trùng
+    private val downloadingFiles = mutableSetOf<String>()
+    private val mainHandler = Handler(Looper.getMainLooper())
+
     fun downloadAllModels(
         context: Context,
         onProgress: (Int) -> Unit,
@@ -21,15 +28,24 @@ object ModelDownloader {
         var downloadedCount = 0
         var hasError = false
 
+        val allExist = YOGA_MODELS.all { File(context.filesDir, it).exists() }
+        if (allExist) {
+            onComplete(true)
+            return
+        }
+
         YOGA_MODELS.forEach { fileName ->
             downloadFile(context, fileName,
-                onProgress = {  },
+                onProgress = { progress ->
+                    mainHandler.post { onProgress(progress) }
+                },
                 onComplete = { file ->
-                    if (file == null) hasError = true
-                    downloadedCount++
-
-                    if (downloadedCount == YOGA_MODELS.size) {
-                        onComplete(!hasError)
+                    synchronized(this) {
+                        if (file == null) hasError = true
+                        downloadedCount++
+                        if (downloadedCount == YOGA_MODELS.size) {
+                            mainHandler.post { onComplete(!hasError) }
+                        }
                     }
                 }
             )
@@ -38,42 +54,41 @@ object ModelDownloader {
 
     private fun downloadFile(context: Context, fileName: String, onProgress: (Int) -> Unit, onComplete: (File?) -> Unit) {
         val targetFile = File(context.filesDir, fileName)
-        Log.d("ModelDownloader", "Bắt đầu kiểm tra file: $fileName")
 
         if (targetFile.exists() && targetFile.length() > 0) {
-            Log.d("ModelDownloader", "File $fileName đã tồn tại (Size: ${targetFile.length()})")
-            onProgress(100)
             onComplete(targetFile)
             return
         }
 
-        val url = BASE_URL + fileName
-        Log.d("ModelDownloader", "Đang tải từ URL: $url")
+        synchronized(downloadingFiles) {
+            if (downloadingFiles.contains(fileName)) return
+            downloadingFiles.add(fileName)
+        }
 
+        val url = BASE_URL + fileName
         val client = OkHttpClient()
         val request = Request.Builder().url(url).build()
 
         client.newCall(request).enqueue(object : Callback {
             override fun onFailure(call: Call, e: IOException) {
-                Log.e("ModelDownloader", "Tải file $fileName THẤT BẠI: ${e.message}")
+                synchronized(downloadingFiles) { downloadingFiles.remove(fileName) }
                 onComplete(null)
             }
 
             override fun onResponse(call: Call, response: Response) {
-                if (!response.isSuccessful) {
-                    Log.e("ModelDownloader", "Server báo lỗi (${response.code}) khi tải $fileName")
+                val body = response.body
+                if (!response.isSuccessful || body == null) {
+                    synchronized(downloadingFiles) { downloadingFiles.remove(fileName) }
                     onComplete(null)
                     return
-                }
-                Log.d("ModelDownloader", "Server OK, bắt đầu ghi file $fileName...")
-                val body = response.body ?: run {
-                    Log.e("ModelDownloader", "Body rỗng"); onComplete(null); return
                 }
 
                 try {
                     val totalBytes = body.contentLength()
                     val inputStream = body.byteStream()
-                    val outputStream = FileOutputStream(targetFile)
+                    val tempFile = File(context.filesDir, "$fileName.tmp")
+                    val outputStream = FileOutputStream(tempFile)
+
                     val buffer = ByteArray(8192)
                     var bytesRead: Int
                     var totalRead: Long = 0
@@ -82,17 +97,17 @@ object ModelDownloader {
                         outputStream.write(buffer, 0, bytesRead)
                         totalRead += bytesRead
                         if (totalBytes > 0) {
-                            val p = ((totalRead * 100) / totalBytes).toInt()
-                            onProgress(p)
+                            onProgress(((totalRead * 100) / totalBytes).toInt())
                         }
                     }
                     outputStream.flush()
                     outputStream.close()
-                    Log.d("ModelDownloader", "Tải file $fileName THÀNH CÔNG!")
+                    tempFile.renameTo(targetFile)
+                    synchronized(downloadingFiles) { downloadingFiles.remove(fileName) }
                     onComplete(targetFile)
                 } catch (e: Exception) {
-                    Log.e("ModelDownloader", "Lỗi khi ghi file $fileName: ${e.message}")
                     if (targetFile.exists()) targetFile.delete()
+                    synchronized(downloadingFiles) { downloadingFiles.remove(fileName) }
                     onComplete(null)
                 }
             }

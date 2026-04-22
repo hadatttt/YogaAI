@@ -23,6 +23,7 @@ class SequenceRepository {
             val data = hashMapOf(
                 "id" to docRef.id,
                 "userId" to sequence.userId,
+                "authorName" to sequence.authorName,
                 "title" to sequence.title,
                 "coverImageUrl" to sequence.coverImageUrl,
                 "totalDuration" to sequence.totalDuration,
@@ -31,7 +32,7 @@ class SequenceRepository {
                 "poses" to sequence.poses,
                 "likeCount" to 0,
                 "viewCount" to 0,
-                "createdAt" to FieldValue.serverTimestamp() // 🔥 QUAN TRỌNG
+                "createdAt" to FieldValue.serverTimestamp()
             )
 
             docRef.set(data).await()
@@ -56,21 +57,6 @@ class SequenceRepository {
         }
     }
 
-    suspend fun getMySequencesInRange(userId: String, fromMillis: Long, toMillis: Long): List<WorkoutSequenceModel> = withContext(Dispatchers.IO) {
-        return@withContext try {
-            sequenceCollection
-                .whereEqualTo("userId", userId)
-                .whereGreaterThanOrEqualTo("createdAt", Date(fromMillis))
-                .whereLessThanOrEqualTo("createdAt", Date(toMillis))
-                .orderBy("createdAt", Query.Direction.ASCENDING)
-                .get()
-                .await()
-                .toObjects(WorkoutSequenceModel::class.java)
-        } catch (e: Exception) {
-            e.printStackTrace()
-            emptyList()
-        }
-    }
 
     suspend fun getAllSequences(): List<WorkoutSequenceModel> = withContext(Dispatchers.IO) {
         return@withContext try {
@@ -175,6 +161,20 @@ class SequenceRepository {
         } catch (e: Exception) {
             e.printStackTrace()
             emptyList()
+        }
+    }
+    suspend fun deleteSequence(sequenceId: String): Boolean = withContext(Dispatchers.IO) {
+        return@withContext try {
+            if (sequenceId.isBlank()) return@withContext false
+
+            sequenceCollection.document(sequenceId)
+                .delete()
+                .await()
+
+            true
+        } catch (e: Exception) {
+            e.printStackTrace()
+            false
         }
     }
 }

@@ -54,12 +54,14 @@ class DetailYogaFragment : BaseFragment<FragmentDetailYogaBinding, DetailYogaVie
         binding.apply {
             tvPoseName.text = item.name
             tvSanskritName.text = item.name
-            tvLevelValue.text = when (item.expertise_level) {
-                1 -> "Beginner"
-                2 -> "Intermediate"
-                3 -> "Advanced"
-                else -> "Unknown"
-            }
+            tvLevelValue.setText(
+                when (item.expertise_level) {
+                    1 -> R.string.beginner
+                    2 -> R.string.intermediate
+                    3 -> R.string.advanced
+                    else -> R.string.beginner
+                }
+            )
             imgYogaPose.loadImageFromNetwork(item.getDisplayPhoto())
         }
     }
@@ -75,10 +77,10 @@ class DetailYogaFragment : BaseFragment<FragmentDetailYogaBinding, DetailYogaVie
         }
 
         categoryAdapter.setList(listOf(
-            CategoryDetailModel(0, "Description", R.drawable.ic_help),
-            CategoryDetailModel(1, "Benefits", R.drawable.ic_benefit),
-            CategoryDetailModel(2, "Step", R.drawable.ic_practice),
-            CategoryDetailModel(3, "Caution", R.drawable.ic_warning)
+            CategoryDetailModel(0, R.string.cat_description, R.drawable.ic_help),
+            CategoryDetailModel(1, R.string.cat_benefits, R.drawable.ic_benefit),
+            CategoryDetailModel(2, R.string.cat_steps, R.drawable.ic_practice),
+            CategoryDetailModel(3, R.string.cat_caution, R.drawable.ic_warning)
         ))
     }
 
@@ -140,7 +142,7 @@ class DetailYogaFragment : BaseFragment<FragmentDetailYogaBinding, DetailYogaVie
     override fun initData() {
         val poseId = args.yogaPoseItem.id
         viewModel.checkFavoriteStatus(requireContext(), poseId)
-        viewModel.fetchYogaDetail(poseId)
+        viewModel.fetchYogaDetail(requireContext(), poseId)
     }
 
     override fun initListener() {
@@ -221,10 +223,17 @@ class DetailYogaFragment : BaseFragment<FragmentDetailYogaBinding, DetailYogaVie
     }
 
     private fun resetAiLoading(message: String) {
+        if (!isAdded) return
+
         binding.tvAiLoading.text = message
         binding.lottieAi.visibility = View.GONE
         binding.imgYogaPose.loadImageFromNetwork(args.yogaPoseItem.getDisplayPhoto())
-        binding.root.postDelayed({ binding.tvAiLoading.visibility = View.GONE }, 1500)
+
+        binding.root.postDelayed({
+            if (isAdded) {
+                binding.tvAiLoading.visibility = View.GONE
+            }
+        }, 1500)
     }
 
     override fun onResults(resultBundle: PoseLandmarkerHelper.ResultBundle) {}

@@ -3,6 +3,7 @@ package com.hadat.aiyoga
 import android.os.Bundle
 import android.util.Log
 import android.view.View
+import android.view.WindowManager
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
@@ -15,12 +16,18 @@ import com.google.firebase.FirebaseApp
 import com.qamar.curvedbottomnaviagtion.CurvedBottomNavigation
 import com.hadat.aiyoga.service.AppPreferences
 import hoang.dqm.codebase.base.activity.navigate
+import android.net.ConnectivityManager
+import android.net.Network
+import android.net.NetworkCapabilities
+import android.net.NetworkRequest
+import android.widget.Button
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var navController: NavController
     private lateinit var bottomNavigation: CurvedBottomNavigation
-
+    private lateinit var connectivityManager: ConnectivityManager
+    private lateinit var networkCallback: ConnectivityManager.NetworkCallback
     companion object {
         val HOME_ITEM = R.id.homeFragment
         val PRACTICE_ITEM = R.id.workoutOverviewFragment
@@ -30,16 +37,19 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        val currentLang = AppPreferences.getLanguageCode(this)
         AppCompatDelegate.setApplicationLocales(
-            LocaleListCompat.forLanguageTags(AppPreferences.getLanguageCode(this))
+            LocaleListCompat.forLanguageTags(currentLang)
         )
+        window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
         super.onCreate(savedInstanceState)
         FirebaseApp.initializeApp(applicationContext)
         Log.d("FCM", "Init OK")
 
         enableEdgeToEdge()
         setContentView(R.layout.activity_main)
-
+        setupNetworkListener()
+        downloadAiModelsInBackground()
         val navHostFragment =
             supportFragmentManager.findFragmentById(R.id.navHostFragment) as NavHostFragment
         navController = navHostFragment.navController
@@ -55,7 +65,11 @@ class MainActivity : AppCompatActivity() {
 
         val navGraph = navController.navInflater.inflate(R.navigation.app_nav)
         val startDestination = if (AppPreferences.isLoggedIn(this)) {
-            R.id.homeFragment
+            if (AppPreferences.isHealthProfileCompleted(this)) {
+                R.id.homeFragment
+            } else {
+                R.id.informationFragment
+            }
         } else {
             R.id.loginFragment
         }
@@ -87,6 +101,7 @@ class MainActivity : AppCompatActivity() {
             val fragmentsToHideNavigation = setOf(
                 R.id.loginFragment,
                 R.id.singleYogaFragment,
+                R.id.informationFragment,
                 R.id.yogaFragment
             )
 
@@ -108,5 +123,60 @@ class MainActivity : AppCompatActivity() {
                 bottomNavigation.show(currentSelectedBottomItem, true)
             }
         }
+    }
+    private fun setupNetworkListener() {
+        val layoutNoInternet = findViewById<View>(R.id.layoutNoInternet)
+        val buttonSetting = findViewById<View>(R.id.buttonSetting)
+
+        connectivityManager = getSystemService(CONNECTIVITY_SERVICE) as ConnectivityManager
+
+        networkCallback = object : ConnectivityManager.NetworkCallback() {
+            override fun onAvailable(network: Network) {
+                runOnUiThread {
+                    layoutNoInternet.visibility = View.GONE
+                }
+            }
+
+            override fun onLost(network: Network) {
+                runOnUiThread {
+                    layoutNoInternet.visibility = View.VISIBLE
+                }
+            }
+        }
+
+        val networkRequest = NetworkRequest.Builder()
+            .addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
+            .build()
+
+        connectivityManager.registerNetworkCallback(networkRequest, networkCallback)
+
+        // Kiểm tra trạng thái mạng ban đầu
+        val activeNetwork = connectivityManager.activeNetwork
+        val capabilities = connectivityManager.getNetworkCapabilities(activeNetwork)
+        val isConnected = capabilities?.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) == true
+
+        layoutNoInternet.visibility = if (isConnected) View.GONE else View.VISIBLE
+
+        buttonSetting.setOnClickListener {
+            startActivity(android.content.Intent(android.provider.Settings.ACTION_WIFI_SETTINGS))
+        }
+    }
+    private fun downloadAiModelsInBackground() {
+        com.hadat.aiyoga.utils.ModelDownloader.downloadAllModels(applicationContext,
+            onProgress = { progress ->
+                Log.d("AI_Model", "Downloading background: $progress%")
+            },
+            onComplete = { success ->
+                if (success) {
+                    Log.d("AI_Model", "All models downloaded and ready.")
+                } else {
+                    Log.e("AI_Model", "Model download failed.")
+                }
+            }
+        )
+    }
+    override fun onDestroy() {
+        super.onDestroy()
+        connectivityManager.unregisterNetworkCallback(networkCallback)
     }
 }

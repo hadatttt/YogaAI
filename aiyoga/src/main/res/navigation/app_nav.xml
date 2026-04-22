@@ -85,6 +85,11 @@
                 app:argType="com.hadat.aiyoga.singleyoga.WorkoutResultModel[]"
                 app:nullable="true"
                 android:defaultValue="@null" />
+        <argument
+                android:name="captured_images_list"
+                app:argType="string[]"
+                app:nullable="true"
+                android:defaultValue="@null" />
     </fragment>
     <fragment
             android:id="@+id/detailSequenceFragment"
@@ -123,10 +128,6 @@
                 android:defaultValue="0" />
     </fragment>
 
-    <fragment
-            android:id="@+id/mySequenceFragment"
-            android:name="com.hadat.aiyoga.mysequence.MySequenceFragment"
-            android:label="MySequenceFragment" />
 
     <fragment
             android:id="@+id/profileFragment"
@@ -137,5 +138,13 @@
             android:id="@+id/workoutOverviewFragment"
             android:name="com.hadat.aiyoga.workoutoverview.WorkoutOverviewFragment"
             android:label="WorkoutOverviewFragment" />
+    <fragment
+            android:id="@+id/chatbotFragment"
+            android:name="com.hadat.aiyoga.chatbot.ChatbotFragment"
+            android:label="ChatbotFragment" />
+    <fragment
+            android:id="@+id/informationFragment"
+            android:name="com.hadat.aiyoga.information.InformationFragment"
+            android:label="InformationFragment" />
 
 </navigation>

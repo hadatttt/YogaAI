@@ -8,10 +8,13 @@ import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.gms.location.LocationServices
 import com.hadat.aiyoga.R
+import com.hadat.aiyoga.data.firestore.model.HealthProfileModel
 import com.hadat.aiyoga.databinding.DialogSharePlaceBinding
 import com.hadat.aiyoga.databinding.FragmentResultBinding
 import com.hadat.aiyoga.service.AppPreferences
 import com.hadat.aiyoga.singleyoga.WorkoutResultModel
+import com.hadat.aiyoga.utils.yogautils.HealthCalculatorUtils
+import com.hadat.aiyoga.data.remoteconfig.YogaDataUtils
 import hoang.dqm.codebase.base.activity.BaseFragment
 import hoang.dqm.codebase.base.activity.popBackStack
 import hoang.dqm.codebase.utils.singleClick
@@ -25,6 +28,7 @@ class ResultFragment : BaseFragment<FragmentResultBinding, ResultViewModel>() {
     private val fusedLocationClient by lazy { LocationServices.getFusedLocationProviderClient(requireActivity()) }
     private var lastLat: Double? = null
     private var lastLng: Double? = null
+    private var healthProfile: HealthProfileModel? = null
 
     private val requestLocationPermission =
         registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { result ->
@@ -52,50 +56,89 @@ class ResultFragment : BaseFragment<FragmentResultBinding, ResultViewModel>() {
     override fun initData() {
         val resultList = args.workoutResultList?.toList().orEmpty()
         if (resultList.isNotEmpty()) {
-            bindWorkoutSummary(resultList)
             historyAdapter.setList(resultList)
-            val mergedImages = resultList.flatMap { it.capturedImages }.distinct()
-            capturedAdapter.setList(mergedImages)
+        }
+        val capturedImages = args.capturedImagesList?.toList().orEmpty()
+        if (capturedImages.isNotEmpty()) {
+            capturedAdapter.setList(capturedImages)
         }
 
         val userId = AppPreferences.getUserId(requireContext()) ?: "guest"
+
+        if (resultList.isNotEmpty()) {
+            viewModel.saveWorkoutResults(resultList, userId)
+        }
+
+        viewModel.loadHealthProfile(userId)
         viewModel.fetchWorkoutHistory(userId)
         viewModel.loadCurrentUser(userId)
+
+        viewModel.healthProfile.observe(viewLifecycleOwner) { profile ->
+            healthProfile = profile
+
+            if (resultList.isNotEmpty()) {
+                bindWorkoutSummary(resultList)
+            }
+        }
+
         viewModel.workoutHistory.observe(viewLifecycleOwner) {
-            if (resultList.isEmpty()) historyAdapter.setList(it)
+            if (resultList.isEmpty()) {
+                historyAdapter.setList(it)
+            }
         }
 
         fetchLastLocation()
 
         viewModel.shareStatus.observe(viewLifecycleOwner) { ok ->
             if (ok == null) return@observe
-            showToast(if (ok) "Shared to map successfully!" else "Share failed")
+            showToast(
+                if (ok) getString(R.string.shared_to_map_successfully)
+                else getString(R.string.share_failed)
+            )
             viewModel.resetShareStatus()
         }
     }
 
     private fun bindWorkoutSummary(list: List<WorkoutResultModel>) {
+
         val animationDuration = 1500L
+
         val totalSeconds = list.sumOf { it.durationInSeconds }
         val totalError = list.sumOf { it.errorCount }
 
-        val caloriesBurned = totalSeconds * 0.15f
-        val maxCaloriesGoal = 30f
-        binding.progressCalories.apply {
-            progressMax = maxCaloriesGoal
-            setProgressWithAnimation(caloriesBurned, animationDuration)
-        }
-        binding.tvCaloriesValue.text = String.format("%.1f", caloriesBurned)
-        binding.tvCaloriesLabel.text = "of ${maxCaloriesGoal.toInt()} kcal"
+        val weight = healthProfile?.weight ?: 60f
 
+        HealthCalculatorUtils.calculateTotalCalories(
+            workouts = list,
+            weight = weight,
+            onMet = { id, callback ->
+                YogaDataUtils.getRemoteYogaMet(id, callback)
+            }
+        ) { totalCalories ->
+
+            binding.progressCalories.apply {
+                progressMax = healthProfile?.tdee ?: 2000f
+                setProgressWithAnimation(totalCalories, 1500L)
+            }
+
+            binding.tvCaloriesValue.text =
+                String.format("%.1f", totalCalories)
+            binding.tvCaloriesLabel.text =
+                "of ${healthProfile?.tdee?.toInt() ?: 2000} kcal "
+        }
         val targetSeconds = 60f
+
         binding.progressTime.apply {
             progressMax = targetSeconds
             setProgressWithAnimation(totalSeconds.toFloat(), animationDuration)
         }
+
         binding.tvTimeValue.text = "${totalSeconds}s"
 
-        val accuracyPercent = (100f - (totalError * 5f)).coerceIn(10f, 100f)
+
+
+        val accuracyPercent = HealthCalculatorUtils.calculateAccuracy(totalSeconds,totalError)
+
         binding.progressAccuracy.apply {
             progressMax = 100f
             progressBarColor = when {
@@ -105,18 +148,17 @@ class ResultFragment : BaseFragment<FragmentResultBinding, ResultViewModel>() {
             }
             setProgressWithAnimation(accuracyPercent, animationDuration)
         }
+
         binding.tvAccuracyValue.text = "${accuracyPercent.toInt()}%"
     }
 
 
     private fun openShareDialog() {
-        val captured = args.workoutResultList?.toList().orEmpty()
-            .flatMap { it.capturedImages }
+        val captured = args.capturedImagesList?.toList().orEmpty()
             .filter { it.isNotBlank() }
-            .distinct()
 
         if (captured.isEmpty()) {
-            showToast("Không có ảnh để chia sẻ")
+            showToast(getString(R.string.no_image_to_share))
             return
         }
 
@@ -158,13 +200,13 @@ class ResultFragment : BaseFragment<FragmentResultBinding, ResultViewModel>() {
                         android.Manifest.permission.ACCESS_COARSE_LOCATION
                     )
                 )
-                showToast("Vui lòng cấp quyền vị trí để chia sẻ bài tập!")
+                showToast(getString(R.string.request_location_permission_share))
                 updateLocationStatus(dialogBinding)
                 return@singleClick
             }
             val selectedImage = selectableAdapter.getSelected().firstOrNull()
             if (selectedImage == null) {
-                showToast("Vui lòng chọn một tấm ảnh đẹp nhất!")
+                showToast(getString(R.string.please_select_best_photo))
                 return@singleClick
             }
             val userId = AppPreferences.getUserId(requireContext()) ?: "guest"

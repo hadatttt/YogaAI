@@ -6,7 +6,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.hadat.aiyoga.data.room.AppDatabase
 import com.hadat.aiyoga.data.room.PoseMetadataEntity
-import com.hadat.aiyoga.utils.yogautils.YogaDataUtils
+import com.hadat.aiyoga.data.remoteconfig.YogaDataUtils
 import com.hadat.aiyoga.yogamain.YogaPoseModel
 import hoang.dqm.codebase.base.viewmodel.BaseViewModel
 import kotlinx.coroutines.Dispatchers
@@ -39,10 +39,10 @@ class DetailYogaViewModel : BaseViewModel() {
         }
     }
 
-    fun fetchYogaDetail(poseId: Int) {
+    fun fetchYogaDetail(context: Context, poseId: Int) {
         if (_yogaDetail.value?.id == poseId) return
 
-        YogaDataUtils.getRemoteYogaDetail(poseId) { detail ->
+        YogaDataUtils.getRemoteYogaDetail(context.applicationContext, poseId) { detail ->
             _yogaDetail.postValue(detail)
         }
     }

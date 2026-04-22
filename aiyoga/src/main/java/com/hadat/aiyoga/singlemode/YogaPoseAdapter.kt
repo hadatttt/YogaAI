@@ -10,8 +10,10 @@ import hoang.dqm.codebase.utils.singleClick
 
 class YogaPoseAdapter : BaseRecyclerViewAdapter<YogaPoseModel, ItemTemplateBinding>() {
     private var onFavoriteClick: ((YogaPoseModel) -> Unit)? = null
+
     override fun bindData(binding: ItemTemplateBinding, item: YogaPoseModel, position: Int) {
         val context = binding.root.context
+
         val heartRes = if (item.isFavorite) R.drawable.ic_on_heart else R.drawable.ic_un_heart
         binding.ivFavorite.setImageResource(heartRes)
         binding.ivFavorite.singleClick {
@@ -20,28 +22,17 @@ class YogaPoseAdapter : BaseRecyclerViewAdapter<YogaPoseModel, ItemTemplateBindi
             onFavoriteClick?.invoke(item)
         }
         binding.tvPoseName.text = item.name
-
-        when (item.expertise_level) {
-            1 -> {
-                binding.tvComplexity.text = "Beginner"
-                binding.llComplexity.background = ContextCompat.getDrawable(context, R.drawable.shape_level_easy)
-            }
-            2 -> {
-                binding.tvComplexity.text = "Intermediate"
-                binding.llComplexity.background = ContextCompat.getDrawable(context, R.drawable.shape_level_medium)
-            }
-            3 -> {
-                binding.tvComplexity.text = "Advanced"
-                binding.llComplexity.background = ContextCompat.getDrawable(context, R.drawable.shape_level_hard)
-            }
-            else -> {
-                binding.tvComplexity.text = "Unknown"
-                binding.llComplexity.background = ContextCompat.getDrawable(context, R.drawable.shape_level_easy)
-            }
+        val (levelRes, backgroundRes) = when (item.expertise_level) {
+            1 -> R.string.beginner to R.drawable.shape_level_easy
+            2 -> R.string.intermediate to R.drawable.shape_level_medium
+            3 -> R.string.advanced to R.drawable.shape_level_hard
+            else -> R.string.beginner to R.drawable.shape_level_easy
         }
+        binding.tvComplexity.setText(levelRes)
+        binding.llComplexity.background = ContextCompat.getDrawable(context, backgroundRes)
         binding.ivThump.loadImageFromNetwork(item.getDisplayPhoto())
-
     }
+
     fun setOnFavoriteClick(listener: (YogaPoseModel) -> Unit) {
         onFavoriteClick = listener
     }
