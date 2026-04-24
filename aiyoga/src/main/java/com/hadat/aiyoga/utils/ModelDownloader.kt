@@ -13,7 +13,7 @@ object ModelDownloader {
     private const val BASE_URL = "https://raw.githubusercontent.com/hadatttt/DataYoga/main/"
     val YOGA_MODELS = listOf(
         "yoga_model.tflite",
-        "pose_landmarker_heavy.task"
+        "pose_landmarker_full.task"
     )
 
     // Biến để kiểm tra xem có đang tải dở không, tránh tải trùng

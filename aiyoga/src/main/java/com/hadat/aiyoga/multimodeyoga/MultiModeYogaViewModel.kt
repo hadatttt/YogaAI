@@ -88,7 +88,7 @@ class MultiModeYogaViewModel : BaseViewModel() {
     }
     fun processCoachLogic(context: android.content.Context, result: PoseLandmarkerResult) {
         val current = _currentPose.value ?: return
-        val poseId = current.id.toIntOrNull() ?: -1
+        val poseId = current.id
         if (poseId == -1 || _isTrackingStarted.value != true || isAdvancingPose) return
 
         val (isCorrect, feedback) = YogaCoachUtils.getCoachFeedback(context, poseId, result)
@@ -176,7 +176,7 @@ class MultiModeYogaViewModel : BaseViewModel() {
 
         completedResults.add(
             PoseWorkoutSummary(
-                poseId = current.id.toIntOrNull() ?: -1,
+                poseId = current.id,
                 poseUrl = current.photoUrl,
                 poseName = current.name,
                 durationInSeconds = currentPoseSeconds,

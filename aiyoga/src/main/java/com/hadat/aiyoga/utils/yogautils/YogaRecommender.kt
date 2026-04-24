@@ -35,7 +35,7 @@ class YogaRecommender {
 
         return allPoses
             .filter { pose ->
-                !existingIds.contains(pose.id.toString()) &&
+                !existingIds.contains(pose.id) &&
                         targetCategories.any { cat -> pose.category.equals(cat, true) }
             }
             .shuffled()

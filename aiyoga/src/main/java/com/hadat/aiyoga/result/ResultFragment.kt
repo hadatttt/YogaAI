@@ -2,7 +2,6 @@ package com.hadat.aiyoga.result
 
 import android.graphics.Color
 import android.os.Bundle
-import android.view.LayoutInflater
 import android.widget.Toast
 import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.LinearLayoutManager

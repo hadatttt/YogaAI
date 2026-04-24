@@ -23,7 +23,8 @@ class OverlayView(context: Context?, attrs: AttributeSet?) :
     private var scaleFactor: Float = 1f
     private var imageWidth: Int = 1
     private var imageHeight: Int = 1
-
+    private var correctionRays: List<com.hadat.aiyoga.yogamain.CorrectionRay> = emptyList()
+    private var rayPaint = Paint()
     init {
         initPaints()
     }
@@ -37,37 +38,78 @@ class OverlayView(context: Context?, attrs: AttributeSet?) :
     }
 
     private fun initPaints() {
-        linePaint.color =
-            ContextCompat.getColor(context!!, R.color.primary)
+        rayPaint.color = Color.RED
+        rayPaint.strokeWidth = 8f
+        rayPaint.style = Paint.Style.STROKE
+        linePaint.color = Color.WHITE
+        linePaint.alpha = 100
         linePaint.strokeWidth = LANDMARK_STROKE_WIDTH
         linePaint.style = Paint.Style.STROKE
+        linePaint.strokeCap = Paint.Cap.ROUND
 
-        pointPaint.color = Color.YELLOW
+        pointPaint.color = Color.WHITE
         pointPaint.strokeWidth = LANDMARK_STROKE_WIDTH
+        pointPaint.alpha = 150
         pointPaint.style = Paint.Style.FILL
     }
+    fun setCorrectionRays(rays: List<com.hadat.aiyoga.yogamain.CorrectionRay>) {
+        this.correctionRays = rays
+        invalidate()
+    }
+    override fun onDraw(canvas: Canvas) {
+        super.onDraw(canvas)
 
-    override fun draw(canvas: Canvas) {
-        super.draw(canvas)
-        results?.let { poseLandmarkerResult ->
-            for(landmark in poseLandmarkerResult.landmarks()) {
-                for(normalizedLandmark in landmark) {
-                    canvas.drawPoint(
-                        normalizedLandmark.x() * imageWidth * scaleFactor,
-                        normalizedLandmark.y() * imageHeight * scaleFactor,
-                        pointPaint
-                    )
-                }
+        results?.let { result ->
+            val landmarksList = result.landmarks()
+            if (landmarksList.isEmpty()) return
 
-                PoseLandmarker.POSE_LANDMARKS.forEach {
-                    canvas.drawLine(
-                        poseLandmarkerResult.landmarks().get(0).get(it!!.start()).x() * imageWidth * scaleFactor,
-                        poseLandmarkerResult.landmarks().get(0).get(it.start()).y() * imageHeight * scaleFactor,
-                        poseLandmarkerResult.landmarks().get(0).get(it.end()).x() * imageWidth * scaleFactor,
-                        poseLandmarkerResult.landmarks().get(0).get(it.end()).y() * imageHeight * scaleFactor,
-                        linePaint)
-                }
+            val lm = landmarksList[0]
+
+            // draw points
+            lm.forEach {
+                canvas.drawPoint(
+                    it.x() * imageWidth * scaleFactor,
+                    it.y() * imageHeight * scaleFactor,
+                    pointPaint
+                )
             }
+
+            // draw skeleton
+            PoseLandmarker.POSE_LANDMARKS.forEach {
+                canvas.drawLine(
+                    lm[it!!.start()].x() * imageWidth * scaleFactor,
+                    lm[it.start()].y() * imageHeight * scaleFactor,
+                    lm[it.end()].x() * imageWidth * scaleFactor,
+                    lm[it.end()].y() * imageHeight * scaleFactor,
+                    linePaint
+                )
+            }
+        }
+
+        // draw rays
+        correctionRays.forEach { ray ->
+
+            rayPaint.color = when (ray.severity) {
+                1 -> Color.YELLOW   // nhẹ
+                2 -> Color.rgb(255,165,0)
+                3 -> Color.RED
+                else -> Color.RED
+            }
+
+            rayPaint.strokeWidth = when (ray.severity) {
+                1 -> 6f
+                2 -> 10f
+                3 -> 14f
+                else -> 8f
+            }
+
+            canvas.drawLine(
+                ray.startX * imageWidth * scaleFactor,
+                ray.startY * imageHeight * scaleFactor,
+                ray.endX * imageWidth * scaleFactor,
+                ray.endY * imageHeight * scaleFactor,
+                rayPaint
+            )
         }
     }
 

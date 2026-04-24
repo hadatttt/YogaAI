@@ -76,7 +76,7 @@
                 android:letterSpacing="0.02"
                 android:paddingHorizontal="@dimen/_20sdp"
                 android:paddingVertical="@dimen/_8sdp"
-                android:text="@string/stand_back_full_body"
+                android:text=""
                 android:textColor="@color/primary"
                 android:textSize="@dimen/_12ssp" />
     </com.google.android.material.card.MaterialCardView>
@@ -89,7 +89,7 @@
             android:letterSpacing="0.02"
             android:paddingHorizontal="@dimen/_20sdp"
             android:paddingVertical="@dimen/_8sdp"
-            android:text="@string/stand_back_full_body"
+            android:text=""
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             android:textColor="@color/primary"

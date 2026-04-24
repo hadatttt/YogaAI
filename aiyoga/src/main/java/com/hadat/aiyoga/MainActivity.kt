@@ -102,6 +102,7 @@ class MainActivity : AppCompatActivity() {
                 R.id.loginFragment,
                 R.id.singleYogaFragment,
                 R.id.informationFragment,
+                R.id.multiModeYogaFragment,
                 R.id.yogaFragment
             )
 

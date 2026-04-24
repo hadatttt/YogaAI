@@ -5,7 +5,7 @@ import kotlinx.parcelize.Parcelize
 
 @Parcelize
 data class SequenceModel(
-    val id: String = "",
+    val id: Int = 0,
     var name: String = "",
     var category: String = "",
     var duration: String = "01:00",

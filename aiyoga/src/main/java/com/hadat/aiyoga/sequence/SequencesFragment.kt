@@ -123,7 +123,7 @@ class SequencesFragment : BaseFragment<FragmentSequencesBinding, SequencesViewMo
 
         recommendAdapter.setOnClickItemRecyclerView { pose, _ ->
             val newPose = SequenceModel(
-                id = pose.id.toString(),
+                id = pose.id,
                 name = pose.name,
                 category = pose.category,
                 duration = "01:00",
@@ -206,7 +206,7 @@ class SequencesFragment : BaseFragment<FragmentSequencesBinding, SequencesViewMo
             args.selectedPosesList?.let { array ->
                 val sequenceData = array.map { pose ->
                     SequenceModel(
-                        id = pose.id.toString(),
+                        id = pose.id,
                         name = pose.name,
                         category = pose.category,
                         duration = "01:00",

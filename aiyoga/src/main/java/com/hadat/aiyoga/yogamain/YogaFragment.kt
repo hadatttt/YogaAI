@@ -8,8 +8,10 @@ import android.graphics.Matrix
 import android.os.Bundle
 import android.speech.tts.TextToSpeech
 import android.util.Log
+import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
+import android.view.animation.DecelerateInterpolator
 import android.view.animation.LinearInterpolator
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
@@ -20,10 +22,10 @@ import com.google.mediapipe.tasks.vision.core.RunningMode
 import com.hadat.aiyoga.databinding.FragmentSingleYogaBinding
 import com.hadat.aiyoga.service.AppPreferences
 import com.hadat.aiyoga.singleyoga.WorkoutResultModel
-import com.hadat.aiyoga.utils.ModelDownloader
 import com.hadat.aiyoga.utils.PoseLandmarkerHelper
 import com.hadat.aiyoga.utils.loadImageFromNetwork
 import com.hadat.aiyoga.utils.yogautils.YogaCoachUtils
+import com.takusemba.spotlight.OnSpotlightListener
 import hoang.dqm.codebase.base.activity.BaseFragment
 import hoang.dqm.codebase.base.activity.navigate
 import hoang.dqm.codebase.base.activity.onBackPressed
@@ -37,9 +39,14 @@ import java.nio.ByteOrder
 import java.util.*
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
-
+import com.takusemba.spotlight.Spotlight
+import com.takusemba.spotlight.shape.Circle
+import com.takusemba.spotlight.shape.RoundedRectangle
+import com.takusemba.spotlight.Target as SpotlightTarget
+import android.view.ViewTreeObserver
 class YogaFragment : BaseFragment<FragmentSingleYogaBinding, YogaViewModel>(),
     PoseLandmarkerHelper.LandmarkerListener {
+    private lateinit var spotlight: Spotlight
     private var cameraProvider: ProcessCameraProvider? = null
     private var gpuDelegate: GpuDelegate? = null
     private val TAG = "YogaAI_Debug"
@@ -60,7 +67,7 @@ class YogaFragment : BaseFragment<FragmentSingleYogaBinding, YogaViewModel>(),
     private var isMuted = false
     private var lastPendingPoseId = -1
     private var poseCounter = 0
-    private val STABLE_THRESHOLD = 3
+    private val STABLE_THRESHOLD = 7
 
     override fun initView() {
         backgroundExecutor = Executors.newSingleThreadExecutor()
@@ -69,6 +76,7 @@ class YogaFragment : BaseFragment<FragmentSingleYogaBinding, YogaViewModel>(),
     }
 
     private fun initializeAiResources() {
+        binding.loadingView.root.visibility = View.VISIBLE
         backgroundExecutor.execute {
             try {
                 val safeContext = context ?: return@execute
@@ -93,7 +101,7 @@ class YogaFragment : BaseFragment<FragmentSingleYogaBinding, YogaViewModel>(),
                 poseLandmarkerHelper = PoseLandmarkerHelper(
                     context = safeContext,
                     runningMode = RunningMode.LIVE_STREAM,
-                    currentModel = PoseLandmarkerHelper.MODEL_POSE_LANDMARKER_HEAVY,
+                    currentModel = PoseLandmarkerHelper.MODEL_POSE_LANDMARKER_FULL,
                     currentDelegate = PoseLandmarkerHelper.DELEGATE_GPU,
                     poseLandmarkerHelperListener = this
                 )
@@ -102,6 +110,8 @@ class YogaFragment : BaseFragment<FragmentSingleYogaBinding, YogaViewModel>(),
                     if (isAdded) {
                         activity?.runOnUiThread {
                             viewModel.fetchYogaPoses(safeContext.applicationContext)
+                            binding.loadingView.root.visibility = View.GONE
+
                         }
                     }
                 }
@@ -132,17 +142,26 @@ class YogaFragment : BaseFragment<FragmentSingleYogaBinding, YogaViewModel>(),
     override fun onResults(resultBundle: PoseLandmarkerHelper.ResultBundle) {
         activity?.runOnUiThread {
             if (view == null) return@runOnUiThread
+            val result = resultBundle.results.first()
+
             binding.overlayView.visibility = View.VISIBLE
             binding.overlayView.setResults(
-                resultBundle.results.first(),
+                result,
                 resultBundle.inputImageHeight,
                 resultBundle.inputImageWidth,
                 RunningMode.LIVE_STREAM
             )
+            val currentPoseId = viewModel.previewPoseId.value ?: -1
+            if (currentPoseId != -1) {
+                val rays = YogaCoachUtils.getCorrectionRays(currentPoseId, result)
+                binding.overlayView.setCorrectionRays(rays)
+            } else {
+                binding.overlayView.setCorrectionRays(emptyList())
+            }
             binding.overlayView.invalidate()
             val now = System.currentTimeMillis()
             if (now - lastCoachTime >= COACH_INTERVAL) {
-                viewModel.processCoachLogic(requireContext(), resultBundle.results.first())
+                viewModel.processCoachLogic(requireContext(), result)
                 lastCoachTime = now
             }
         }
@@ -181,10 +200,10 @@ class YogaFragment : BaseFragment<FragmentSingleYogaBinding, YogaViewModel>(),
             val matrix = Matrix().apply {
                 postRotate(imageProxy.imageInfo.rotationDegrees.toFloat())
                 if (lensFacing == CameraSelector.LENS_FACING_FRONT) {
-                    postScale(-1f, 1f, bitmap!!.width / 2f, bitmap.height / 2f)
+                    postScale(-1f, 1f, bitmap.width / 2f, bitmap.height / 2f)
                 }
             }
-            val rotatedBitmap = Bitmap.createBitmap(bitmap!!, 0, 0, bitmap.width, bitmap.height, matrix, true)
+            val rotatedBitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.width, bitmap.height, matrix, true)
 
             poseLandmarkerHelper?.detectLiveStream(imageProxy, lensFacing == CameraSelector.LENS_FACING_FRONT)
             frameCounter++
@@ -210,7 +229,7 @@ class YogaFragment : BaseFragment<FragmentSingleYogaBinding, YogaViewModel>(),
         val maxIdx = probabilities.indices.maxByOrNull { probabilities[it] } ?: 0
         val confidence = probabilities[maxIdx]
 
-        if (confidence > 0.65f) {
+        if (confidence > 0.7f) {
             if (maxIdx == lastPendingPoseId) poseCounter++ else { lastPendingPoseId = maxIdx; poseCounter = 0 }
             if (poseCounter >= STABLE_THRESHOLD) {
                 activity?.runOnUiThread { viewModel.handlePoseInference(requireContext(), maxIdx) }
@@ -264,18 +283,23 @@ class YogaFragment : BaseFragment<FragmentSingleYogaBinding, YogaViewModel>(),
 
             if (id != -1 && currentPose != null && !currentPose.photo_url.isNullOrEmpty()) {
                 binding.cardPreview.visibility = View.VISIBLE
+                binding.ivZoomSample.visibility = View.VISIBLE
                 binding.tvYogaName.visibility = View.VISIBLE
 
                 binding.ivYogaSample.loadImageFromNetwork(currentPose.photo_url)
                 binding.tvYogaName.text = currentPose.name
             } else {
                 binding.cardPreview.visibility = View.GONE
+                binding.ivZoomSample.visibility = View.GONE
                 binding.tvYogaName.text = ""
             }
         }
     }
 
     override fun initListener() {
+        binding.ivHelp.singleClick {
+            startYogaTutorial()
+        }
         binding.ivYogaSample.singleClick {
             val poseId = viewModel.previewPoseId.value
             val poseList = viewModel.yogaPoseDataList.value
@@ -377,7 +401,7 @@ class YogaFragment : BaseFragment<FragmentSingleYogaBinding, YogaViewModel>(),
             WorkoutResultModel(
                 userId = com.hadat.aiyoga.service.AppPreferences.getUserId(requireContext()) ?: "guest",
                 poseUrl = sequence.photoUrl,
-                poseId = sequence.id.toIntOrNull() ?: -1,
+                poseId = sequence.id,
                 poseName = sequence.name,
                 durationInSeconds = timeStringToSeconds(sequence.duration),
                 date = java.text.SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date()),
@@ -454,5 +478,94 @@ class YogaFragment : BaseFragment<FragmentSingleYogaBinding, YogaViewModel>(),
         binding.viewFlash.animate().alpha(0f).setDuration(200)
             .withEndAction { binding.viewFlash.visibility = View.GONE }
             .start()
+    }
+    private fun startYogaTutorial() {
+        val targets = ArrayList<SpotlightTarget>()
+
+        targets.add(createYogaTarget(binding.cardPreview, "Tư thế mẫu", "Nhìn vào đây để biết tư thế chuẩn đang nhận diện.", true))
+        targets.add(createYogaTarget(binding.ivPhoto, "Chụp ảnh", "Lưu lại khoảnh khắc tập luyện.", false))
+        targets.add(createYogaTarget(binding.ivVoice, "Âm thanh", "Bật/Tắt hướng dẫn AI bằng giọng nói.", false))
+        targets.add(createYogaTarget(binding.progressAround, "Tiến trình", "Giữ để hoàn thành bài tập.", false))
+
+        spotlight = Spotlight.Builder(requireActivity())
+            .setTargets(*targets.toTypedArray())
+            .setBackgroundColor(android.graphics.Color.parseColor("#CC000000"))
+            .setDuration(400L)
+            .setAnimation(DecelerateInterpolator())
+            .setOnSpotlightListener(object : OnSpotlightListener {
+                override fun onStarted() {}
+                override fun onEnded() {
+                    showLegendDialog()
+                }
+            })
+            .build()
+
+        spotlight.start()
+    }
+
+    private fun showLegendDialog() {
+        val dialogView = LayoutInflater.from(requireContext()).inflate(com.hadat.aiyoga.R.layout.layout_legend, null)
+        val alertDialog = android.app.AlertDialog.Builder(requireContext())
+            .setView(dialogView)
+            .setCancelable(true)
+            .create()
+
+        dialogView.findViewById<android.view.View>(com.hadat.aiyoga.R.id.btn_done_legend)?.setOnClickListener {
+            alertDialog.dismiss()
+        }
+        alertDialog.show()
+        alertDialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
+    }
+
+    private fun createYogaTarget(
+        targetView: View,
+        title: String,
+        description: String,
+        isRectangle: Boolean = false
+    ): SpotlightTarget {
+        val overlayView = LayoutInflater.from(requireContext()).inflate(com.hadat.aiyoga.R.layout.layout_help, null)
+        val contentContainer = overlayView.findViewById<View>(com.hadat.aiyoga.R.id.content_container)
+        val tvTitle = overlayView.findViewById<android.widget.TextView>(com.hadat.aiyoga.R.id.tv_title)
+        val tvDesc = overlayView.findViewById<android.widget.TextView>(com.hadat.aiyoga.R.id.tv_desc)
+        val btnNext = overlayView.findViewById<android.view.View>(com.hadat.aiyoga.R.id.btn_next_step)
+        val btnClose = overlayView.findViewById<android.view.View>(com.hadat.aiyoga.R.id.btn_close)
+
+        tvTitle.text = title
+        tvDesc.text = description
+
+        btnNext.setOnClickListener { if (::spotlight.isInitialized) spotlight.next() }
+        btnClose.setOnClickListener { if (::spotlight.isInitialized) spotlight.finish() }
+
+        contentContainer.viewTreeObserver.addOnGlobalLayoutListener(object : ViewTreeObserver.OnGlobalLayoutListener {
+            override fun onGlobalLayout() {
+                contentContainer.viewTreeObserver.removeOnGlobalLayoutListener(this)
+                val location = IntArray(2)
+                targetView.getLocationOnScreen(location)
+                val screenW = resources.displayMetrics.widthPixels
+                val screenH = resources.displayMetrics.heightPixels
+
+                var finalX = location[0].toFloat() + (targetView.width / 2) - (contentContainer.width / 2)
+                if (finalX < 40) finalX = 40f
+                if (finalX + contentContainer.width > screenW - 40) finalX = (screenW - contentContainer.width - 40).toFloat()
+
+                var finalY = location[1].toFloat() + targetView.height + 60f
+                if (finalY + contentContainer.height > screenH - 100) finalY = location[1].toFloat() - contentContainer.height - 60f
+
+                contentContainer.x = finalX
+                contentContainer.y = finalY
+            }
+        })
+
+        val shape = if (isRectangle) {
+            RoundedRectangle((targetView.height + 30).toFloat(), (targetView.width + 30).toFloat(), 24f)
+        } else {
+            Circle((kotlin.math.max(targetView.width, targetView.height) / 1.2f) + 20f)
+        }
+
+        return SpotlightTarget.Builder()
+            .setAnchor(targetView)
+            .setShape(shape)
+            .setOverlay(overlayView)
+            .build()
     }
 }

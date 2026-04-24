@@ -147,4 +147,6 @@ dependencies {
     implementation(project(":ucrop"))
     //photo zoom
     implementation("com.github.chrisbanes:PhotoView:2.3.0")
+    //help
+    implementation("com.github.takusemba:spotlight:2.0.3")
 }

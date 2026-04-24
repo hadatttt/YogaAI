@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:padding="@dimen/_20sdp">
+
+    <com.google.android.material.card.MaterialCardView
+            android:layout_width="@dimen/_280sdp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            app:cardBackgroundColor="#F2FFFFFF"
+            app:cardCornerRadius="@dimen/_16sdp"
+            app:cardElevation="10dp"
+            app:strokeColor="#FF956FF9"
+            app:strokeWidth="1.5dp">
+
+        <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="@dimen/_20sdp">
+
+            <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:text="Accuracy &amp; Legend"
+                    android:textColor="@color/primary"
+                    android:textSize="@dimen/_15ssp"
+                    android:textStyle="bold" />
+
+            <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1.5dp"
+                    android:layout_marginTop="@dimen/_10sdp"
+                    android:layout_marginBottom="@dimen/_15sdp"
+                    android:background="#1A000000" />
+
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:gravity="center_vertical" android:layout_marginBottom="@dimen/_10sdp">
+                <View android:layout_width="@dimen/_100sdp" android:layout_height="6dp" android:background="#B3CCCCCC" android:backgroundTint="#B3CCCCCC" />
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginStart="@dimen/_12sdp" android:text="Current Pose" android:textColor="#444444" android:textSize="@dimen/_11ssp" />
+            </LinearLayout>
+
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:gravity="center_vertical" android:layout_marginBottom="@dimen/_10sdp">
+                <View android:layout_width="@dimen/_100sdp" android:layout_height="6dp" android:background="#FFEB3B" />
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginStart="@dimen/_12sdp" android:text="Slightly off" android:textColor="#444444" android:textSize="@dimen/_11ssp" />
+            </LinearLayout>
+
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:gravity="center_vertical" android:layout_marginBottom="@dimen/_10sdp">
+                <View android:layout_width="@dimen/_100sdp" android:layout_height="6dp" android:background="#FFA500" />
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginStart="@dimen/_12sdp" android:text="Need adjust" android:textColor="#444444" android:textSize="@dimen/_11ssp" />
+            </LinearLayout>
+
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:gravity="center_vertical" android:layout_marginBottom="@dimen/_10sdp">
+                <View android:layout_width="@dimen/_100sdp" android:layout_height="6dp" android:background="#F44336" />
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginStart="@dimen/_12sdp" android:text="Wrong pose" android:textColor="#444444" android:textSize="@dimen/_11ssp" />
+            </LinearLayout>
+
+            <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_done_legend"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/_15sdp"
+                    android:text="Got it"
+                    android:textAllCaps="false"
+                    android:textSize="@dimen/_12ssp"
+                    android:paddingVertical="@dimen/_8sdp"
+                    app:cornerRadius="@dimen/_10sdp" />
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
+</FrameLayout>

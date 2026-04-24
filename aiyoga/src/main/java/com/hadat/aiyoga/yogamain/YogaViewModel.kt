@@ -119,7 +119,7 @@ fun toggleCaptureWait() {
 
                     if (!workoutSequenceMap.containsKey(poseId)) {
                         workoutSequenceMap[poseId] = SequenceModel(
-                            id = poseData.id.toString(),
+                            id = poseData.id,
                             name = poseData.name,
                             photoUrl = poseData.photo_url,
                             duration = "00:00"

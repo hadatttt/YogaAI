@@ -6,7 +6,9 @@ import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.provider.MediaStore
+import android.view.LayoutInflater
 import android.view.View
+import android.view.ViewTreeObserver
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.lifecycle.lifecycleScope
@@ -19,6 +21,12 @@ import com.hadat.aiyoga.utils.PoseLandmarkerHelper
 import com.hadat.aiyoga.utils.ViewUtils
 import com.hadat.aiyoga.utils.loadImageFromNetwork
 import com.hadat.aiyoga.utils.yogautils.YogaCoachUtils
+import com.takusemba.spotlight.Spotlight
+import com.takusemba.spotlight.OnSpotlightListener
+import com.takusemba.spotlight.shape.Circle
+import com.takusemba.spotlight.shape.RoundedRectangle
+import com.takusemba.spotlight.Target as SpotlightTarget
+import android.view.animation.DecelerateInterpolator
 import hoang.dqm.codebase.base.activity.BaseFragment
 import hoang.dqm.codebase.base.activity.navigate
 import hoang.dqm.codebase.base.activity.popBackStack
@@ -29,7 +37,7 @@ import kotlinx.coroutines.withContext
 import com.yalantis.ucrop.UCrop
 
 class DetailYogaFragment : BaseFragment<FragmentDetailYogaBinding, DetailYogaViewModel>(), PoseLandmarkerHelper.LandmarkerListener {
-
+    private lateinit var spotlight: Spotlight
     private var poseLandmarkerHelper: PoseLandmarkerHelper? = null
     private val args by navArgs<DetailYogaFragmentArgs>()
 
@@ -167,6 +175,9 @@ class DetailYogaFragment : BaseFragment<FragmentDetailYogaBinding, DetailYogaVie
     }
 
     override fun initListener() {
+        binding.ivHelp.singleClick {
+            startYogaTutorial()
+        }
         binding.ivBack.singleClick { popBackStack() }
         binding.ivFavorite.singleClick { viewModel.toggleFavorite(requireContext(), args.yogaPoseItem) }
         binding.ivCameraCapture.singleClick {
@@ -266,5 +277,78 @@ class DetailYogaFragment : BaseFragment<FragmentDetailYogaBinding, DetailYogaVie
         poseLandmarkerHelper?.clearPoseLandmarker()
         poseLandmarkerHelper = null
         super.onDestroyView()
+    }
+    private fun startYogaTutorial() {
+        val targets = ArrayList<SpotlightTarget>()
+
+        targets.add(createYogaTarget(
+            binding.ivCameraCapture,
+            "Thay ảnh bằng AI",
+            "Tải ảnh tập luyện của bạn lên để AI phân tích và thay thế ảnh mẫu nếu tư thế chuẩn.",
+            false
+        ))
+
+        spotlight = Spotlight.Builder(requireActivity())
+            .setTargets(*targets.toTypedArray())
+            .setBackgroundColor(android.graphics.Color.parseColor("#CC000000"))
+            .setDuration(400L)
+            .setAnimation(DecelerateInterpolator())
+            .build()
+
+        spotlight.start()
+    }
+
+    private fun createYogaTarget(
+        targetView: View,
+        title: String,
+        description: String,
+        isRectangle: Boolean = false
+    ): SpotlightTarget {
+        val overlayView = LayoutInflater.from(requireContext()).inflate(com.hadat.aiyoga.R.layout.layout_help, null)
+        val contentContainer = overlayView.findViewById<View>(com.hadat.aiyoga.R.id.content_container)
+        val tvTitle = overlayView.findViewById<android.widget.TextView>(com.hadat.aiyoga.R.id.tv_title)
+        val tvDesc = overlayView.findViewById<android.widget.TextView>(com.hadat.aiyoga.R.id.tv_desc)
+        val btnNext = overlayView.findViewById<android.view.View>(com.hadat.aiyoga.R.id.btn_next_step)
+        val btnClose = overlayView.findViewById<android.view.View>(com.hadat.aiyoga.R.id.btn_close)
+
+        tvTitle.text = title
+        tvDesc.text = description
+
+        btnNext.setOnClickListener { if (::spotlight.isInitialized) spotlight.finish() }
+        btnClose.setOnClickListener { if (::spotlight.isInitialized) spotlight.finish() }
+
+        contentContainer.viewTreeObserver.addOnGlobalLayoutListener(object : ViewTreeObserver.OnGlobalLayoutListener {
+            override fun onGlobalLayout() {
+                contentContainer.viewTreeObserver.removeOnGlobalLayoutListener(this)
+                val location = IntArray(2)
+                targetView.getLocationOnScreen(location)
+
+                var finalX = location[0].toFloat() + (targetView.width / 2) - (contentContainer.width / 2)
+                if (finalX < 40) finalX = 40f
+                if (finalX + contentContainer.width > resources.displayMetrics.widthPixels - 40) {
+                    finalX = (resources.displayMetrics.widthPixels - contentContainer.width - 40).toFloat()
+                }
+
+                var finalY = location[1].toFloat() + targetView.height + 60f
+                if (finalY + contentContainer.height > resources.displayMetrics.heightPixels - 100) {
+                    finalY = location[1].toFloat() - contentContainer.height - 60f
+                }
+
+                contentContainer.x = finalX
+                contentContainer.y = finalY
+            }
+        })
+
+        val shape = if (isRectangle) {
+            RoundedRectangle((targetView.height + 30).toFloat(), (targetView.width + 30).toFloat(), 24f)
+        } else {
+            Circle((kotlin.math.max(targetView.width, targetView.height) / 1.2f) + 20f)
+        }
+
+        return SpotlightTarget.Builder()
+            .setAnchor(targetView)
+            .setShape(shape)
+            .setOverlay(overlayView)
+            .build()
     }
 }

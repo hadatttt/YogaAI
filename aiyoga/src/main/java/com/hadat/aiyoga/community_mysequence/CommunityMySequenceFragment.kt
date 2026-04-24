@@ -130,8 +130,8 @@ class CommunityMySequenceFragment : BaseFragment<FragmentCommunityMySequenceBind
     }
 
     override fun initListener() {
-        binding.tvTabCommunity.singleClick { binding.vpCommunityMySequences.setCurrentItem(TAB_COMMUNITY, true) }
-        binding.tvTabMySequences.singleClick { binding.vpCommunityMySequences.setCurrentItem(TAB_MY_SEQUENCES, true) }
+        binding.layoutTabCommunity.singleClick { binding.vpCommunityMySequences.setCurrentItem(TAB_COMMUNITY, true) }
+        binding.layoutTabMySequences.singleClick { binding.vpCommunityMySequences.setCurrentItem(TAB_MY_SEQUENCES, true) }
 
         binding.vpCommunityMySequences.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
             override fun onPageSelected(position: Int) {
