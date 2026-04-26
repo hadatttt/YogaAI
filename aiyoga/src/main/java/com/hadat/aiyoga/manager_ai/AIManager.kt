@@ -13,9 +13,12 @@ import java.io.File
 import java.util.concurrent.Executors
 
 object AIManager {
+
     private var classifierInterpreter: Interpreter? = null
+
     @SuppressLint("StaticFieldLeak")
     private var poseLandmarkerHelper: PoseLandmarkerHelper? = null
+
     private var isInitialized = false
 
     private val executor = Executors.newSingleThreadExecutor()
@@ -29,18 +32,10 @@ object AIManager {
 
         executor.execute {
             try {
-                val classifierFile = File(context.filesDir, "yoga_model.tflite")
-                if (classifierFile.exists()) {
-                    val options = Interpreter.Options().apply {
-                        addDelegate(GpuDelegate())
-                        setNumThreads(4)
-                    }
-                    classifierInterpreter = Interpreter(classifierFile, options)
-                }
+                initClassifier(context)
                 initPoseLandmarker(context)
                 isInitialized = true
                 mainHandler.post { onComplete() }
-
             } catch (e: Exception) {
                 Log.e("AIManager", "Init Error: ${e.message}")
                 mainHandler.post { onComplete() }
@@ -48,21 +43,44 @@ object AIManager {
         }
     }
 
-    private fun initPoseLandmarker(context: Context) {
+    private fun initClassifier(context: Context) {
+        val file = File(context.filesDir, "yoga_model.tflite")
+        if (!file.exists()) return
+
+        val options = Interpreter.Options()
+
         try {
-            poseLandmarkerHelper = PoseLandmarkerHelper(
-                context = context.applicationContext,
-                runningMode = RunningMode.LIVE_STREAM,
-                currentModel = PoseLandmarkerHelper.MODEL_POSE_LANDMARKER_FULL,
-                currentDelegate = PoseLandmarkerHelper.DELEGATE_GPU,
-                poseLandmarkerHelperListener = object : PoseLandmarkerHelper.LandmarkerListener {
-                    override fun onError(error: String, errorCode: Int) {}
-                    override fun onResults(resultBundle: PoseLandmarkerHelper.ResultBundle) {}
-                }
-            )
+            val gpuDelegate = GpuDelegate()
+            options.addDelegate(gpuDelegate)
+            Log.d("AIManager", "Classifier using GPU")
         } catch (e: Exception) {
-            Log.e("AIManager", "MediaPipe Init Error: ${e.message}")
+            options.setNumThreads(4)
+            options.setUseNNAPI(true)
+            Log.d("AIManager", "Classifier using CPU")
         }
+
+        classifierInterpreter = Interpreter(file, options)
+    }
+
+    private fun initPoseLandmarker(context: Context) {
+        val delegate = try {
+            PoseLandmarkerHelper.DELEGATE_GPU
+            Log.d("AIManager", "PoseLandmarker using GPU")
+        } catch (e: Exception) {
+            PoseLandmarkerHelper.DELEGATE_CPU
+            Log.d("AIManager", "PoseLandmarker using CPU")
+        }
+
+        poseLandmarkerHelper = PoseLandmarkerHelper(
+            context = context.applicationContext,
+            runningMode = RunningMode.LIVE_STREAM,
+            currentModel = PoseLandmarkerHelper.MODEL_POSE_LANDMARKER_FULL,
+            currentDelegate = delegate,
+            poseLandmarkerHelperListener = object : PoseLandmarkerHelper.LandmarkerListener {
+                override fun onError(error: String, errorCode: Int) {}
+                override fun onResults(resultBundle: PoseLandmarkerHelper.ResultBundle) {}
+            }
+        )
     }
 
     fun getLandmarker() = poseLandmarkerHelper
