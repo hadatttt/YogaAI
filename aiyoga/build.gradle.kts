@@ -17,9 +17,6 @@ android {
         targetSdk = 36
         versionCode = 1
         versionName = "1.0"
-        ndk {
-            abiFilters.add("arm64-v8a")
-        }
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -60,8 +57,6 @@ android {
 
 dependencies {
     implementation(project(":base"))
-//    implementation(project(":dailycheckin"))
-//    implementation(project(":slotmachinegame"))
     implementation("com.airbnb.android:lottie:6.0.0")
 
     // Android Core
@@ -143,4 +138,10 @@ dependencies {
     implementation("androidx.viewpager2:viewpager2:1.1.0")
 
     implementation("com.tbuonomo:dotsindicator:4.3")
+    //ucrop
+    implementation(project(":ucrop"))
+    //photo zoom
+    implementation("com.github.chrisbanes:PhotoView:2.3.0")
+    //help
+    implementation("com.github.takusemba:spotlight:2.0.3")
 }

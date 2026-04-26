@@ -220,4 +220,23 @@
     <string name="text_connection_lost">Mất kết nối Internet</string>
     <string name="text_check_your_internet_connection_and_try_again">Vui lòng kiểm tra lại kết nối mạng và thử lại sau.</string>
     <string name="text_setting">Cài đặt</string>
+    <string name="tell_us_about_your_practice_spot">Hãy chia sẻ về nơi bạn tập luyện...</string>
+    <string name="checking_data">Đang kiểm tra dữ liệu…</string>
+
+    <string name="target_ai_replace_title">Thay ảnh bằng AI</string>
+    <string name="target_ai_replace_desc">Tải ảnh tập luyện của bạn lên để AI phân tích và thay thế ảnh mẫu nếu tư thế chuẩn.</string>
+    <string name="target_pose_sample_title">Tư thế mẫu</string>
+    <string name="target_pose_sample_desc">Nhìn vào đây để biết tư thế chuẩn đang nhận diện.</string>
+    <string name="target_capture_title">Chụp ảnh</string>
+    <string name="target_capture_desc">Lưu lại khoảnh khắc tập luyện.</string>
+    <string name="target_voice_title">Âm thanh</string>
+    <string name="target_voice_desc">Bật/Tắt hướng dẫn AI bằng giọng nói.</string>
+    <string name="target_progress_title">Tiến trình</string>
+    <string name="target_progress_desc">Giữ để hoàn thành bài tập.</string>
+    <string name="legend_title">Độ chính xác &amp; Chú giải</string>
+    <string name="legend_current_pose">Tư thế hiện tại</string>
+    <string name="legend_slightly_off">Hơi lệch</string>
+    <string name="legend_need_adjust">Cần điều chỉnh</string>
+    <string name="legend_wrong_pose">Sai tư thế</string>
+    <string name="legend_btn_got_it">Đã hiểu</string>
 </resources>

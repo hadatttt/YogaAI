@@ -5,7 +5,7 @@ import android.view.View
 import androidx.navigation.fragment.navArgs
 import com.hadat.aiyoga.R
 import com.hadat.aiyoga.databinding.FragmentSequenceDetailBinding
-import com.hadat.aiyoga.utils.loadImageFromNetwork
+import com.hadat.aiyoga.utils.view.loadImageFromNetwork
 import hoang.dqm.codebase.base.activity.BaseFragment
 import hoang.dqm.codebase.base.activity.navigate
 import hoang.dqm.codebase.base.activity.onBackPressed

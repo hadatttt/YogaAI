@@ -94,20 +94,17 @@
 
     <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/rv_chat"
-            android:clipToPadding="false"
-            android:overScrollMode="never"
-            android:paddingBottom="100dp"
             android:layout_width="0dp"
             android:layout_height="0dp"
+            android:clipToPadding="false"
+            android:overScrollMode="never"
             android:paddingHorizontal="@dimen/_12sdp"
             android:visibility="gone"
-            app:layout_constrainedHeight="true"
             app:layout_constraintBottom_toTopOf="@id/input_card"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/header_info"
-            tools:listitem="@layout/item_chat_bot"
-            tools:visibility="visible" />
+            tools:listitem="@layout/item_chat_bot" />
 
     <com.google.android.material.card.MaterialCardView
             android:id="@+id/input_card"

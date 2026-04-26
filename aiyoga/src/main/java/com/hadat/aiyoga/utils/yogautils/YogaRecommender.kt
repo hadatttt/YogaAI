@@ -1,7 +1,7 @@
 package com.hadat.aiyoga.utils.yogautils
 
 import com.hadat.aiyoga.sequence.SequenceModel
-import com.hadat.aiyoga.yogamain.YogaPoseModel
+import com.hadat.aiyoga.yoga_ai.YogaPoseModel
 
 class YogaRecommender {
     fun getRecommendations(
@@ -35,7 +35,7 @@ class YogaRecommender {
 
         return allPoses
             .filter { pose ->
-                !existingIds.contains(pose.id.toString()) &&
+                !existingIds.contains(pose.id) &&
                         targetCategories.any { cat -> pose.category.equals(cat, true) }
             }
             .shuffled()

@@ -4,8 +4,8 @@ import android.widget.Toast
 import androidx.navigation.fragment.navArgs
 import com.hadat.aiyoga.R
 import com.hadat.aiyoga.databinding.FragmentSequenceCommunityDetailBinding
-import com.hadat.aiyoga.service.AppPreferences
-import com.hadat.aiyoga.utils.loadImageFromNetwork
+import com.hadat.aiyoga.utils.service.AppPreferences
+import com.hadat.aiyoga.utils.view.loadImageFromNetwork
 import com.hadat.aiyoga.detailsequence.PoseDetailAdapter
 import hoang.dqm.codebase.base.activity.BaseFragment
 import hoang.dqm.codebase.base.activity.popBackStack

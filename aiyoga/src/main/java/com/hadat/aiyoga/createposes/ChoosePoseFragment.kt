@@ -8,7 +8,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.hadat.aiyoga.R
 import com.hadat.aiyoga.databinding.FragmentChoosePosesBinding
 import com.hadat.aiyoga.home.CategoryAdapter
-import com.hadat.aiyoga.utils.ViewUtils
+import com.hadat.aiyoga.utils.view.ViewUtils
 import hoang.dqm.codebase.base.activity.BaseFragment
 import hoang.dqm.codebase.base.activity.navigate
 import hoang.dqm.codebase.base.activity.onBackPressed
@@ -100,7 +100,7 @@ class ChoosePoseFragment : BaseFragment<FragmentChoosePosesBinding, ChoosePoseVi
             popBackStack()
         }
     }
-    private fun navigateToDetail(pose: com.hadat.aiyoga.yogamain.YogaPoseModel) {
+    private fun navigateToDetail(pose: com.hadat.aiyoga.yoga_ai.YogaPoseModel) {
         val bundle = Bundle().apply { putParcelable("yogaPoseItem", pose) }
         navigate(R.id.detailYogaFragment, bundle)
     }

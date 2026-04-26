@@ -4,7 +4,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.hadat.aiyoga.data.firestore.repository.HealthProfileRepository
 import com.hadat.aiyoga.data.firestore.repository.WorkoutRepository
-import com.hadat.aiyoga.singleyoga.WorkoutResultModel
+import com.hadat.aiyoga.yoga_single.WorkoutResultModel
 import com.hadat.aiyoga.utils.yogautils.HealthCalculatorUtils
 import com.hadat.aiyoga.data.remoteconfig.YogaDataUtils
 import hoang.dqm.codebase.base.viewmodel.BaseViewModel

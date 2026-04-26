@@ -2,8 +2,8 @@ package com.hadat.aiyoga.createposes
 
 import com.hadat.aiyoga.R
 import com.hadat.aiyoga.databinding.ItemMiniPoseBinding
-import com.hadat.aiyoga.utils.loadImageFromNetwork
-import com.hadat.aiyoga.yogamain.YogaPoseModel
+import com.hadat.aiyoga.utils.view.loadImageFromNetwork
+import com.hadat.aiyoga.yoga_ai.YogaPoseModel
 import hoang.dqm.codebase.base.adapter.BaseRecyclerViewAdapter
 import hoang.dqm.codebase.utils.singleClick
 

@@ -5,7 +5,7 @@ import android.view.ViewGroup
 import com.hadat.aiyoga.R
 import com.hadat.aiyoga.data.firestore.model.MapPostModel
 import com.hadat.aiyoga.databinding.ItemMapPostBinding
-import com.hadat.aiyoga.utils.loadImageFromNetwork
+import com.hadat.aiyoga.utils.view.loadImageFromNetwork
 import hoang.dqm.codebase.base.adapter.BaseRecyclerViewAdapter
 import hoang.dqm.codebase.base.adapter.BaseViewHolder
 import hoang.dqm.codebase.utils.singleClick

@@ -14,13 +14,16 @@ import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
 import com.google.firebase.FirebaseApp
 import com.qamar.curvedbottomnaviagtion.CurvedBottomNavigation
-import com.hadat.aiyoga.service.AppPreferences
+import com.hadat.aiyoga.utils.service.AppPreferences
+import com.hadat.aiyoga.manager_ai.AIManager
+import com.hadat.aiyoga.data.download.ModelDownloader
 import hoang.dqm.codebase.base.activity.navigate
 import android.net.ConnectivityManager
 import android.net.Network
 import android.net.NetworkCapabilities
 import android.net.NetworkRequest
-import android.widget.Button
+import com.airbnb.lottie.LottieAnimationView
+import java.io.File
 
 class MainActivity : AppCompatActivity() {
 
@@ -28,6 +31,8 @@ class MainActivity : AppCompatActivity() {
     private lateinit var bottomNavigation: CurvedBottomNavigation
     private lateinit var connectivityManager: ConnectivityManager
     private lateinit var networkCallback: ConnectivityManager.NetworkCallback
+    private lateinit var loadingView: View
+    private var currentSelectedBottomItem = HOME_ITEM
     companion object {
         val HOME_ITEM = R.id.homeFragment
         val PRACTICE_ITEM = R.id.workoutOverviewFragment
@@ -38,22 +43,59 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         val currentLang = AppPreferences.getLanguageCode(this)
-        AppCompatDelegate.setApplicationLocales(
-            LocaleListCompat.forLanguageTags(currentLang)
-        )
+        AppCompatDelegate.setApplicationLocales(LocaleListCompat.forLanguageTags(currentLang))
         window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
+
         super.onCreate(savedInstanceState)
         FirebaseApp.initializeApp(applicationContext)
-        Log.d("FCM", "Init OK")
-
         enableEdgeToEdge()
         setContentView(R.layout.activity_main)
-        setupNetworkListener()
-        downloadAiModelsInBackground()
-        val navHostFragment =
-            supportFragmentManager.findFragmentById(R.id.navHostFragment) as NavHostFragment
-        navController = navHostFragment.navController
 
+        loadingView = findViewById(R.id.loadingView)
+
+        if (AppPreferences.isLoggedIn(this)) {
+            loadingView.visibility = View.VISIBLE
+            (loadingView as? LottieAnimationView)?.playAnimation()
+        }
+        loadingView.postDelayed({
+            setupNetworkListener()
+            manageAIResources()
+        }, 800)
+
+        setupNavigation()
+    }
+
+    private fun manageAIResources() {
+        val isLoggedIn = AppPreferences.isLoggedIn(this)
+        val modelsExist = ModelDownloader.YOGA_MODELS.all { File(filesDir, it).exists() }
+
+        if (modelsExist) {
+            startAIEngine(isLoggedIn)
+        } else {
+            ModelDownloader.downloadAllModels(applicationContext,
+                onProgress = { Log.d("AI_Model", "Progress: $it%") },
+                onComplete = { success ->
+                    if (success) startAIEngine(isLoggedIn)
+                    else runOnUiThread { loadingView.visibility = View.GONE }
+                }
+            )
+        }
+    }
+
+    private fun startAIEngine(shouldHideLoading: Boolean) {
+        AIManager.initialize(applicationContext) {
+            if (shouldHideLoading) {
+                runOnUiThread {
+                    loadingView.visibility = View.GONE
+                    Log.d("AI_Model", "AI Engine Ready")
+                }
+            }
+        }
+    }
+
+    private fun setupNavigation() {
+        val navHostFragment = supportFragmentManager.findFragmentById(R.id.navHostFragment) as NavHostFragment
+        navController = navHostFragment.navController
         bottomNavigation = findViewById(R.id.bottomNavigation)
         setUpBottomNavigation()
 
@@ -64,23 +106,17 @@ class MainActivity : AppCompatActivity() {
         }
 
         val navGraph = navController.navInflater.inflate(R.navigation.app_nav)
-        val startDestination = if (AppPreferences.isLoggedIn(this)) {
-            if (AppPreferences.isHealthProfileCompleted(this)) {
-                R.id.homeFragment
-            } else {
-                R.id.informationFragment
-            }
-        } else {
-            R.id.loginFragment
+        val startDestination = when {
+            !AppPreferences.isLoggedIn(this) -> R.id.loginFragment
+            !AppPreferences.isHealthProfileCompleted(this) -> R.id.informationFragment
+            else -> R.id.homeFragment
         }
         navGraph.setStartDestination(startDestination)
         navController.graph = navGraph
     }
 
-    private var currentSelectedBottomItem = HOME_ITEM
-
     private fun setUpBottomNavigation() {
-        val bottomNavigationItems = mutableListOf(
+        val items = listOf(
             CurvedBottomNavigation.Model(MAP_ITEM, getString(R.string.map), R.drawable.ic_social),
             CurvedBottomNavigation.Model(PRACTICE_ITEM, getString(R.string.history), R.drawable.ic_history),
             CurvedBottomNavigation.Model(HOME_ITEM, getString(R.string.home), R.drawable.ic_home),
@@ -89,94 +125,61 @@ class MainActivity : AppCompatActivity() {
         )
 
         bottomNavigation.apply {
-            bottomNavigationItems.forEach { add(it) }
+            items.forEach { add(it) }
 
-            setOnClickMenuListener { model ->
-                currentSelectedBottomItem = model.id
-                navigate(model.id)
+            // 2. Cập nhật Listener: Chỉ navigate nếu nhấn vào tab khác tab hiện tại
+            setOnClickMenuListener { item ->
+                if (currentSelectedBottomItem != item.id) {
+                    currentSelectedBottomItem = item.id
+                    navigate(item.id)
+                }
             }
         }
 
         navController.addOnDestinationChangedListener { _, destination, _ ->
-            val fragmentsToHideNavigation = setOf(
+            val hideNav = setOf(
                 R.id.loginFragment,
                 R.id.singleYogaFragment,
                 R.id.informationFragment,
-                R.id.yogaFragment
+                R.id.multiModeYogaFragment,
+                R.id.yogaFragment,
             )
 
-            if (fragmentsToHideNavigation.contains(destination.id)) {
+            if (hideNav.contains(destination.id)) {
                 bottomNavigation.visibility = View.GONE
             } else {
                 bottomNavigation.visibility = View.VISIBLE
-
-                when (destination.id) {
-                    MAP_ITEM,
-                    PRACTICE_ITEM,
-                    HOME_ITEM,
-                    SEQUENCES_ITEM,
-                    PROFILE_ITEM -> {
-                        currentSelectedBottomItem = destination.id
-                    }
+                val bottomItems = setOf(MAP_ITEM, PRACTICE_ITEM, HOME_ITEM, SEQUENCES_ITEM, PROFILE_ITEM)
+                if (bottomItems.contains(destination.id)) {
+                    currentSelectedBottomItem = destination.id
                 }
-
                 bottomNavigation.show(currentSelectedBottomItem, true)
             }
         }
     }
+
     private fun setupNetworkListener() {
         val layoutNoInternet = findViewById<View>(R.id.layoutNoInternet)
         val buttonSetting = findViewById<View>(R.id.buttonSetting)
-
         connectivityManager = getSystemService(CONNECTIVITY_SERVICE) as ConnectivityManager
 
         networkCallback = object : ConnectivityManager.NetworkCallback() {
-            override fun onAvailable(network: Network) {
-                runOnUiThread {
-                    layoutNoInternet.visibility = View.GONE
-                }
-            }
-
-            override fun onLost(network: Network) {
-                runOnUiThread {
-                    layoutNoInternet.visibility = View.VISIBLE
-                }
-            }
+            override fun onAvailable(network: Network) { runOnUiThread { layoutNoInternet.visibility = View.GONE } }
+            override fun onLost(network: Network) { runOnUiThread { layoutNoInternet.visibility = View.VISIBLE } }
         }
 
-        val networkRequest = NetworkRequest.Builder()
-            .addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
-            .build()
+        connectivityManager.registerNetworkCallback(NetworkRequest.Builder().addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET).build(), networkCallback)
 
-        connectivityManager.registerNetworkCallback(networkRequest, networkCallback)
-
-        // Kiểm tra trạng thái mạng ban đầu
-        val activeNetwork = connectivityManager.activeNetwork
-        val capabilities = connectivityManager.getNetworkCapabilities(activeNetwork)
-        val isConnected = capabilities?.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) == true
-
-        layoutNoInternet.visibility = if (isConnected) View.GONE else View.VISIBLE
-
-        buttonSetting.setOnClickListener {
-            startActivity(android.content.Intent(android.provider.Settings.ACTION_WIFI_SETTINGS))
-        }
+        val activeNet = connectivityManager.activeNetwork
+        val caps = connectivityManager.getNetworkCapabilities(activeNet)
+        layoutNoInternet.visibility = if (caps?.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) == true) View.GONE else View.VISIBLE
+        buttonSetting.setOnClickListener { startActivity(android.content.Intent(android.provider.Settings.ACTION_WIFI_SETTINGS)) }
     }
-    private fun downloadAiModelsInBackground() {
-        com.hadat.aiyoga.utils.ModelDownloader.downloadAllModels(applicationContext,
-            onProgress = { progress ->
-                Log.d("AI_Model", "Downloading background: $progress%")
-            },
-            onComplete = { success ->
-                if (success) {
-                    Log.d("AI_Model", "All models downloaded and ready.")
-                } else {
-                    Log.e("AI_Model", "Model download failed.")
-                }
-            }
-        )
-    }
+
     override fun onDestroy() {
+        if (::networkCallback.isInitialized) {
+            connectivityManager.unregisterNetworkCallback(networkCallback)
+        }
         super.onDestroy()
-        connectivityManager.unregisterNetworkCallback(networkCallback)
     }
 }

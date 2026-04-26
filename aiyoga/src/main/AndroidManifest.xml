@@ -27,7 +27,9 @@
             android:roundIcon="@mipmap/ic_launcher_round"
             android:supportsRtl="true"
             android:theme="@style/Theme.YogaAI">
-
+        <activity
+                android:name="com.yalantis.ucrop.UCropActivity"
+                android:theme="@style/Theme.AppCompat.Light.NoActionBar"/>
         <activity
                 android:name=".MainActivity"
                 android:exported="true"
@@ -54,7 +56,7 @@
                 android:value="AIzaSyDD-vKHhBZ5Si14bp-oOJeaL4w8OjEg0JY" />
 
         <service
-                android:name=".service.AppFirebaseMessagingService"
+                android:name=".utils.service.AppFirebaseMessagingService"
                 android:exported="false">
             <intent-filter>
                 <action android:name="com.google.firebase.MESSAGING_EVENT" />

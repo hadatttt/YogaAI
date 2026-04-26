@@ -17,9 +17,9 @@ import com.hadat.aiyoga.R
 import com.hadat.aiyoga.databinding.DialogDeleteBinding
 import com.hadat.aiyoga.databinding.DialogTimeBinding
 import com.hadat.aiyoga.databinding.FragmentSequencesBinding
-import com.hadat.aiyoga.service.AppPreferences
-import com.hadat.aiyoga.utils.CloudinaryUtils
-import com.hadat.aiyoga.utils.loadImageFromNetwork
+import com.hadat.aiyoga.utils.service.AppPreferences
+import com.hadat.aiyoga.utils.view.CloudinaryUtils
+import com.hadat.aiyoga.utils.view.loadImageFromNetwork
 import hoang.dqm.codebase.base.activity.BaseFragment
 import hoang.dqm.codebase.base.activity.navigate
 import hoang.dqm.codebase.base.activity.popBackStack
@@ -123,7 +123,7 @@ class SequencesFragment : BaseFragment<FragmentSequencesBinding, SequencesViewMo
 
         recommendAdapter.setOnClickItemRecyclerView { pose, _ ->
             val newPose = SequenceModel(
-                id = pose.id.toString(),
+                id = pose.id,
                 name = pose.name,
                 category = pose.category,
                 duration = "01:00",
@@ -182,31 +182,41 @@ class SequencesFragment : BaseFragment<FragmentSequencesBinding, SequencesViewMo
 
     override fun initData() {
         viewModel.fetchAllPoses(requireContext())
+        val aiPoses = args.aiPosesList
+        if (aiPoses != null) {
+            binding.apply {
+                if (selectedImageUri == null) {
+                    ivSequenceBackground.loadImageFromNetwork(defaultImageUrl)
+                }
+            }
+            val listFromAi = aiPoses.toList()
+            poseAdapter.setList(listFromAi)
+            viewModel.updateList(listFromAi)
+            return
+        }
         if (args.isEdit && args.detailSequence != null) {
             val data = args.detailSequence!!
 
             binding.apply {
                 edtSequenceName.setText(data.title)
-
                 when (data.level) {
                     1 -> cgLevel.check(R.id.chip_beginner)
                     2 -> cgLevel.check(R.id.chip_intermediate)
                     3 -> cgLevel.check(R.id.chip_advanced)
                 }
-
                 if (selectedImageUri == null) {
                     ivSequenceBackground.loadImageFromNetwork(data.coverImageUrl)
                 }
             }
-
             poseAdapter.setList(data.poses)
             viewModel.updateList(data.poses)
 
-        } else {
+        }
+        else {
             args.selectedPosesList?.let { array ->
                 val sequenceData = array.map { pose ->
                     SequenceModel(
-                        id = pose.id.toString(),
+                        id = pose.id,
                         name = pose.name,
                         category = pose.category,
                         duration = "01:00",

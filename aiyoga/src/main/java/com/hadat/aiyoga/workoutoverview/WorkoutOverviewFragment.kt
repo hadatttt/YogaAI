@@ -5,10 +5,9 @@ import android.graphics.Color
 import com.github.mikephil.charting.data.BarEntry
 import com.github.mikephil.charting.data.Entry
 import com.github.mikephil.charting.data.PieEntry
-import com.hadat.aiyoga.R
 import com.hadat.aiyoga.databinding.FragmentWorkoutOverviewBinding
-import com.hadat.aiyoga.service.AppPreferences
-import com.hadat.aiyoga.singleyoga.WorkoutResultModel
+import com.hadat.aiyoga.utils.service.AppPreferences
+import com.hadat.aiyoga.yoga_single.WorkoutResultModel
 import com.hadat.aiyoga.utils.yogautils.HealthCalculatorUtils
 import hoang.dqm.codebase.base.activity.BaseFragment
 import hoang.dqm.codebase.base.activity.popBackStack

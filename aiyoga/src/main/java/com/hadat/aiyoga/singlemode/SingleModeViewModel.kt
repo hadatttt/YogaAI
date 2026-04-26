@@ -7,7 +7,7 @@ import com.hadat.aiyoga.data.firestore.repository.YogaRepository
 import com.hadat.aiyoga.data.room.AppDatabase
 import com.hadat.aiyoga.data.room.PoseMetadataEntity
 import com.hadat.aiyoga.home.CategoryModel
-import com.hadat.aiyoga.yogamain.YogaPoseModel
+import com.hadat.aiyoga.yoga_ai.YogaPoseModel
 import com.hadat.aiyoga.data.remoteconfig.YogaDataUtils
 import hoang.dqm.codebase.base.viewmodel.BaseViewModel
 import kotlinx.coroutines.Dispatchers

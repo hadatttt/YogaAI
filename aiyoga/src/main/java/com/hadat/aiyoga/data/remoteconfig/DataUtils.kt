@@ -12,9 +12,9 @@ import com.hadat.aiyoga.R
 import com.hadat.aiyoga.detailyoga.YogaPoseAngleModel
 import com.hadat.aiyoga.detailyoga.YogaPoseDetailModel
 import com.hadat.aiyoga.home.CategoryModel
-import com.hadat.aiyoga.service.AppPreferences
+import com.hadat.aiyoga.utils.service.AppPreferences
 import com.hadat.aiyoga.utils.yogautils.YogaMetModel
-import com.hadat.aiyoga.yogamain.YogaPoseModel
+import com.hadat.aiyoga.yoga_ai.YogaPoseModel
 import kotlin.collections.forEach
 
 object YogaDataUtils {

@@ -27,3 +27,5 @@ project(":aiyoga").projectDir = file("aiyoga")
 
 include(":base")
 project(":base").projectDir = file("base")
+include(":ucrop")
+project(":ucrop").projectDir = file("ucrop")

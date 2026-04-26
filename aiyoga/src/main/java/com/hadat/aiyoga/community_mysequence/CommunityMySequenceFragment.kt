@@ -15,10 +15,9 @@ import com.hadat.aiyoga.community.CommunityCategory
 import com.hadat.aiyoga.community.CommunityCategoryAdapter
 import com.hadat.aiyoga.community.SequencesCommunityAdapter
 import com.hadat.aiyoga.databinding.FragmentCommunityMySequenceBinding
-import com.hadat.aiyoga.community_mysequence.MySequenceAdapter
 import com.hadat.aiyoga.databinding.DialogDeleteBinding
 import com.hadat.aiyoga.sequence.WorkoutSequenceModel
-import com.hadat.aiyoga.service.AppPreferences
+import com.hadat.aiyoga.utils.service.AppPreferences
 import hoang.dqm.codebase.base.activity.BaseFragment
 import hoang.dqm.codebase.base.activity.navigate
 import hoang.dqm.codebase.utils.singleClick
@@ -130,8 +129,8 @@ class CommunityMySequenceFragment : BaseFragment<FragmentCommunityMySequenceBind
     }
 
     override fun initListener() {
-        binding.tvTabCommunity.singleClick { binding.vpCommunityMySequences.setCurrentItem(TAB_COMMUNITY, true) }
-        binding.tvTabMySequences.singleClick { binding.vpCommunityMySequences.setCurrentItem(TAB_MY_SEQUENCES, true) }
+        binding.layoutTabCommunity.singleClick { binding.vpCommunityMySequences.setCurrentItem(TAB_COMMUNITY, true) }
+        binding.layoutTabMySequences.singleClick { binding.vpCommunityMySequences.setCurrentItem(TAB_MY_SEQUENCES, true) }
 
         binding.vpCommunityMySequences.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
             override fun onPageSelected(position: Int) {

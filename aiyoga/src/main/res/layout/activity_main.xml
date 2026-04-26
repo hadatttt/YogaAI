@@ -43,5 +43,9 @@
             android:layout_height="match_parent"
             android:id="@+id/layoutNoInternet"
             layout="@layout/layout_no_internet" />
+    <include
+            android:id="@+id/loadingView"
+            layout="@layout/layout_loading"
+            android:visibility="gone" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -1,6 +1,5 @@
 package com.hadat.aiyoga.profile
 
-import android.app.TimePickerDialog
 import android.net.Uri
 import android.os.Build
 import android.widget.Toast
@@ -13,14 +12,13 @@ import com.google.android.material.timepicker.TimeFormat
 import com.hadat.aiyoga.MainActivity
 import com.hadat.aiyoga.R
 import com.hadat.aiyoga.databinding.FragmentProfileBinding
-import com.hadat.aiyoga.service.AppPreferences
-import com.hadat.aiyoga.service.NotificationHelper
-import com.hadat.aiyoga.service.NotificationWorker
-import com.hadat.aiyoga.utils.CloudinaryUtils
-import com.hadat.aiyoga.utils.ViewUtils.removeVietnameseAccents
-import com.hadat.aiyoga.utils.loadImageFromNetwork
+import com.hadat.aiyoga.utils.service.AppPreferences
+import com.hadat.aiyoga.utils.service.NotificationHelper
+import com.hadat.aiyoga.utils.service.NotificationWorker
+import com.hadat.aiyoga.utils.view.CloudinaryUtils
+import com.hadat.aiyoga.utils.view.ViewUtils.removeVietnameseAccents
+import com.hadat.aiyoga.utils.view.loadImageFromNetwork
 import hoang.dqm.codebase.base.activity.BaseFragment
-import hoang.dqm.codebase.base.activity.navigate
 import hoang.dqm.codebase.base.activity.navigateWithPopAll
 import hoang.dqm.codebase.base.activity.popBackStack
 import hoang.dqm.codebase.utils.singleClick
@@ -36,6 +34,7 @@ class ProfileFragment : BaseFragment<FragmentProfileBinding, ProfileViewModel>()
             uri?.let {
                 selectedImageUri = it
                 binding.imgAvatar.setImageURI(it)
+                saveProfile()
             }
         }
 
@@ -70,27 +69,29 @@ class ProfileFragment : BaseFragment<FragmentProfileBinding, ProfileViewModel>()
         }
         viewModel.saveStatus.observe(viewLifecycleOwner) { ok ->
             if (ok == null) return@observe
+            binding.pbSaving.visibility = android.view.View.GONE
             showToast(if (ok) getString(R.string.profile_updated) else getString(R.string.update_failed))
             viewModel.resetSaveStatus()
         }
     }
 
     override fun initListener() {
-        binding.ivBack.singleClick { popBackStack() }
+        binding.ivBack.singleClick {
+            binding.edtDisplayName.clearFocus()
+            popBackStack()
+        }
+        binding.edtDisplayName.setOnFocusChangeListener { _, hasFocus ->
+            if (!hasFocus) {
+                saveProfile()
+            }
+        }
         binding.ivEditAvatar.singleClick { pickImageLauncher.launch("image/*") }
         binding.layoutNotificationTime.singleClick { showTimePicker() }
         binding.layoutLanguage.singleClick { showLanguagePicker() }
         binding.layoutBodyStats.singleClick {
             navigateWithPopAll(R.id.informationFragment)
         }
-        binding.ivSave.singleClick {
-            NotificationHelper.checkPermission(this, onGranted = {
-                NotificationWorker.scheduleDailyNotifications(requireContext(), listOf(reminderTime))
-            }, permissionLauncher = notificationPermissionLauncher)
 
-            AppPreferences.setNotificationTime(requireContext(), reminderTime)
-            saveProfile()
-        }
 
         binding.btnLogout.singleClick {
             viewModel.logout(requireContext()) {
@@ -121,15 +122,20 @@ class ProfileFragment : BaseFragment<FragmentProfileBinding, ProfileViewModel>()
         picker.addOnPositiveButtonClickListener {
             reminderTime = String.format("%02d:%02d", picker.hour, picker.minute)
             binding.tvNotificationTime.text = reminderTime
+            AppPreferences.setNotificationTime(requireContext(), reminderTime)
+            NotificationHelper.checkPermission(this, onGranted = {
+                NotificationWorker.scheduleDailyNotifications(requireContext(), listOf(reminderTime))
+            }, permissionLauncher = notificationPermissionLauncher)
+
+            saveProfile()
         }
     }
     private fun saveProfile() {
         val userId = AppPreferences.getUserId(requireContext()) ?: return
         val newName = binding.edtDisplayName.text?.toString()?.trim().orEmpty().removeVietnameseAccents()
-        if (newName.isBlank()) {
-            showToast(getString(R.string.name_cannot_be_empty))
-            return
-        }
+
+        if (newName.isBlank()) return
+        binding.pbSaving.visibility = android.view.View.VISIBLE
 
         selectedImageUri?.let { uri ->
             CloudinaryUtils.uploadImage(
@@ -137,9 +143,13 @@ class ProfileFragment : BaseFragment<FragmentProfileBinding, ProfileViewModel>()
                 imageUri = uri,
                 onSuccess = { url ->
                     currentPhotoUrl = url
+                    selectedImageUri = null
                     viewModel.updateProfile(userId, newName, url)
                 },
-                onError = { showToast(it) }
+                onError = {
+                    showToast(it)
+                    binding.pbSaving.visibility = android.view.View.GONE
+                }
             )
         } ?: viewModel.updateProfile(userId, newName, currentPhotoUrl)
     }

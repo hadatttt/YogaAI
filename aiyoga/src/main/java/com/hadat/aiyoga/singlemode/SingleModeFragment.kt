@@ -7,8 +7,8 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.hadat.aiyoga.R
 import com.hadat.aiyoga.databinding.FragmentSingleModeBinding
 import com.hadat.aiyoga.home.CategoryAdapter
-import com.hadat.aiyoga.utils.ViewUtils
-import com.hadat.aiyoga.utils.loadImageFromNetwork
+import com.hadat.aiyoga.utils.view.ViewUtils
+import com.hadat.aiyoga.utils.view.loadImageFromNetwork
 import hoang.dqm.codebase.base.activity.BaseFragment
 import hoang.dqm.codebase.base.activity.navigate
 import hoang.dqm.codebase.base.adapter.animation.AnimationType
@@ -74,7 +74,7 @@ class SingleModeFragment : BaseFragment<FragmentSingleModeBinding, SingleModeVie
         }
     }
 
-    private fun navigateToDetail(pose: com.hadat.aiyoga.yogamain.YogaPoseModel) {
+    private fun navigateToDetail(pose: com.hadat.aiyoga.yoga_ai.YogaPoseModel) {
         val bundle = Bundle().apply { putParcelable("yogaPoseItem", pose) }
         navigate(R.id.detailYogaFragment, bundle)
     }

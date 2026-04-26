@@ -220,5 +220,23 @@
     <string name="text_connection_lost">Connection Lost</string>
     <string name="text_check_your_internet_connection_and_try_again">Please check your internet connection and try again.</string>
     <string name="text_setting">Settings</string>
+    <string name="tell_us_about_your_practice_spot">Tell us about your practice spot...</string>
+    <string name="checking_data">Checking data…</string>
 
+    <string name="target_ai_replace_title">AI Image Replace</string>
+    <string name="target_ai_replace_desc">Upload your workout photo for AI analysis. It will replace the sample if your pose is correct.</string>
+    <string name="target_pose_sample_title">Sample Pose</string>
+    <string name="target_pose_sample_desc">Look here to see the standard pose being recognized.</string>
+    <string name="target_capture_title">Capture</string>
+    <string name="target_capture_desc">Save your workout moments.</string>
+    <string name="target_voice_title">Audio</string>
+    <string name="target_voice_desc">Turn AI voice guidance On/Off.</string>
+    <string name="target_progress_title">Progress</string>
+    <string name="target_progress_desc">Hold to complete the exercise.</string>
+    <string name="legend_title">Accuracy &amp; Legend</string>
+    <string name="legend_current_pose">Current Pose</string>
+    <string name="legend_slightly_off">Slightly off</string>
+    <string name="legend_need_adjust">Need adjustment</string>
+    <string name="legend_wrong_pose">Wrong pose</string>
+    <string name="legend_btn_got_it">Got it</string>
 </resources>
