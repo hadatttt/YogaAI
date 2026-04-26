@@ -15,10 +15,9 @@ import com.hadat.aiyoga.community.CommunityCategory
 import com.hadat.aiyoga.community.CommunityCategoryAdapter
 import com.hadat.aiyoga.community.SequencesCommunityAdapter
 import com.hadat.aiyoga.databinding.FragmentCommunityMySequenceBinding
-import com.hadat.aiyoga.community_mysequence.MySequenceAdapter
 import com.hadat.aiyoga.databinding.DialogDeleteBinding
 import com.hadat.aiyoga.sequence.WorkoutSequenceModel
-import com.hadat.aiyoga.service.AppPreferences
+import com.hadat.aiyoga.utils.service.AppPreferences
 import hoang.dqm.codebase.base.activity.BaseFragment
 import hoang.dqm.codebase.base.activity.navigate
 import hoang.dqm.codebase.utils.singleClick

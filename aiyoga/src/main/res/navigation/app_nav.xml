@@ -6,7 +6,7 @@
     app:startDestination="@id/yogaFragment">
     <fragment
             android:id="@+id/yogaFragment"
-            android:name="com.hadat.aiyoga.yogamain.YogaFragment"
+            android:name="com.hadat.aiyoga.yoga_ai.YogaFragment"
             android:label="YogaFragment" />
     <fragment
             android:id="@+id/loginFragment"
@@ -22,16 +22,16 @@
             android:label="DetailYogaFragment" >
         <argument
                 android:name="yogaPoseItem"
-                app:argType="com.hadat.aiyoga.yogamain.YogaPoseModel"
+                app:argType="com.hadat.aiyoga.yoga_ai.YogaPoseModel"
                 app:nullable="false"/>
     </fragment>
     <fragment
             android:id="@+id/singleYogaFragment"
-            android:name="com.hadat.aiyoga.singleyoga.SingleYogaFragment"
+            android:name="com.hadat.aiyoga.yoga_single.SingleYogaFragment"
             android:label="SingleYogaFragment" >
         <argument
                 android:name="yogaPoseItem"
-                app:argType="com.hadat.aiyoga.yogamain.YogaPoseModel"
+                app:argType="com.hadat.aiyoga.yoga_ai.YogaPoseModel"
                 app:nullable="false"/>
     </fragment>
     <fragment
@@ -40,7 +40,7 @@
             android:label="SingleModeFragment" />
     <fragment
             android:id="@+id/multiModeYogaFragment"
-            android:name="com.hadat.aiyoga.multimodeyoga.MultiModeYogaFragment"
+            android:name="com.hadat.aiyoga.yoga_multi.MultiModeYogaFragment"
             android:label="MultiModeYogaFragment" >
         <argument
                 android:name="detail_sequence"
@@ -58,7 +58,7 @@
             android:label="SequencesFragment" >
         <argument
                 android:name="selected_poses_list"
-                app:argType="com.hadat.aiyoga.yogamain.YogaPoseModel[]"
+                app:argType="com.hadat.aiyoga.yoga_ai.YogaPoseModel[]"
                 app:nullable="true"
                 android:defaultValue="@null" />
         <argument
@@ -69,6 +69,11 @@
         <argument
                 android:name="detail_sequence"
                 app:argType="com.hadat.aiyoga.sequence.WorkoutSequenceModel"
+                app:nullable="true"
+                android:defaultValue="@null" />
+        <argument
+                android:name="ai_poses_list"
+                app:argType="com.hadat.aiyoga.sequence.SequenceModel[]"
                 app:nullable="true"
                 android:defaultValue="@null" />
     </fragment>
@@ -82,7 +87,7 @@
             android:label="ResultFragment" >
         <argument
                 android:name="workout_result_list"
-                app:argType="com.hadat.aiyoga.singleyoga.WorkoutResultModel[]"
+                app:argType="com.hadat.aiyoga.yoga_single.WorkoutResultModel[]"
                 app:nullable="true"
                 android:defaultValue="@null" />
         <argument
@@ -140,7 +145,7 @@
             android:label="WorkoutOverviewFragment" />
     <fragment
             android:id="@+id/chatbotFragment"
-            android:name="com.hadat.aiyoga.chatbot.ChatbotFragment"
+            android:name="com.hadat.aiyoga.chatbot_ai.ChatbotFragment"
             android:label="ChatbotFragment" />
     <fragment
             android:id="@+id/informationFragment"

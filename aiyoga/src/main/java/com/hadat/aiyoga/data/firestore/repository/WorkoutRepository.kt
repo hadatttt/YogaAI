@@ -2,7 +2,7 @@ package com.hadat.aiyoga.data.firestore.repository
 
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
-import com.hadat.aiyoga.singleyoga.WorkoutResultModel
+import com.hadat.aiyoga.yoga_single.WorkoutResultModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext

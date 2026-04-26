@@ -113,7 +113,7 @@
                             android:layout_width="match_parent"
                             android:layout_height="match_parent"
                             android:scaleType="centerCrop" />
-                    <com.hadat.aiyoga.utils.yogautils.OverlayViewImage
+                    <com.hadat.aiyoga.utils.view.OverlayViewImage
                         android:id="@+id/overlay_result"
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"

@@ -1,7 +1,7 @@
 package com.hadat.aiyoga.utils.yogautils
 
 
-import com.hadat.aiyoga.singleyoga.WorkoutResultModel
+import com.hadat.aiyoga.yoga_single.WorkoutResultModel
 import kotlin.math.pow
 
 object HealthCalculatorUtils {

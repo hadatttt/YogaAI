@@ -12,13 +12,11 @@ import com.hadat.aiyoga.data.firestore.repository.HealthProfileRepository
 import com.hadat.aiyoga.data.firestore.repository.MapRepository
 import com.hadat.aiyoga.data.firestore.repository.UserRepository
 import com.hadat.aiyoga.data.firestore.repository.WorkoutRepository
-import com.hadat.aiyoga.singleyoga.WorkoutResultModel
-import com.hadat.aiyoga.utils.CloudinaryUtils
+import com.hadat.aiyoga.yoga_single.WorkoutResultModel
+import com.hadat.aiyoga.utils.view.CloudinaryUtils
 import hoang.dqm.codebase.base.viewmodel.BaseViewModel
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
-import kotlinx.coroutines.withContext
 import kotlin.coroutines.resume
 
 class ResultViewModel : BaseViewModel() {

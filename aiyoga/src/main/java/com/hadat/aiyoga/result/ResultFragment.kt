@@ -8,8 +8,8 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.hadat.aiyoga.R
 import com.hadat.aiyoga.data.firestore.model.HealthProfileModel
 import com.hadat.aiyoga.databinding.FragmentResultBinding
-import com.hadat.aiyoga.service.AppPreferences
-import com.hadat.aiyoga.singleyoga.WorkoutResultModel
+import com.hadat.aiyoga.utils.service.AppPreferences
+import com.hadat.aiyoga.yoga_single.WorkoutResultModel
 import com.hadat.aiyoga.utils.yogautils.HealthCalculatorUtils
 import com.hadat.aiyoga.data.remoteconfig.YogaDataUtils
 import hoang.dqm.codebase.base.activity.BaseFragment

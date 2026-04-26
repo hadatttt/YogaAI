@@ -17,12 +17,11 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.mediapipe.tasks.vision.core.RunningMode
 import com.hadat.aiyoga.R
 import com.hadat.aiyoga.databinding.FragmentDetailYogaBinding
-import com.hadat.aiyoga.utils.PoseLandmarkerHelper
-import com.hadat.aiyoga.utils.ViewUtils
-import com.hadat.aiyoga.utils.loadImageFromNetwork
+import com.hadat.aiyoga.utils.yogautils.PoseLandmarkerHelper
+import com.hadat.aiyoga.utils.view.ViewUtils
+import com.hadat.aiyoga.utils.view.loadImageFromNetwork
 import com.hadat.aiyoga.utils.yogautils.YogaCoachUtils
 import com.takusemba.spotlight.Spotlight
-import com.takusemba.spotlight.OnSpotlightListener
 import com.takusemba.spotlight.shape.Circle
 import com.takusemba.spotlight.shape.RoundedRectangle
 import com.takusemba.spotlight.Target as SpotlightTarget
@@ -283,8 +282,8 @@ class DetailYogaFragment : BaseFragment<FragmentDetailYogaBinding, DetailYogaVie
 
         targets.add(createYogaTarget(
             binding.ivCameraCapture,
-            "Thay ảnh bằng AI",
-            "Tải ảnh tập luyện của bạn lên để AI phân tích và thay thế ảnh mẫu nếu tư thế chuẩn.",
+            getString(R.string.target_ai_replace_title),
+            getString(R.string.target_ai_replace_desc),
             false
         ))
 

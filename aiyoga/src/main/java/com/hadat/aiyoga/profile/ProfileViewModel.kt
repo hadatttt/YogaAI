@@ -11,7 +11,7 @@ import com.hadat.aiyoga.data.firestore.model.HealthProfileModel
 import com.hadat.aiyoga.data.firestore.model.User
 import com.hadat.aiyoga.data.firestore.repository.HealthProfileRepository
 import com.hadat.aiyoga.data.firestore.repository.UserRepository
-import com.hadat.aiyoga.service.AppPreferences
+import com.hadat.aiyoga.utils.service.AppPreferences
 import hoang.dqm.codebase.base.viewmodel.BaseViewModel
 import kotlinx.coroutines.launch
 

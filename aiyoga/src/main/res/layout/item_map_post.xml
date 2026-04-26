@@ -18,12 +18,12 @@
         <com.google.android.material.imageview.ShapeableImageView
                 android:id="@+id/img_background"
                 android:layout_width="0dp"
-                android:layout_height="240dp"
+                android:layout_height="0dp"
                 android:scaleType="centerCrop"
-                android:src="#F5F5F5"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintDimensionRatio="1:1"
                 app:shapeAppearanceOverlay="@style/TopRoundedImage" />
 
         <View

@@ -2,7 +2,7 @@ package com.hadat.aiyoga.createposes
 
 import androidx.lifecycle.MutableLiveData
 import com.hadat.aiyoga.home.CategoryModel
-import com.hadat.aiyoga.yogamain.YogaPoseModel
+import com.hadat.aiyoga.yoga_ai.YogaPoseModel
 import com.hadat.aiyoga.data.remoteconfig.YogaDataUtils
 import hoang.dqm.codebase.base.viewmodel.BaseViewModel
 

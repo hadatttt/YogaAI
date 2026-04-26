@@ -69,7 +69,7 @@
                     android:minWidth="0dp"
                     android:paddingHorizontal="@dimen/_15sdp"
                     android:paddingVertical="@dimen/_6sdp"
-                    android:text="Tiếp theo"
+                    android:text="@string/next"
                     android:textAllCaps="false"
                     android:textSize="@dimen/_10ssp"
                     app:cornerRadius="@dimen/_8sdp" />

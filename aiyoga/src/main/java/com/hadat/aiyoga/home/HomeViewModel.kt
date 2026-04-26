@@ -9,7 +9,7 @@ import com.hadat.aiyoga.data.firestore.repository.SequenceRepository
 import com.hadat.aiyoga.data.firestore.repository.UserRepository
 import com.hadat.aiyoga.data.firestore.repository.YogaRepository
 import com.hadat.aiyoga.sequence.WorkoutSequenceModel
-import com.hadat.aiyoga.yogamain.YogaPoseModel
+import com.hadat.aiyoga.yoga_ai.YogaPoseModel
 import com.hadat.aiyoga.data.remoteconfig.YogaDataUtils
 import hoang.dqm.codebase.base.viewmodel.BaseViewModel
 import kotlinx.coroutines.launch

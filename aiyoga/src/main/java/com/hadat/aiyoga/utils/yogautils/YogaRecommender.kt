@@ -1,7 +1,7 @@
 package com.hadat.aiyoga.utils.yogautils
 
 import com.hadat.aiyoga.sequence.SequenceModel
-import com.hadat.aiyoga.yogamain.YogaPoseModel
+import com.hadat.aiyoga.yoga_ai.YogaPoseModel
 
 class YogaRecommender {
     fun getRecommendations(

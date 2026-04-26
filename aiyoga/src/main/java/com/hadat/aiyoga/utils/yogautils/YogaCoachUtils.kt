@@ -7,7 +7,7 @@ import com.google.mediapipe.tasks.components.containers.NormalizedLandmark
 import com.hadat.aiyoga.R
 import com.hadat.aiyoga.data.remoteconfig.YogaDataUtils
 import com.hadat.aiyoga.detailyoga.YogaPoseAngleModel
-import com.hadat.aiyoga.yogamain.CorrectionRay
+import com.hadat.aiyoga.yoga_ai.CorrectionRay
 import kotlin.math.*
 
 object YogaCoachUtils {
@@ -50,98 +50,41 @@ object YogaCoachUtils {
         }
     }
 
-    fun getCorrectionRays(
-        poseId: Int,
-        result: PoseLandmarkerResult
-    ): List<CorrectionRay> {
-
+    fun getCorrectionRays(poseId: Int, result: PoseLandmarkerResult): List<CorrectionRay> {
         val rays = mutableListOf<CorrectionRay>()
         val drawnBones = mutableSetOf<String>()
-
         val landmarks = result.landmarks()
         if (landmarks.isNullOrEmpty()) return rays
-
         val lm = landmarks[0]
         val rawRefModel = referenceData?.get(poseId) ?: return rays
 
-        val u = mapOf(
-            "knee_L" to calculateAngleVector(lm[L_HIP], lm[L_KNEE], lm[L_ANKLE]),
-            "knee_R" to calculateAngleVector(lm[R_HIP], lm[R_KNEE], lm[R_ANKLE]),
-            "hip_L" to calculateAngleVector(lm[L_SHOULDER], lm[L_HIP], lm[L_KNEE]),
-            "hip_R" to calculateAngleVector(lm[R_SHOULDER], lm[R_HIP], lm[R_KNEE]),
-            "arm_body_L" to calculateAngleVector(lm[L_ELBOW], lm[L_SHOULDER], lm[L_HIP]),
-            "arm_body_R" to calculateAngleVector(lm[R_ELBOW], lm[R_SHOULDER], lm[R_HIP]),
-            "elbow_L" to calculateAngleVector(lm[L_SHOULDER], lm[L_ELBOW], lm[L_WRIST]),
-            "elbow_R" to calculateAngleVector(lm[R_SHOULDER], lm[R_ELBOW], lm[R_WRIST])
-        )
+        val u = getCurrentProcessedAngles(lm)
+        val (ref, _) = getBestReferenceMap(u, rawRefModel)
 
-        val rawRefMap = getAngleMap(rawRefModel, false)
-        val swapRefMap = getAngleMap(rawRefModel, true)
-
-        fun calcTotalDiff(refMap: Map<String, Double>) =
-            u.entries.sumOf { angleDiff(it.value, refMap[it.key] ?: 0.0) }
-
-        val ref = if (calcTotalDiff(swapRefMap) < calcTotalDiff(rawRefMap))
-            swapRefMap else rawRefMap
-
-        val threshold = ANGLE_THRESHOLD
-
-        // ===== helper
         fun highlightBone(startIdx: Int, endIdx: Int, diff: Double) {
             val id = "$startIdx-$endIdx"
             if (drawnBones.contains(id)) return
-
-            val s = lm[startIdx]
-            val e = lm[endIdx]
-
-            rays.add(
-                CorrectionRay(
-                    s.x(),
-                    s.y(),
-                    e.x(),
-                    e.y(),
-                    getSeverityLevel(diff)
-                )
-            )
-
+            rays.add(CorrectionRay(lm[startIdx].x(), lm[startIdx].y(), lm[endIdx].x(), lm[endIdx].y(), getSeverityLevel(diff)))
             drawnBones.add(id)
         }
-        val diffHipL = angleDiff(u["hip_L"]!!, ref["hip_L"]!!)
-        if (diffHipL > threshold) highlightBone(L_HIP, L_KNEE, diffHipL)
 
-        val diffHipR = angleDiff(u["hip_R"]!!, ref["hip_R"]!!)
-        if (diffHipR > threshold) highlightBone(R_HIP, R_KNEE, diffHipR)
+        val jointsToCheck = listOf("hip_L" to listOf(L_HIP to L_KNEE), "hip_R" to listOf(R_HIP to R_KNEE),
+            "arm_body_L" to listOf(L_SHOULDER to L_ELBOW), "arm_body_R" to listOf(R_SHOULDER to R_ELBOW))
 
-        val diffArmL = angleDiff(u["arm_body_L"]!!, ref["arm_body_L"]!!)
-        if (diffArmL > threshold) highlightBone(L_SHOULDER, L_ELBOW, diffArmL)
-
-        val diffArmR = angleDiff(u["arm_body_R"]!!, ref["arm_body_R"]!!)
-        if (diffArmR > threshold) highlightBone(R_SHOULDER, R_ELBOW, diffArmR)
-
-        val diffElbowL = angleDiff(u["elbow_L"]!!, ref["elbow_L"]!!)
-        if (diffElbowL > threshold) {
-            highlightBone(L_SHOULDER, L_ELBOW, diffElbowL)
-            highlightBone(L_ELBOW, L_WRIST, diffElbowL)
+        jointsToCheck.forEach { (key, bones) ->
+            val diff = angleDiff(u[key]!!, ref[key]!!)
+            if (diff > ANGLE_THRESHOLD) bones.forEach { highlightBone(it.first, it.second, diff) }
         }
 
-        val diffElbowR = angleDiff(u["elbow_R"]!!, ref["elbow_R"]!!)
-        if (diffElbowR > threshold) {
-            highlightBone(R_SHOULDER, R_ELBOW, diffElbowR)
-            highlightBone(R_ELBOW, R_WRIST, diffElbowR)
-        }
+        val complexJoints = listOf("elbow_L" to listOf(L_SHOULDER to L_ELBOW, L_ELBOW to L_WRIST),
+            "elbow_R" to listOf(R_SHOULDER to R_ELBOW, R_ELBOW to R_WRIST),
+            "knee_L" to listOf(L_HIP to L_KNEE, L_KNEE to L_ANKLE),
+            "knee_R" to listOf(R_HIP to R_KNEE, R_KNEE to R_ANKLE))
 
-        val diffKneeL = angleDiff(u["knee_L"]!!, ref["knee_L"]!!)
-        if (diffKneeL > threshold) {
-            highlightBone(L_HIP, L_KNEE, diffKneeL)
-            highlightBone(L_KNEE, L_ANKLE, diffKneeL)
+        complexJoints.forEach { (key, bones) ->
+            val diff = angleDiff(u[key]!!, ref[key]!!)
+            if (diff > ANGLE_THRESHOLD) bones.forEach { highlightBone(it.first, it.second, diff) }
         }
-
-        val diffKneeR = angleDiff(u["knee_R"]!!, ref["knee_R"]!!)
-        if (diffKneeR > threshold) {
-            highlightBone(R_HIP, R_KNEE, diffKneeR)
-            highlightBone(R_KNEE, R_ANKLE, diffKneeR)
-        }
-
         return rays
     }
     private fun getAngleMap(model: YogaPoseAngleModel, isSwap: Boolean = false): Map<String, Double> {
@@ -222,16 +165,7 @@ object YogaCoachUtils {
         }
         val rawRefModel = referenceData?.get(poseId) ?: return true to context.getString(R.string.guide_analyzing)
 
-        val u = mapOf(
-            "knee_L" to getSmoothAngle("knee_L", calculateAngleVector(lm[L_HIP], lm[L_KNEE], lm[L_ANKLE])),
-            "knee_R" to getSmoothAngle("knee_R", calculateAngleVector(lm[R_HIP], lm[R_KNEE], lm[R_ANKLE])),
-            "hip_L" to getSmoothAngle("hip_L", calculateAngleVector(lm[L_SHOULDER], lm[L_HIP], lm[L_KNEE])),
-            "hip_R" to getSmoothAngle("hip_R", calculateAngleVector(lm[R_SHOULDER], lm[R_HIP], lm[R_KNEE])),
-            "arm_body_L" to getSmoothAngle("arm_body_L", calculateAngleVector(lm[L_ELBOW], lm[L_SHOULDER], lm[L_HIP])),
-            "arm_body_R" to getSmoothAngle("arm_body_R", calculateAngleVector(lm[R_ELBOW], lm[R_SHOULDER], lm[R_HIP])),
-            "elbow_L" to getSmoothAngle("elbow_L", calculateAngleVector(lm[L_SHOULDER], lm[L_ELBOW], lm[L_WRIST])),
-            "elbow_R" to getSmoothAngle("elbow_R", calculateAngleVector(lm[R_SHOULDER], lm[R_ELBOW], lm[R_WRIST]))
-        )
+        val u = getCurrentProcessedAngles(lm)
 
         fun calcTotalDiff(a: Map<String, Double>, b: Map<String, Double>): Double {
             return a.entries.sumOf { (k, v) -> angleDiff(v, b[k] ?: 0.0) }
@@ -342,5 +276,30 @@ object YogaCoachUtils {
         Log.d("YogaCoach", "📸 Static Image Score: ${finalPercent.toInt()}%")
         return finalPercent > 80.0
     }
+    private fun getCurrentProcessedAngles(lm: List<NormalizedLandmark>): Map<String, Double> {
+        return mapOf(
+            "knee_L" to getSmoothAngle("knee_L", calculateAngleVector(lm[L_HIP], lm[L_KNEE], lm[L_ANKLE])),
+            "knee_R" to getSmoothAngle("knee_R", calculateAngleVector(lm[R_HIP], lm[R_KNEE], lm[R_ANKLE])),
+            "hip_L" to getSmoothAngle("hip_L", calculateAngleVector(lm[L_SHOULDER], lm[L_HIP], lm[L_KNEE])),
+            "hip_R" to getSmoothAngle("hip_R", calculateAngleVector(lm[R_SHOULDER], lm[R_HIP], lm[R_KNEE])),
+            "arm_body_L" to getSmoothAngle("arm_body_L", calculateAngleVector(lm[L_ELBOW], lm[L_SHOULDER], lm[L_HIP])),
+            "arm_body_R" to getSmoothAngle("arm_body_R", calculateAngleVector(lm[R_ELBOW], lm[R_SHOULDER], lm[R_HIP])),
+            "elbow_L" to getSmoothAngle("elbow_L", calculateAngleVector(lm[L_SHOULDER], lm[L_ELBOW], lm[L_WRIST])),
+            "elbow_R" to getSmoothAngle("elbow_R", calculateAngleVector(lm[R_SHOULDER], lm[R_ELBOW], lm[R_WRIST]))
+        )
+    }
 
+    private fun getBestReferenceMap(
+        currentAngles: Map<String, Double>,
+        refModel: YogaPoseAngleModel
+    ): Pair<Map<String, Double>, Boolean> {
+        val rawRefMap = getAngleMap(refModel, false)
+        val swapRefMap = getAngleMap(refModel, true)
+
+        fun calcTotalDiff(refMap: Map<String, Double>) =
+            currentAngles.entries.sumOf { angleDiff(it.value, refMap[it.key] ?: 0.0) }
+
+        val isSwap = calcTotalDiff(swapRefMap) < calcTotalDiff(rawRefMap)
+        return (if (isSwap) swapRefMap else rawRefMap) to isSwap
+    }
 }

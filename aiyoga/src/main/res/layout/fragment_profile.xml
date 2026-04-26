@@ -228,21 +228,27 @@
                 android:textSize="@dimen/_12sdp" />
     </LinearLayout>
 
-    <androidx.appcompat.widget.AppCompatButton
+    <com.google.android.material.button.MaterialButton
             android:id="@+id/btn_logout"
             android:layout_width="0dp"
             android:layout_height="@dimen/_48sdp"
+            android:layout_marginHorizontal="@dimen/_100sdp"
+            android:layout_marginBottom="@dimen/_16sdp"
             android:background="@drawable/bg_btn_create"
-            app:layout_constraintBottom_toBottomOf="parent"
+            app:backgroundTint="@null"
             android:text="@string/logout"
             android:textAllCaps="false"
-            android:textColor="@color/white"
+            android:textColor="@android:color/white"
             android:textSize="@dimen/_16sdp"
             android:fontFamily="@font/font_bold"
+            app:icon="@drawable/ic_logout"
+            app:iconGravity="textStart"
+            app:iconPadding="@dimen/_8sdp"
+            app:iconTint="@android:color/white"
+            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintTop_toBottomOf="@id/layout_body_stats"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintWidth_percent="0.5" />
+            app:layout_constraintEnd_toEndOf="parent"/>
     <ImageView
             android:id="@+id/ic_body"
             android:layout_width="@dimen/_16sdp"

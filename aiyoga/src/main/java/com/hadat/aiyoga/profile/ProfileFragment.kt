@@ -1,6 +1,5 @@
 package com.hadat.aiyoga.profile
 
-import android.app.TimePickerDialog
 import android.net.Uri
 import android.os.Build
 import android.widget.Toast
@@ -13,14 +12,13 @@ import com.google.android.material.timepicker.TimeFormat
 import com.hadat.aiyoga.MainActivity
 import com.hadat.aiyoga.R
 import com.hadat.aiyoga.databinding.FragmentProfileBinding
-import com.hadat.aiyoga.service.AppPreferences
-import com.hadat.aiyoga.service.NotificationHelper
-import com.hadat.aiyoga.service.NotificationWorker
-import com.hadat.aiyoga.utils.CloudinaryUtils
-import com.hadat.aiyoga.utils.ViewUtils.removeVietnameseAccents
-import com.hadat.aiyoga.utils.loadImageFromNetwork
+import com.hadat.aiyoga.utils.service.AppPreferences
+import com.hadat.aiyoga.utils.service.NotificationHelper
+import com.hadat.aiyoga.utils.service.NotificationWorker
+import com.hadat.aiyoga.utils.view.CloudinaryUtils
+import com.hadat.aiyoga.utils.view.ViewUtils.removeVietnameseAccents
+import com.hadat.aiyoga.utils.view.loadImageFromNetwork
 import hoang.dqm.codebase.base.activity.BaseFragment
-import hoang.dqm.codebase.base.activity.navigate
 import hoang.dqm.codebase.base.activity.navigateWithPopAll
 import hoang.dqm.codebase.base.activity.popBackStack
 import hoang.dqm.codebase.utils.singleClick

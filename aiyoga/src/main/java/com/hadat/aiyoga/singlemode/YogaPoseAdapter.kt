@@ -3,8 +3,8 @@ package com.hadat.aiyoga.singlemode
 import androidx.core.content.ContextCompat
 import com.hadat.aiyoga.R
 import com.hadat.aiyoga.databinding.ItemTemplateBinding
-import com.hadat.aiyoga.utils.loadImageFromNetwork
-import com.hadat.aiyoga.yogamain.YogaPoseModel
+import com.hadat.aiyoga.utils.view.loadImageFromNetwork
+import com.hadat.aiyoga.yoga_ai.YogaPoseModel
 import hoang.dqm.codebase.base.adapter.BaseRecyclerViewAdapter
 import hoang.dqm.codebase.utils.singleClick
 

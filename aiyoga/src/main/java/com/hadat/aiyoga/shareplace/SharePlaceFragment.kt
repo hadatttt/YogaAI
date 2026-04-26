@@ -11,8 +11,8 @@ import com.google.android.gms.location.LocationServices
 import com.hadat.aiyoga.R
 import com.hadat.aiyoga.databinding.FragmentSharePlaceBinding
 import com.hadat.aiyoga.result.CapturedImagesAdapter
-import com.hadat.aiyoga.service.AppPreferences
-import com.hadat.aiyoga.utils.loadImageFromNetwork
+import com.hadat.aiyoga.utils.service.AppPreferences
+import com.hadat.aiyoga.utils.view.loadImageFromNetwork
 import com.yalantis.ucrop.UCrop
 import hoang.dqm.codebase.base.activity.BaseFragment
 import hoang.dqm.codebase.base.activity.popBackStack

@@ -7,7 +7,7 @@ import com.google.android.gms.common.api.ApiException
 import com.google.firebase.auth.GoogleAuthProvider
 import com.hadat.aiyoga.R
 import com.hadat.aiyoga.databinding.FragmentLoginBinding
-import com.hadat.aiyoga.service.AppPreferences
+import com.hadat.aiyoga.utils.service.AppPreferences
 import hoang.dqm.codebase.base.activity.BaseFragment
 import hoang.dqm.codebase.base.activity.navigate
 import hoang.dqm.codebase.utils.singleClick

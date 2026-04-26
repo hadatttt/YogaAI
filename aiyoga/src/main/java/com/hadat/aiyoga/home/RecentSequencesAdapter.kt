@@ -7,7 +7,7 @@ import com.hadat.aiyoga.R
 import com.hadat.aiyoga.databinding.ItemAddSequencesBinding
 import com.hadat.aiyoga.databinding.ItemSequencesBinding
 import com.hadat.aiyoga.sequence.WorkoutSequenceModel
-import com.hadat.aiyoga.utils.loadImageFromNetwork
+import com.hadat.aiyoga.utils.view.loadImageFromNetwork
 import hoang.dqm.codebase.base.adapter.BaseRecyclerViewAdapter
 import hoang.dqm.codebase.base.adapter.BaseViewHolder
 import hoang.dqm.codebase.utils.singleClick

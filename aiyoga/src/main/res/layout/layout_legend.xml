@@ -25,7 +25,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
-                    android:text="Accuracy &amp; Legend"
+                    android:text="@string/legend_title"
                     android:textColor="@color/primary"
                     android:textSize="@dimen/_15ssp"
                     android:textStyle="bold" />
@@ -37,24 +37,76 @@
                     android:layout_marginBottom="@dimen/_15sdp"
                     android:background="#1A000000" />
 
-            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:gravity="center_vertical" android:layout_marginBottom="@dimen/_10sdp">
-                <View android:layout_width="@dimen/_100sdp" android:layout_height="6dp" android:background="#B3CCCCCC" android:backgroundTint="#B3CCCCCC" />
-                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginStart="@dimen/_12sdp" android:text="Current Pose" android:textColor="#444444" android:textSize="@dimen/_11ssp" />
+            <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:layout_marginBottom="@dimen/_10sdp">
+                <View
+                        android:layout_width="@dimen/_100sdp"
+                        android:layout_height="6dp"
+                        android:background="#B3CCCCCC" />
+                <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="@dimen/_12sdp"
+                        android:text="@string/legend_current_pose"
+                        android:textColor="#444444"
+                        android:textSize="@dimen/_11ssp" />
             </LinearLayout>
 
-            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:gravity="center_vertical" android:layout_marginBottom="@dimen/_10sdp">
-                <View android:layout_width="@dimen/_100sdp" android:layout_height="6dp" android:background="#FFEB3B" />
-                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginStart="@dimen/_12sdp" android:text="Slightly off" android:textColor="#444444" android:textSize="@dimen/_11ssp" />
+            <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:layout_marginBottom="@dimen/_10sdp">
+                <View
+                        android:layout_width="@dimen/_100sdp"
+                        android:layout_height="6dp"
+                        android:background="#FFEB3B" />
+                <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="@dimen/_12sdp"
+                        android:text="@string/legend_slightly_off"
+                        android:textColor="#444444"
+                        android:textSize="@dimen/_11ssp" />
             </LinearLayout>
 
-            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:gravity="center_vertical" android:layout_marginBottom="@dimen/_10sdp">
-                <View android:layout_width="@dimen/_100sdp" android:layout_height="6dp" android:background="#FFA500" />
-                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginStart="@dimen/_12sdp" android:text="Need adjust" android:textColor="#444444" android:textSize="@dimen/_11ssp" />
+            <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:layout_marginBottom="@dimen/_10sdp">
+                <View
+                        android:layout_width="@dimen/_100sdp"
+                        android:layout_height="6dp"
+                        android:background="#FFA500" />
+                <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="@dimen/_12sdp"
+                        android:text="@string/legend_need_adjust"
+                        android:textColor="#444444"
+                        android:textSize="@dimen/_11ssp" />
             </LinearLayout>
 
-            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:gravity="center_vertical" android:layout_marginBottom="@dimen/_10sdp">
-                <View android:layout_width="@dimen/_100sdp" android:layout_height="6dp" android:background="#F44336" />
-                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginStart="@dimen/_12sdp" android:text="Wrong pose" android:textColor="#444444" android:textSize="@dimen/_11ssp" />
+            <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:layout_marginBottom="@dimen/_10sdp">
+                <View
+                        android:layout_width="@dimen/_100sdp"
+                        android:layout_height="6dp"
+                        android:background="#F44336" />
+                <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="@dimen/_12sdp"
+                        android:text="@string/legend_wrong_pose"
+                        android:textColor="#444444"
+                        android:textSize="@dimen/_11ssp" />
             </LinearLayout>
 
             <com.google.android.material.button.MaterialButton
@@ -62,7 +114,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="@dimen/_15sdp"
-                    android:text="Got it"
+                    android:text="@string/legend_btn_got_it"
                     android:textAllCaps="false"
                     android:textSize="@dimen/_12ssp"
                     android:paddingVertical="@dimen/_8sdp"
