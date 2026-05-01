@@ -73,15 +73,15 @@ class MultiModeYogaFragment : BaseFragment<FragmentMultiModeYogaBinding, MultiMo
 
     private fun initializePoseLandmarkerHelper() {
         binding.loadingView.root.visibility = View.VISIBLE
+
         poseLandmarkerHelper = AIManager.getLandmarker()
         AIManager.setListener(this)
-        YogaCoachUtils.loadReferenceData { isSuccess ->
-            if (isSuccess && isAdded) {
-                activity?.runOnUiThread {
-                    args.detailSequence?.let { viewModel.startWorkout(requireContext(), it) }
-                    binding.loadingView.root.visibility = View.GONE
-                }
-            }
+
+        if (YogaCoachUtils.loadReferenceData() && isAdded) {
+            args.detailSequence?.let { viewModel.startWorkout(it) }
+            binding.loadingView.root.visibility = View.GONE
+        } else if (isAdded) {
+            binding.loadingView.root.visibility = View.GONE
         }
     }
     override fun onResume() {

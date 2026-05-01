@@ -11,6 +11,7 @@ import com.google.android.material.timepicker.MaterialTimePicker
 import com.google.android.material.timepicker.TimeFormat
 import com.hadat.aiyoga.MainActivity
 import com.hadat.aiyoga.R
+import com.hadat.aiyoga.data.remoteconfig.YogaDataUtils
 import com.hadat.aiyoga.databinding.FragmentProfileBinding
 import com.hadat.aiyoga.utils.service.AppPreferences
 import com.hadat.aiyoga.utils.service.NotificationHelper
@@ -171,7 +172,11 @@ class ProfileFragment : BaseFragment<FragmentProfileBinding, ProfileViewModel>()
                 AppCompatDelegate.setApplicationLocales(LocaleListCompat.forLanguageTags(selectedCode))
                 renderLanguage()
                 dialog.dismiss()
-                requireActivity().recreate()
+                YogaDataUtils.prefetchData(requireContext(), forceRefresh = true) {
+                    if (isAdded && activity != null) {
+                        requireActivity().recreate()
+                    }
+                }
             }
             .setNegativeButton(getString(R.string.title_cancel), null)
             .show()

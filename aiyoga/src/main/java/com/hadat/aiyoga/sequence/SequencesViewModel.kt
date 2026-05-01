@@ -24,13 +24,12 @@ class SequencesViewModel : BaseViewModel() {
     fun resetSaveStatus() {
         saveStatus.value = null
     }
-    fun fetchAllPoses(context: Context) {
+    fun fetchAllPoses() {
         if (allPoses.isNotEmpty()) return
-        YogaDataUtils.getRemoteYogaPoses(context.applicationContext) { poses ->
-            poses?.let {
-                allPoses = it
-                getRecommendations()
-            }
+        val poses = YogaDataUtils.getAllPoses()
+        if (poses.isNotEmpty()) {
+            allPoses = poses
+            getRecommendations()
         }
     }
 

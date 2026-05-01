@@ -41,7 +41,8 @@ import com.takusemba.spotlight.Target as SpotlightTarget
 
 class SingleYogaFragment : BaseFragment<FragmentSingleYogaBinding, SingleYogaViewModel>(),
     PoseLandmarkerHelper.LandmarkerListener {
-
+    private var lastProcessTime = 0L
+    private val PROCESS_INTERVAL = 33L // ~30 FPS cho logic
     private val args by navArgs<SingleYogaFragmentArgs>()
     private lateinit var spotlight: Spotlight
     private lateinit var backgroundExecutor: ExecutorService
@@ -54,8 +55,6 @@ class SingleYogaFragment : BaseFragment<FragmentSingleYogaBinding, SingleYogaVie
     private var cameraProvider: ProcessCameraProvider? = null
 
     private var lastSpeakTime = 0L
-    private var lastCoachTime = 0L
-    private val COACH_INTERVAL = 2000L
     private var progressAnimator: ObjectAnimator? = null
     private var isMuted = false
 
@@ -69,14 +68,12 @@ class SingleYogaFragment : BaseFragment<FragmentSingleYogaBinding, SingleYogaVie
         poseLandmarkerHelper = AIManager.getLandmarker()
         AIManager.setListener(this)
 
-        YogaCoachUtils.loadReferenceData { isSuccess ->
-            if (isSuccess && isAdded) {
-                activity?.runOnUiThread {
-                    viewModel.fetchYogaPoses(requireContext().applicationContext)
-                    viewModel.startSinglePoseTracking(requireContext(), args.yogaPoseItem.id)
-                    binding.loadingView.root.visibility = View.GONE
-                }
-            }
+        if (YogaCoachUtils.loadReferenceData() && isAdded) {
+            viewModel.fetchYogaPoses()
+            viewModel.startSinglePoseTracking(requireContext(),args.yogaPoseItem.id)
+            binding.loadingView.root.visibility = View.GONE
+        } else if (isAdded) {
+            binding.loadingView.root.visibility = View.GONE
         }
     }
     override fun onResume() {
@@ -189,10 +186,10 @@ class SingleYogaFragment : BaseFragment<FragmentSingleYogaBinding, SingleYogaVie
     }
 
     override fun onResults(resultBundle: PoseLandmarkerHelper.ResultBundle) {
-        activity?.runOnUiThread {
-            if (view == null) return@runOnUiThread
+        val result = resultBundle.results.firstOrNull() ?: return
 
-            val result = resultBundle.results.first()
+        binding.overlayView.post {
+            if (view == null) return@post
 
             binding.overlayView.setResults(
                 result,
@@ -200,21 +197,24 @@ class SingleYogaFragment : BaseFragment<FragmentSingleYogaBinding, SingleYogaVie
                 resultBundle.inputImageWidth,
                 RunningMode.LIVE_STREAM
             )
-
+        }
+        val now = System.currentTimeMillis()
+        if (now - lastProcessTime < PROCESS_INTERVAL) return
+        lastProcessTime = now
+        backgroundExecutor.execute {
             val rays = YogaCoachUtils.getCorrectionRays(
                 args.yogaPoseItem.id,
                 result
             )
-            binding.overlayView.setCorrectionRays(rays)
-
-            val now = System.currentTimeMillis()
-            if (now - lastCoachTime >= COACH_INTERVAL) {
+            val context = context ?: return@execute
+            activity?.runOnUiThread {
+                if (view == null) return@runOnUiThread
+                binding.overlayView.setCorrectionRays(rays)
                 viewModel.processCoachLogic(
-                    requireContext(),
+                    context,
                     result,
                     args.yogaPoseItem.id
                 )
-                lastCoachTime = now
             }
         }
     }

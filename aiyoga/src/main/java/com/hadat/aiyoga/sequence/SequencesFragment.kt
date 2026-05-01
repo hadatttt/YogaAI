@@ -181,7 +181,7 @@ class SequencesFragment : BaseFragment<FragmentSequencesBinding, SequencesViewMo
     }
 
     override fun initData() {
-        viewModel.fetchAllPoses(requireContext())
+        viewModel.fetchAllPoses()
         val aiPoses = args.aiPosesList
         if (aiPoses != null) {
             binding.apply {

@@ -27,7 +27,7 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
         )
     }
     override fun initView() {
-        viewModel.fetchData(requireContext())
+        viewModel.fetchData()
         binding.tvGreeting.text = getGreeting(requireContext())
         binding.rvSequences.apply {
             layoutManager = LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)

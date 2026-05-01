@@ -93,9 +93,10 @@ fun toggleCaptureWait() {
         lastPoseName = null
         stopExerciseTimer()
     }
-    fun fetchYogaPoses(context: Context) {
-        YogaDataUtils.getRemoteYogaPoses(context.applicationContext) { poses ->
-            poses?.let { _yogaPoseDataList.postValue(it) }
+    fun fetchYogaPoses() {
+        val poses = YogaDataUtils.getAllPoses()
+        if (poses.isNotEmpty()) {
+            _yogaPoseDataList.value = poses
         }
     }
 

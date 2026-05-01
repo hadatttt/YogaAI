@@ -21,29 +21,21 @@ class WorkoutOverviewViewModel : BaseViewModel() {
 
     fun fetchRange(userId: String, fromMillis: Long, toMillis: Long) {
         viewModelScope.launch {
-            isLoading.postValue(true)
-
+            isLoading.value = true
             val profile = healthRepository.getProfile(userId)
             profile?.let {
-                userWeight.postValue(it.weight)
-                dailyGoalCalories.postValue(
-                    HealthCalculatorUtils.calculateDailyGoalCalories(it.tdee)
-                )
+                userWeight.value = it.weight
+                dailyGoalCalories.value = HealthCalculatorUtils.calculateDailyGoalCalories(it.tdee)
             }
 
-            YogaDataUtils.getAllRemoteMet { map ->
-                metDataMap.postValue(map)
 
-                viewModelScope.launch {
-                    val list = workoutRepository.getHistoryInRange(
-                        userId,
-                        fromMillis,
-                        toMillis
-                    )
-                    sequences.postValue(list)
-                    isLoading.postValue(false)
-                }
-            }
+            val metMap = YogaDataUtils.getAllMetData()
+            metDataMap.value = metMap
+
+            val list = workoutRepository.getHistoryInRange(userId, fromMillis, toMillis)
+
+            sequences.value = list
+            isLoading.value = false
         }
     }
 }

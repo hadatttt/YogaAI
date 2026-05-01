@@ -105,25 +105,17 @@ class ResultFragment : BaseFragment<FragmentResultBinding, ResultViewModel>() {
         val totalError = list.sumOf { it.errorCount }
 
         val weight = healthProfile?.weight ?: 60f
+        val totalCalories = HealthCalculatorUtils.calculateTotalCalories(list, weight)
 
-        HealthCalculatorUtils.calculateTotalCalories(
-            workouts = list,
-            weight = weight,
-            onMet = { id, callback ->
-                YogaDataUtils.getRemoteYogaMet(id, callback)
-            }
-        ) { totalCalories ->
-
-            binding.progressCalories.apply {
-                progressMax = healthProfile?.tdee ?: 2000f
-                setProgressWithAnimation(totalCalories, 1500L)
-            }
-
-            binding.tvCaloriesValue.text =
-                String.format("%.1f", totalCalories)
-            binding.tvCaloriesLabel.text =
-                "of ${healthProfile?.tdee?.toInt() ?: 2000} kcal "
+        binding.progressCalories.apply {
+            val tdee = healthProfile?.tdee ?: 2000f
+            progressMax = tdee
+            setProgressWithAnimation(totalCalories, 1500L)
         }
+
+        val targetKcal = healthProfile?.tdee?.toInt() ?: 2000
+        binding.tvCaloriesValue.text = String.format("%.1f", totalCalories)
+        binding.tvCaloriesLabel.text = "of $targetKcal kcal"
         val targetSeconds = 60f
 
         binding.progressTime.apply {

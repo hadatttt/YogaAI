@@ -66,7 +66,7 @@ class MultiModeYogaViewModel : BaseViewModel() {
     private var isPreviousFrameCorrect = true
     private var isAdvancingPose = false
 
-    fun startWorkout(context: android.content.Context, sequence: WorkoutSequenceModel) {
+    fun startWorkout( sequence: WorkoutSequenceModel) {
         sequencePoses = sequence.poses
         completedResults.clear()
         sessionImagePaths.clear()

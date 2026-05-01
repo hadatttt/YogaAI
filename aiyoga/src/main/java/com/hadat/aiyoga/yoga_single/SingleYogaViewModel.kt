@@ -13,7 +13,9 @@ class SingleYogaViewModel : BaseViewModel() {
     private val _isWaitingForCapture = MutableLiveData(false)
     val isWaitingForCapture: LiveData<Boolean> = _isWaitingForCapture
     private val sessionImagePaths = mutableListOf<String>()
-
+    private var lastFeedback: String = ""
+    private var lastFeedbackTime = 0L
+    private  val FEEDBACK_HOLD_TIME = 2000L // 2 giây
     private var errorCount = 0
     private var hasStartedCorrectPose = false
     private var isPreviousFrameCorrect = true
@@ -44,16 +46,20 @@ class SingleYogaViewModel : BaseViewModel() {
 
     private var exerciseTimer: Timer? = null
     private var totalSecondsAccumulated = 0
+    @Volatile
     private var isCurrentlyCorrect = false
 
-    fun fetchYogaPoses(context: android.content.Context) {
-        YogaDataUtils.getRemoteYogaPoses(context.applicationContext) { poses -> poses?.let { _yogaPoseDataList.postValue(it) } }
+    fun fetchYogaPoses() {
+        val poses = YogaDataUtils.getAllPoses()
+        if (poses.isNotEmpty()) {
+            _yogaPoseDataList.value = poses
+        }
     }
 
     fun getErrorCount(): Int {
         return errorCount
     }
-    fun startSinglePoseTracking(context: android.content.Context, poseId: Int) {
+    fun startSinglePoseTracking( context: android.content.Context,poseId: Int) {
         exerciseTimer?.cancel()
         exerciseTimer = null
         totalSecondsAccumulated = 0
@@ -73,38 +79,49 @@ class SingleYogaViewModel : BaseViewModel() {
         exerciseTimer = null
         _isTrackingStarted.postValue(false)
     }
-    fun processCoachLogic(context: android.content.Context, result: PoseLandmarkerResult, poseId: Int) {
-        if (poseId != -1 && _isTrackingStarted.value == true) {
-            val (isCorrect, feedback) = YogaCoachUtils.getCoachFeedback(context, poseId, result)
+    // Trong SingleYogaViewModel.kt
 
-            if (isCorrect) {
-                hasStartedCorrectPose = true
+    fun processCoachLogic(context: android.content.Context, result: PoseLandmarkerResult, poseId: Int) {
+        if (poseId == -1 || _isTrackingStarted.value != true) {
+            isCurrentlyCorrect = false
+            return
+        }
+
+        val (isCorrect, feedback) = YogaCoachUtils.getCoachFeedback(context, poseId, result)
+
+        // Cập nhật trạng thái bắt đầu để tính errorCount
+        if (isCorrect) hasStartedCorrectPose = true
+        else if (hasStartedCorrectPose && isPreviousFrameCorrect) errorCount++
+
+        isPreviousFrameCorrect = isCorrect
+
+        val now = System.currentTimeMillis()
+        val isHolding = now - lastFeedbackTime < FEEDBACK_HOLD_TIME
+
+        // CHỖ QUAN TRỌNG:
+        // Chỉ cập nhật trạng thái logic khi không bị block bởi thời gian giữ feedback
+        // Hoặc khi có sự thay đổi rõ rệt về kết quả
+        if (!isHolding) {
+            val message = if (isCorrect) {
+                context.getString(com.hadat.aiyoga.R.string.guide_perfect_counting)
             } else {
-                if (hasStartedCorrectPose && isPreviousFrameCorrect) {
-                    errorCount++
+                "⚠️ $feedback"
+            }
+
+            if (message != lastFeedback) {
+                lastFeedback = message
+                lastFeedbackTime = now
+                _currentGuideText.postValue(message)
+
+                // Timer sẽ nhìn vào biến này để chạy
+                isCurrentlyCorrect = isCorrect
+
+                if (!isCorrect) {
+                    _speakCommand.postValue(feedback)
                 }
             }
-
-            isPreviousFrameCorrect = isCorrect
-            isCurrentlyCorrect = isCorrect
-            if (isCorrect && _isWaitingForCapture.value == true) {
-                _captureTrigger.postValue(Unit)
-                _isWaitingForCapture.postValue(false)
-            }
-
-            if (isCorrect) {
-                val perfectMsg = context.getString(com.hadat.aiyoga.R.string.guide_perfect_counting)
-                _currentGuideText.postValue(perfectMsg)
-            } else {
-                _currentGuideText.postValue("⚠️ $feedback")
-                _speakCommand.postValue(feedback)
-            }
-        } else {
-            isCurrentlyCorrect = false
-            isPreviousFrameCorrect = true
         }
     }
-
     private fun startLogicalTimer() {
         exerciseTimer?.cancel()
         exerciseTimer = Timer()

@@ -15,154 +15,125 @@ import com.hadat.aiyoga.home.CategoryModel
 import com.hadat.aiyoga.utils.service.AppPreferences
 import com.hadat.aiyoga.utils.yogautils.YogaMetModel
 import com.hadat.aiyoga.yoga_ai.YogaPoseModel
-import kotlin.collections.forEach
 
+/**
+ * Quản lý dữ liệu Yoga từ Firebase Remote Config.
+ * Áp dụng Singleton pattern và Thread-safety.
+ */
+@SuppressLint("StaticFieldLeak")
 object YogaDataUtils {
-    private const val TAG = "YogaDataUtils"
-    private const val CONFIG_YOGA_MET_KEY = "data_yoga_met"
-    private const val CONFIG_YOGA_KEY = "data_yoga_image"
-    private const val CONFIG_DETAIL_KEY = "data_yoga_details"
-    private const val CONFIG_YOGA_ANGLES_KEY = "data_yoga_angles"
+    private const val TAG = "YogaDebug" // Đổi tag để bạn dễ lọc trong Logcat
 
-    @SuppressLint("StaticFieldLeak")
-    private val remoteConfig = Firebase.remoteConfig
+    // Keys Remote Config
+    private const val KEY_MET = "data_yoga_met"
+    private const val KEY_POSE = "data_yoga_image"
+    private const val KEY_DETAIL = "data_yoga_details"
+    private const val KEY_ANGLE = "data_yoga_angles"
+
+    private val remoteConfig by lazy { Firebase.remoteConfig }
     private val gson = Gson()
+
+    @Volatile
+    var isDataReady = false
+        private set
+
+    private var cachedPoses: List<YogaPoseModel>? = null
+    private var cachedDetails: List<YogaPoseDetailModel>? = null
+    private var cachedAngles: List<YogaPoseAngleModel>? = null
+    private var cachedMetMap: Map<Int, Double>? = null
+    private var currentLang: String? = null
 
     init {
         val configSettings = remoteConfigSettings {
-            minimumFetchIntervalInSeconds = 0
+            minimumFetchIntervalInSeconds = 0 // Để 0s để debug nhanh, release nên để 3600
         }
         remoteConfig.setConfigSettingsAsync(configSettings)
     }
-    private fun getLocalizedKey(context: Context, baseKey: String): String {
+
+    /**
+     * Nạp dữ liệu từ Firebase hoặc Cache Local.
+     */
+    fun prefetchData(context: Context, forceRefresh: Boolean = false, onComplete: (Boolean) -> Unit) {
         val lang = AppPreferences.getLanguageCode(context)
-        return if (lang == "vi") "${baseKey}_vi" else baseKey
-    }
-    fun getRemoteYogaMet(id: Int, onResult: (Double) -> Unit) {
+        Log.d(TAG, "--- Start PrefetchData (Lang: $lang, Force: $forceRefresh) ---")
+
+        if (!forceRefresh && lang == currentLang && isDataReady) {
+            Log.d(TAG, "Data already cached and ready. Skipping fetch.")
+            onComplete(true)
+            return
+        }
+
         remoteConfig.fetchAndActivate().addOnCompleteListener { task ->
-            if (task.isSuccessful) {
-                val json = remoteConfig.getString(CONFIG_YOGA_MET_KEY)
-                if (json.isNotEmpty()) {
-                    val metList = parseMetJson(json)
-                    val metValue = metList?.find { it.id == id }?.met ?: 3.0
-                    onResult(metValue)
-                } else {
-                    Log.e(TAG, "Key '$CONFIG_YOGA_MET_KEY' trống")
-                    onResult(3.0)
-                }
-            } else {
-                onResult(3.0)
-            }
+            Log.d(TAG, "Firebase Fetch Success: ${task.isSuccessful}")
+
+            // Bất kể thành công hay không, đều thử refreshCache để lấy data local cũ
+            currentLang = lang
+            refreshCache(context)
+
+            isDataReady = cachedPoses != null && cachedAngles != null
+            Log.d(TAG, "Final Data Status: isDataReady = $isDataReady")
+
+            onComplete(isDataReady)
         }
     }
-    fun getRemoteYogaAngles(onResult: (List<YogaPoseAngleModel>?) -> Unit) {
-        remoteConfig.fetchAndActivate().addOnCompleteListener { task ->
-            if (task.isSuccessful) {
-                val json = remoteConfig.getString(CONFIG_YOGA_ANGLES_KEY)
-                if (json.isNotEmpty()) {
-                    onResult(parseAngleJson(json))
-                } else {
-                    Log.e(TAG, "Key '$CONFIG_YOGA_ANGLES_KEY' trống")
-                    onResult(null)
-                }
-            } else {
-                onResult(null)
-            }
-        }
+
+    /**
+     * Parse toàn bộ JSON từ Remote Config vào Cache trong RAM.
+     */
+    @Synchronized
+    private fun refreshCache(context: Context) {
+        val lang = currentLang ?: AppPreferences.getLanguageCode(context)
+        Log.d(TAG, "Refreshing Cache for Language: $lang")
+
+        // 1. Pose Data
+        val poseKey = if (lang == "vi") "${KEY_POSE}_vi" else KEY_POSE
+        cachedPoses = parseJson<List<YogaPoseModel>>(getSafeJson(poseKey, KEY_POSE))
+        Log.d(TAG, "-> Loaded Poses: ${cachedPoses?.size ?: 0}")
+
+        // 2. Detail Data
+        val detailKey = if (lang == "vi") "${KEY_DETAIL}_vi" else KEY_DETAIL
+        cachedDetails = parseJson<List<YogaPoseDetailModel>>(getSafeJson(detailKey, KEY_DETAIL))
+        Log.d(TAG, "-> Loaded Details: ${cachedDetails?.size ?: 0}")
+
+        // 3. Angles Data
+        cachedAngles = parseJson<List<YogaPoseAngleModel>>(remoteConfig.getString(KEY_ANGLE))
+        Log.d(TAG, "-> Loaded Angles: ${cachedAngles?.size ?: 0}")
+
+        // 4. MET Data
+        val metJson = remoteConfig.getString(KEY_MET)
+        val metList = parseJson<List<YogaMetModel>>(metJson)
+        cachedMetMap = metList?.associate { it.id to it.met }
+        Log.d(TAG, "-> Loaded MET Map: ${cachedMetMap?.size ?: 0}")
     }
-    fun getAllRemoteMet(onResult: (Map<Int, Double>) -> Unit) {
-        remoteConfig.fetchAndActivate().addOnCompleteListener { task ->
-            val metMap = mutableMapOf<Int, Double>()
-            if (task.isSuccessful) {
-                val json = remoteConfig.getString(CONFIG_YOGA_MET_KEY)
-                if (json.isNotEmpty()) {
-                    parseMetJson(json)?.forEach {
-                        metMap[it.id] = it.met
-                    }
-                }
-            }
-            onResult(metMap)
-        }
+
+    private fun getSafeJson(preferredKey: String, defaultKey: String): String {
+        val value = remoteConfig.getString(preferredKey)
+        return if (value.isNotEmpty()) value else remoteConfig.getString(defaultKey)
     }
-    private fun parseAngleJson(json: String): List<YogaPoseAngleModel>? {
+
+    private inline fun <reified T> parseJson(json: String): T? {
+        if (json.isBlank()) {
+            Log.w(TAG, "JSON String is blank/empty. Type: ${T::class.java.simpleName}")
+            return null
+        }
         return try {
-            val listType = object : TypeToken<List<YogaPoseAngleModel>>() {}.type
-            gson.fromJson<List<YogaPoseAngleModel>>(json, listType)
+            val type = object : TypeToken<T>() {}.type
+            gson.fromJson<T>(json, type)
         } catch (e: Exception) {
-            Log.e(TAG, "❌ Lỗi Parse Angle GSON: ${e.message}")
+            Log.e(TAG, "Parse Error for ${T::class.java.simpleName}: ${e.message}")
             null
         }
     }
-    fun getRemoteYogaPoses(context: Context, onResult: (List<YogaPoseModel>?) -> Unit) {
-        remoteConfig.fetchAndActivate().addOnCompleteListener { task ->
-            if (task.isSuccessful) {
-                val localizedKey = getLocalizedKey(context, CONFIG_YOGA_KEY)
-                val json = remoteConfig.getString(localizedKey)
-                val finalJson = if (json.isEmpty() && localizedKey.endsWith("_vi")) {
-                    remoteConfig.getString(CONFIG_YOGA_KEY)
-                } else json
 
-                if (finalJson.isNotEmpty()) {
-                    onResult(parseJsonToModel(finalJson))
-                } else {
-                    Log.e(TAG, "Nội dung Key '$localizedKey' bị trống")
-                    onResult(null)
-                }
-            } else {
-                onResult(null)
-            }
-        }
-    }
-    fun getRemoteYogaDetail(context: Context, id: Int, onResult: (YogaPoseDetailModel?) -> Unit) {
-        remoteConfig.fetchAndActivate().addOnCompleteListener { task ->
-            if (task.isSuccessful) {
-                val localizedKey = getLocalizedKey(context, CONFIG_DETAIL_KEY)
-                val json = remoteConfig.getString(localizedKey)
+    // --- Public Getters ---
+    fun getAllPoses(): List<YogaPoseModel> = cachedPoses ?: emptyList()
+    fun getAllAngles(): List<YogaPoseAngleModel> = cachedAngles ?: emptyList()
+    fun getPoseDetail(id: Int): YogaPoseDetailModel? = cachedDetails?.find { it.id == id }
+    fun getMetValue(id: Int): Double = cachedMetMap?.get(id) ?: 3.0
+    fun getAllMetData(): Map<Int, Double> = cachedMetMap ?: emptyMap()
 
-                val finalJson = if (json.isEmpty() && localizedKey.endsWith("_vi")) {
-                    remoteConfig.getString(CONFIG_DETAIL_KEY)
-                } else json
-
-                if (finalJson.isNotEmpty()) {
-                    val detailList = parseDetailListJson(finalJson)
-                    val detail = detailList?.find { it.id == id }
-                    onResult(detail)
-                } else {
-                    Log.e(TAG, "Nội dung Key '$localizedKey' bị trống")
-                    onResult(null)
-                }
-            } else {
-                onResult(null)
-            }
-        }
-    }
-    fun getRemoteYogaPoses(onResult: (List<YogaPoseModel>?) -> Unit) {
-        remoteConfig.fetchAndActivate().addOnCompleteListener { task ->
-            if (task.isSuccessful) {
-                Log.d(TAG, "Các Keys hiện có trên Firebase: ${remoteConfig.all.keys}")
-
-                val json = remoteConfig.getString(CONFIG_YOGA_KEY)
-                Log.d(TAG, "JSON Poses nhận được: '$json'")
-
-                if (json.isNotEmpty()) {
-                    onResult(parseJsonToModel(json))
-                } else {
-                    Log.e(TAG, "Nội dung Key '$CONFIG_YOGA_KEY' bị trống")
-                    onResult(null)
-                }
-            } else {
-                onResult(null)
-            }
-        }
-    }
-    private fun parseMetJson(json: String): List<YogaMetModel>? {
-        return try {
-            val listType = object : TypeToken<List<YogaMetModel>>() {}.type
-            gson.fromJson<List<YogaMetModel>>(json, listType)
-        } catch (e: Exception) {
-            Log.e(TAG, "❌ Lỗi Parse MET GSON: ${e.message}")
-            null
-        }
+    fun onLanguageChanged(context: Context, onComplete: (Boolean) -> Unit) {
+        prefetchData(context, true, onComplete)
     }
 
     fun getLocalizedCategory(context: Context, rawValue: String): String {
@@ -178,64 +149,9 @@ object YogaDataUtils {
             else -> rawValue
         }
     }
-    fun getLocalYogaCategories(): List<CategoryModel> {
-        return listOf(
-            CategoryModel(value = "All", displayValue = "All"),
-            CategoryModel(value = "Standing", displayValue = "Standing"),
-            CategoryModel(value = "Seated", displayValue = "Seated"),
-            CategoryModel(value = "Prone", displayValue = "Prone"),
-            CategoryModel(value = "Supine", displayValue = "Supine"),
-            CategoryModel(value = "Inversion", displayValue = "Inversion"),
-            CategoryModel(value = "Arm Balance", displayValue = "Arm Balance"),
-            CategoryModel(value = "Arm Leg Support", displayValue = "Arm Leg Support")
-        )
-    }
 
-    private fun parseJsonToModel(json: String): List<YogaPoseModel>? {
-        return try {
-            val listType = object : TypeToken<List<YogaPoseModel>>() {}.type
-            gson.fromJson<List<YogaPoseModel>>(json, listType)
-        } catch (e: Exception) {
-            Log.e(TAG, "❌ Lỗi Parse Poses GSON: ${e.message}")
-            null
-        }
-    }
-
-    fun getRemoteYogaDetail(id: Int, onResult: (YogaPoseDetailModel?) -> Unit) {
-        remoteConfig.fetchAndActivate().addOnCompleteListener { task ->
-            if (task.isSuccessful) {
-                val json = remoteConfig.getString(CONFIG_DETAIL_KEY)
-                if (json.isNotEmpty()) {
-                    val detailList = parseDetailListJson(json)
-                    val detail = detailList?.find { it.id == id }
-                    onResult(detail)
-                } else {
-                    Log.e(TAG, "Nội dung Key '$CONFIG_DETAIL_KEY' bị trống")
-                    onResult(null)
-                }
-            } else {
-                onResult(null)
-            }
-        }
-    }
-
-    private fun parseDetailListJson(json: String): List<YogaPoseDetailModel>? {
-        return try {
-            val listType = object : TypeToken<List<YogaPoseDetailModel>>() {}.type
-            gson.fromJson<List<YogaPoseDetailModel>>(json, listType)
-        } catch (e: Exception) {
-            Log.e(TAG, "❌ Lỗi Parse Detail List GSON: ${e.message}")
-            null
-        }
-    }
-
-    private fun parseDetailMapJson(json: String): Map<String, YogaPoseDetailModel>? {
-        return try {
-            val mapType = object : TypeToken<Map<String, YogaPoseDetailModel>>() {}.type
-            gson.fromJson<Map<String, YogaPoseDetailModel>>(json, mapType)
-        } catch (e: Exception) {
-            Log.e(TAG, "❌ Lỗi Parse Detail Map GSON: ${e.message}")
-            null
-        }
-    }
+    fun getLocalYogaCategories(): List<CategoryModel> = listOf(
+        "All", "Standing", "Seated", "Prone", "Supine",
+        "Inversion", "Arm Balance", "Arm Leg Support"
+    ).map { CategoryModel(it, it) }
 }

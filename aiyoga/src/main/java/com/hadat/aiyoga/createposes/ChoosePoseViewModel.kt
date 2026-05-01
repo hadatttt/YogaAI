@@ -33,11 +33,11 @@ class ChoosePoseViewModel : BaseViewModel() {
             }
         )
 
-        YogaDataUtils.getRemoteYogaPoses(context.applicationContext) { poses ->
-            poses?.let {
-                fullYogaList = it
-                applyFilterAndSearch()
-            }
+        val poses = YogaDataUtils.getAllPoses()
+
+        if (poses.isNotEmpty()) {
+            fullYogaList = poses
+            applyFilterAndSearch()
         }
     }
 

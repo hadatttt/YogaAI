@@ -76,16 +76,19 @@ class YogaFragment : BaseFragment<FragmentSingleYogaBinding, YogaViewModel>(),
 
     private fun initializeAiResources() {
         binding.loadingView.root.visibility = View.VISIBLE
+
         poseLandmarkerHelper = AIManager.getLandmarker()
         classifierInterpreter = AIManager.getClassifier()
         AIManager.setListener(this)
-        YogaCoachUtils.loadReferenceData { isSuccess ->
-            if (isAdded) {
-                activity?.runOnUiThread {
-                    viewModel.fetchYogaPoses(requireContext().applicationContext)
-                    binding.loadingView.root.visibility = View.GONE
-                }
-            }
+
+        val isSuccess = YogaCoachUtils.loadReferenceData()
+
+        if (isSuccess && isAdded) {
+            viewModel.fetchYogaPoses()
+            binding.loadingView.root.visibility = View.GONE
+        } else if (isAdded) {
+            binding.loadingView.root.visibility = View.GONE
+            Log.e("YogaFragment", "Failed to load reference data")
         }
     }
     override fun onResume() {

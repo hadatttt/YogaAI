@@ -25,21 +25,16 @@ object YogaCoachUtils {
     private const val L_KNEE = 25;     private const val R_KNEE = 26
     private const val L_ANKLE = 27;    private const val R_ANKLE = 28
 
-    fun loadReferenceData(onComplete: (Boolean) -> Unit) {
-        if (referenceData != null) {
-            onComplete(true)
-            return
-        }
-
-        YogaDataUtils.getRemoteYogaAngles { list ->
-            if (list != null) {
-                referenceData = list.associateBy { it.id }
-                Log.d("YogaCoach", "✅ Loaded ${referenceData?.size} poses from Remote Config")
-                onComplete(true)
-            } else {
-                Log.e("YogaCoach", "❌ Load error: Firebase data is null")
-                onComplete(false)
-            }
+    fun loadReferenceData(): Boolean {
+        if (referenceData != null) return true
+        val list = YogaDataUtils.getAllAngles()
+        return if (list.isNotEmpty()) {
+            referenceData = list.associateBy { it.id }
+            Log.d("YogaCoach", "✅ Loaded ${referenceData?.size} poses from Cache")
+            true
+        } else {
+            Log.e("YogaCoach", "❌ Load error: Cache data is empty")
+            false
         }
     }
     fun getSeverityLevel(diff: Double): Int {

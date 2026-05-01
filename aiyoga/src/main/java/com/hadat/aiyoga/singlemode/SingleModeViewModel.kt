@@ -26,22 +26,17 @@ class SingleModeViewModel : BaseViewModel() {
 
     fun fetchData(context: Context) {
         if (fullYogaList.isNotEmpty()) return
-
         val localCategories = YogaDataUtils.getLocalYogaCategories()
-        categoryList.postValue(
-            localCategories.map { category ->
-                category.copy(
-                    displayValue = YogaDataUtils.getLocalizedCategory(context, category.value)
-                )
-            }
-        )
-
-        YogaDataUtils.getRemoteYogaPoses(context.applicationContext) { poses ->
-            poses?.let {
-                fullYogaList = it
-                applyFilterAndSearch(context)
-                fetchTodayPick(context)
-            }
+        categoryList.value = localCategories.map { category ->
+            category.copy(
+                displayValue = YogaDataUtils.getLocalizedCategory(context, category.value)
+            )
+        }
+        val poses = YogaDataUtils.getAllPoses()
+        if (poses.isNotEmpty()) {
+            fullYogaList = poses
+            applyFilterAndSearch(context)
+            fetchTodayPick(context)
         }
     }
 
@@ -63,7 +58,7 @@ class SingleModeViewModel : BaseViewModel() {
 
     private fun fetchTodayPick(context: Context) {
         viewModelScope.launch {
-            val trendingId = yogaRepository.getTodayTrendingPoseId()?.toString()
+            val trendingId = yogaRepository.getTodayTrendingPoseId()
             val pose = fullYogaList.find { it.id.toString() == trendingId } ?: fullYogaList.firstOrNull()
 
             pose?.let {

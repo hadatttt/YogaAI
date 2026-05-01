@@ -23,6 +23,7 @@ import android.net.Network
 import android.net.NetworkCapabilities
 import android.net.NetworkRequest
 import com.airbnb.lottie.LottieAnimationView
+import com.hadat.aiyoga.data.remoteconfig.YogaDataUtils
 import java.io.File
 
 class MainActivity : AppCompatActivity() {
@@ -59,9 +60,11 @@ class MainActivity : AppCompatActivity() {
         }
         loadingView.postDelayed({
             setupNetworkListener()
-            manageAIResources()
+            YogaDataUtils.prefetchData(this) { success ->
+                Log.d("YogaData", "Prefetch: $success")
+                manageAIResources()
+            }
         }, 800)
-
         setupNavigation()
     }
 
@@ -149,11 +152,13 @@ class MainActivity : AppCompatActivity() {
                 bottomNavigation.visibility = View.GONE
             } else {
                 bottomNavigation.visibility = View.VISIBLE
+
                 val bottomItems = setOf(MAP_ITEM, PRACTICE_ITEM, HOME_ITEM, SEQUENCES_ITEM, PROFILE_ITEM)
+
                 if (bottomItems.contains(destination.id)) {
                     currentSelectedBottomItem = destination.id
+                    bottomNavigation.show(destination.id, true)
                 }
-                bottomNavigation.show(currentSelectedBottomItem, true)
             }
         }
     }
