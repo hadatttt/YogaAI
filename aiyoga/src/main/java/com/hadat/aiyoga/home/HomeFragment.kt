@@ -7,6 +7,7 @@ import com.hadat.aiyoga.databinding.FragmentHomeBinding
 import com.hadat.aiyoga.utils.view.ViewUtils.getGreeting
 import com.hadat.aiyoga.utils.view.ViewUtils.removeVietnameseAccents
 import com.hadat.aiyoga.utils.view.loadImageFromNetwork
+import com.hadat.aiyoga.utils.yogautils.YogaAssetAngleScanner
 import hoang.dqm.codebase.base.activity.BaseFragment
 import hoang.dqm.codebase.base.activity.navigate
 import hoang.dqm.codebase.utils.setDraggableWithClick

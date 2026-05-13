@@ -23,7 +23,8 @@ import com.hadat.aiyoga.databinding.FragmentSingleYogaBinding
 import com.hadat.aiyoga.utils.service.AppPreferences
 import com.hadat.aiyoga.yoga_single.WorkoutResultModel
 import com.hadat.aiyoga.utils.yogautils.PoseLandmarkerHelper
-import com.hadat.aiyoga.utils.view.loadImageFromNetwork
+import com.hadat.aiyoga.utils.view.getYogaPoseGithubRawImageUrl
+import com.hadat.aiyoga.utils.view.loadYogaPoseGithubImage
 import com.hadat.aiyoga.utils.yogautils.YogaCoachUtils
 import com.takusemba.spotlight.OnSpotlightListener
 import hoang.dqm.codebase.base.activity.BaseFragment
@@ -282,12 +283,12 @@ class YogaFragment : BaseFragment<FragmentSingleYogaBinding, YogaViewModel>(),
             val poseList = viewModel.yogaPoseDataList.value
             val currentPose = poseList?.find { it.id == id }
 
-            if (id != -1 && currentPose != null && !currentPose.photo_url.isNullOrEmpty()) {
+            if (id != -1 && currentPose != null) {
                 binding.cardPreview.visibility = View.VISIBLE
                 binding.ivZoomSample.visibility = View.VISIBLE
                 binding.tvYogaName.visibility = View.VISIBLE
 
-                binding.ivYogaSample.loadImageFromNetwork(currentPose.photo_url)
+                binding.ivYogaSample.loadYogaPoseGithubImage(id)
                 binding.tvYogaName.text = currentPose.name
             } else {
                 binding.cardPreview.visibility = View.GONE
@@ -306,8 +307,8 @@ class YogaFragment : BaseFragment<FragmentSingleYogaBinding, YogaViewModel>(),
             val poseList = viewModel.yogaPoseDataList.value
             val currentPose = poseList?.find { it.id == poseId }
 
-            currentPose?.photo_url?.let { imageUrl ->
-                DialogZoom.newInstance(imageUrl)
+            currentPose?.id?.let { currentPoseId ->
+                DialogZoom.newInstance(getYogaPoseGithubRawImageUrl(currentPoseId))
                     .show(parentFragmentManager, "DialogZoom")
             }
         }

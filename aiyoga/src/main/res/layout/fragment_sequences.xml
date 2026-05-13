@@ -88,7 +88,7 @@
                     android:layout_marginTop="@dimen/_8sdp"
                     android:fontFamily="@font/font_bold"
                     android:background="@drawable/bg_search"
-                    android:hint="Ex: Morning Yoga Flow"
+                    android:hint="@string/sequence_name_example"
                     android:paddingHorizontal="@dimen/_12sdp"
                     android:textSize="@dimen/_12sdp"
                     app:layout_constraintTop_toBottomOf="@id/tv_name_label" />

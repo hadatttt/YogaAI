@@ -115,15 +115,12 @@ class MapFragment : BaseFragment<FragmentMapBinding, MapViewModel>(), OnMapReady
             val lat = location.latitude
             val lng = location.longitude
             val mapLink = "https://www.google.com/maps/search/?api=1&query=$lat,$lng"
-            val shareBody = """
-🧘‍♂️ Cùng tập Yoga tại địa điểm này nhé!
-🔗 Xem trên Google Maps: $mapLink
-    """.trimIndent()
+            val shareBody = getString(R.string.map_share_location_body, mapLink)
             val shareIntent = Intent(Intent.ACTION_SEND).apply {
                 type = "text/plain"
                 putExtra(Intent.EXTRA_TEXT, shareBody)
             }
-            val chooser = Intent.createChooser(shareIntent, "Chia sẻ địa điểm tập Yoga qua:")
+            val chooser = Intent.createChooser(shareIntent, getString(R.string.map_share_location_chooser_title))
             startActivity(chooser)
             dialog.dismiss()
             sheetBinding.btnShare.postDelayed({ sheetBinding.btnShare.isEnabled = true }, 500)

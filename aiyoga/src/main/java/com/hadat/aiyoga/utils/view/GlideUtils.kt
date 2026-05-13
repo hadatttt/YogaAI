@@ -14,9 +14,31 @@ import com.bumptech.glide.request.RequestListener
 import com.bumptech.glide.request.target.Target
 import java.io.File
 
-/**
- * Load ảnh từ URL mạng thông thường (Dùng cho Yoga-82 Dataset)
- */
+private const val YOGA_GITHUB_RAW_BASE_URL =
+    "https://raw.githubusercontent.com/hadatttt/DataYoga/main/yogadata"
+
+fun getYogaPoseGithubRawImageUrl(poseId: Int): String {
+    return "$YOGA_GITHUB_RAW_BASE_URL/$poseId.webp"
+}
+
+fun ImageView.loadYogaPoseGithubImage(poseId: Int) {
+    if (poseId !in 0..81) return
+
+    val thumbnailRequest = Glide.with(this)
+        .asDrawable()
+        .sizeMultiplier(0.1f)
+
+    Glide.with(this)
+        .load(getYogaPoseGithubRawImageUrl(poseId))
+        .placeholder(hoang.dqm.codebase.R.drawable.bg_rectangle_gray_radius_24)
+        .error(hoang.dqm.codebase.R.drawable.bg_rectangle_gray_radius_24)
+        .thumbnail(thumbnailRequest)
+        .fitCenter()
+        .diskCacheStrategy(DiskCacheStrategy.ALL)
+        .transition(DrawableTransitionOptions.withCrossFade())
+        .into(this)
+}
+
 
 fun ImageView.loadGif(gifResource: Int) {
     Glide.with(this)

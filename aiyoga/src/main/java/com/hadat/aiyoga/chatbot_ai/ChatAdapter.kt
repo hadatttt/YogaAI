@@ -78,7 +78,7 @@ class ChatAdapter(
     private fun isJson(content: String): Boolean {
         return try {
             val obj = Gson().fromJson(content, AiSequenceResponse::class.java)
-            obj.poses != null
+            obj.poses.isNotEmpty()
         } catch (e: Exception) {
             false
         }

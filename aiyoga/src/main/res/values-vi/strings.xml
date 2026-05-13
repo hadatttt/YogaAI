@@ -87,7 +87,9 @@
     <string name="categories">Danh mục</string>
     <string name="sequence_settings">Cài đặt chuỗi</string>
     <string name="edit_sequence">Sửa chuỗi tập</string>
+    <string name="update_sequence">Cập nhật chuỗi</string>
     <string name="sequence_name">Tên chuỗi</string>
+    <string name="sequence_name_example">VD: Chuỗi yoga buổi sáng</string>
     <string name="level">Cấp độ</string>
     <string name="beginner">Cơ bản</string>
     <string name="intermediate">Trung bình</string>
@@ -108,6 +110,8 @@
     <string name="map_posts_title">Các điểm Yoga gần đây</string>
     <string name="direction">Chỉ đường</string>
     <string name="share_this_location">Chia sẻ vị trí</string>
+    <string name="map_share_location_body">Cùng tập Yoga tại địa điểm này nhé!\nXem trên Google Maps: %1$s</string>
+    <string name="map_share_location_chooser_title">Chia sẻ địa điểm tập Yoga qua:</string>
     <string name="login_title">YOGA AI</string>
     <string name="next">Tiếp theo</string>
     <string name="ai_analyzing">AI đang phân tích...</string>
@@ -148,6 +152,9 @@
     <string name="yogi_buddy">Yogi Buddy</string>
     <string name="ai_yoga_expert">● Chuyên gia AI</string>
     <string name="chatbot_hint">Tôi có thể giúp gì cho bạn?</string>
+    <string name="ai_sequence_generated_title">Tôi đã tạo cho bạn một chuỗi bài tập phù hợp.</string>
+    <string name="ai_sequence_no_data">Tôi chưa tìm thấy đủ dữ liệu tư thế phù hợp để tạo chuỗi bài tập.</string>
+    <string name="ai_server_connection_error">Lỗi kết nối AI Server!</string>
     <string name="social">Mạng xã hội</string>
     <string name="history">Lịch sử</string>
     <string name="home">Trang chủ</string>
@@ -247,4 +254,5 @@
     <string name="error_invalid_weight">Cân nặng phải từ 20 đến 250 kg</string>
     <string name="error_invalid_height">Chiều cao phải từ 50 đến 250 cm</string>
     <string name="chat_input_hint">Nhập tin nhắn...</string>
+    <string name="clear_chat">Xóa trò chuyện</string>
 </resources>

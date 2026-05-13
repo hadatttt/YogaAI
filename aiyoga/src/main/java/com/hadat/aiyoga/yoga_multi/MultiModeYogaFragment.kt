@@ -27,7 +27,8 @@ import com.hadat.aiyoga.R
 import com.hadat.aiyoga.databinding.FragmentMultiModeYogaBinding
 import com.hadat.aiyoga.utils.service.AppPreferences
 import com.hadat.aiyoga.utils.yogautils.PoseLandmarkerHelper
-import com.hadat.aiyoga.utils.view.loadImageFromNetwork
+import com.hadat.aiyoga.utils.view.getYogaPoseGithubRawImageUrl
+import com.hadat.aiyoga.utils.view.loadYogaPoseGithubImage
 import com.hadat.aiyoga.utils.yogautils.YogaCoachUtils
 import com.hadat.aiyoga.yoga_ai.DialogZoom
 import com.takusemba.spotlight.OnSpotlightListener
@@ -125,7 +126,7 @@ class MultiModeYogaFragment : BaseFragment<FragmentMultiModeYogaBinding, MultiMo
     override fun initData() {
         args.detailSequence?.poses?.firstOrNull()?.let { firstPose ->
             binding.tvYogaName.text = firstPose.name
-            binding.ivYogaSample.loadImageFromNetwork(firstPose.photoUrl)
+            binding.ivYogaSample.loadYogaPoseGithubImage(firstPose.id)
             binding.tvPoseIndex.text = "1/${args.detailSequence?.poses?.size ?: 1}"
         }
         viewModel.currentGuideText.observe(viewLifecycleOwner) { binding.tvGuide.text = it }
@@ -135,7 +136,7 @@ class MultiModeYogaFragment : BaseFragment<FragmentMultiModeYogaBinding, MultiMo
         viewModel.currentPose.observe(viewLifecycleOwner) { pose ->
             pose ?: return@observe
             binding.tvYogaName.text = pose.name
-            binding.ivYogaSample.loadImageFromNetwork(pose.photoUrl)
+            binding.ivYogaSample.loadYogaPoseGithubImage(pose.id)
         }
         viewModel.isWaitingForCapture.observe(viewLifecycleOwner) { isWaiting ->
             if (isWaiting) {
@@ -180,10 +181,11 @@ class MultiModeYogaFragment : BaseFragment<FragmentMultiModeYogaBinding, MultiMo
             startYogaTutorial()
         }
         binding.ivYogaSample.singleClick {
-            val imageUrl = viewModel.currentPose.value?.photoUrl
-                ?: args.detailSequence?.poses?.firstOrNull()?.photoUrl
-            if (!imageUrl.isNullOrEmpty()) {
-                DialogZoom.newInstance(imageUrl)
+            val poseId = viewModel.currentPose.value?.id
+                ?: args.detailSequence?.poses?.firstOrNull()?.id
+                ?: -1
+            if (poseId in 0..81) {
+                DialogZoom.newInstance(getYogaPoseGithubRawImageUrl(poseId))
                     .show(parentFragmentManager, "DialogZoom")
             }
         }

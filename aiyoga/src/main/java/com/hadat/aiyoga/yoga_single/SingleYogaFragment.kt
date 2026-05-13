@@ -23,7 +23,8 @@ import com.hadat.aiyoga.databinding.FragmentSingleYogaBinding
 import com.hadat.aiyoga.manager_ai.AIManager
 import com.hadat.aiyoga.utils.service.AppPreferences
 import com.hadat.aiyoga.utils.yogautils.PoseLandmarkerHelper
-import com.hadat.aiyoga.utils.view.loadImageFromNetwork
+import com.hadat.aiyoga.utils.view.getYogaPoseGithubRawImageUrl
+import com.hadat.aiyoga.utils.view.loadYogaPoseGithubImage
 import com.hadat.aiyoga.utils.yogautils.YogaCoachUtils
 import com.hadat.aiyoga.yoga_ai.DialogZoom
 import com.takusemba.spotlight.OnSpotlightListener
@@ -217,9 +218,9 @@ class SingleYogaFragment : BaseFragment<FragmentSingleYogaBinding, SingleYogaVie
 
     override fun initData() {
         val initialPose = args.yogaPoseItem
-        if (!initialPose.photo_url.isNullOrEmpty()) {
+        if (initialPose.id in 0..81) {
             binding.ivYogaSample.visibility = View.VISIBLE
-            binding.ivYogaSample.loadImageFromNetwork(initialPose.photo_url)
+            binding.ivYogaSample.loadYogaPoseGithubImage(initialPose.id)
         }
         binding.tvYogaName.text = initialPose.name
         viewModel.currentGuideText.observe(viewLifecycleOwner) { binding.tvGuide.text = it }
@@ -245,9 +246,9 @@ class SingleYogaFragment : BaseFragment<FragmentSingleYogaBinding, SingleYogaVie
     @SuppressLint("ClickableViewAccessibility")
     override fun initListener() {
         binding.ivYogaSample.singleClick {
-            val imageUrl = args.yogaPoseItem.photo_url
-            if (!imageUrl.isNullOrEmpty()) {
-                DialogZoom.newInstance(imageUrl)
+            val poseId = args.yogaPoseItem.id
+            if (poseId in 0..81) {
+                DialogZoom.newInstance(getYogaPoseGithubRawImageUrl(poseId))
                     .show(parentFragmentManager, "DialogZoom")
             }
         }

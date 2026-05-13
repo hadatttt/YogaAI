@@ -127,7 +127,9 @@
                 android:id="@+id/iv_yoga_sample"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:scaleType="centerCrop" />
+                android:background="@color/white"
+                android:padding="@dimen/_3sdp"
+                android:scaleType="fitCenter" />
     </com.google.android.material.card.MaterialCardView>
     <TextView
             android:id="@+id/tv_yoga_name"

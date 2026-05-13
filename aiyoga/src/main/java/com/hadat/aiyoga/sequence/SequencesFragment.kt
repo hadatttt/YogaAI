@@ -54,11 +54,11 @@ class SequencesFragment : BaseFragment<FragmentSequencesBinding, SequencesViewMo
 
     override fun initView() {
         if (args.isEdit) {
-            binding.tvTitle.text = "Edit Sequence"
-            binding.btnCreate.text = "Update Sequence"
+            binding.tvTitle.text = getString(R.string.edit_sequence)
+            binding.btnCreate.text = getString(R.string.update_sequence)
         } else {
-            binding.tvTitle.text = "Sequence Settings"
-            binding.btnCreate.text = "Create Sequence"
+            binding.tvTitle.text = getString(R.string.sequence_settings)
+            binding.btnCreate.text = getString(R.string.create_sequence)
         }
         binding.rcvPeakOptions.apply {
             layoutManager = LinearLayoutManager(context)

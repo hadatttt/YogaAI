@@ -76,7 +76,9 @@
     <string name="categories">Categories</string>
     <string name="sequence_settings">Sequence Settings</string>
     <string name="edit_sequence">Edit Sequence</string>
+    <string name="update_sequence">Update Sequence</string>
     <string name="sequence_name">Sequence Name</string>
+    <string name="sequence_name_example">Ex: Morning Yoga Flow</string>
     <string name="level">Level</string>
     <string name="beginner">Beginner</string>
     <string name="intermediate">Intermediate</string>
@@ -97,6 +99,8 @@
     <string name="map_posts_title">Yoga Spots Nearby</string>
     <string name="direction">Direction</string>
     <string name="share_this_location">Share Location</string>
+    <string name="map_share_location_body">Let us practice yoga at this place!\nView on Google Maps: %1$s</string>
+    <string name="map_share_location_chooser_title">Share yoga practice spot via:</string>
     <string name="login_title">YOGA AI</string>
     <string name="next">Next</string>
     <string name="ai_analyzing">AI analyzing...</string>
@@ -115,6 +119,9 @@
     <string name="yogi_buddy">Yogi Buddy</string>
     <string name="ai_yoga_expert">● AI Expert</string>
     <string name="chatbot_hint">How can I help you today?</string>
+    <string name="ai_sequence_generated_title">I created a suitable workout sequence for you.</string>
+    <string name="ai_sequence_no_data">I could not find enough pose data to create a suitable workout sequence.</string>
+    <string name="ai_server_connection_error">AI Server connection error!</string>
     <string name="social">Social</string>
     <string name="history">History</string>
     <string name="home">Home</string>
@@ -247,4 +254,5 @@
     <string name="error_invalid_weight">Weight must be between 20 and 250 kg</string>
     <string name="error_invalid_height">Height must be between 50 and 250 cm</string>
     <string name="chat_input_hint">Type a message...</string>
+    <string name="clear_chat">Clear chat</string>
 </resources>
