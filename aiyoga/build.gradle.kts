@@ -19,6 +19,9 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        ndk {
+            abiFilters += listOf("arm64-v8a")
+        }
     }
 
     buildTypes {
@@ -109,10 +112,6 @@ dependencies {
     val tfliteVersion = "2.14.0"
 
     implementation("org.tensorflow:tensorflow-lite:$tfliteVersion")
-    implementation("org.tensorflow:tensorflow-lite-support:0.4.4")
-    implementation("org.tensorflow:tensorflow-lite-metadata:0.4.4")
-    implementation("org.tensorflow:tensorflow-lite-gpu:$tfliteVersion")
-    implementation("org.tensorflow:tensorflow-lite-gpu-api:$tfliteVersion")
 
     // MediaPipe (Dùng để lấy Pose Landmarks)
     implementation("com.google.mediapipe:tasks-vision:0.10.14")

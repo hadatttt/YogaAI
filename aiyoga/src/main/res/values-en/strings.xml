@@ -51,10 +51,10 @@
     <string name="recent_sequences">Recent sessions</string>
     <string name="view_all">View all</string>
     <string name="chatbot_ai">AI Chatbot</string>
-    <string name="chatbot_suggestion_warrior1">Benefits of Warrior I pose?</string>
-    <string name="chatbot_suggestion_back_pain">Yoga for back pain</string>
-    <string name="chatbot_suggestion_crow_pose">Crow Pose instructions</string>
-    <string name="chatbot_suggestion_daily_yoga">Benefits of daily yoga practice</string>
+    <string name="chatbot_suggestion_1">10-minute morning yoga (5 poses)</string>
+    <string name="chatbot_suggestion_2">Benefits of Tree Pose</string>
+    <string name="chatbot_suggestion_3">Steps for Warrior II pose</string>
+    <string name="chatbot_suggestion_4">Quick full-body stretch routine</string>
     <string name="workout_overview">Workout Overview</string>
     <string name="kcal_unit">kcal</string>
     <string name="duration">Duration</string>
@@ -221,8 +221,7 @@
     <string name="text_check_your_internet_connection_and_try_again">Please check your internet connection and try again.</string>
     <string name="text_setting">Settings</string>
     <string name="tell_us_about_your_practice_spot">Tell us about your practice spot...</string>
-    <string name="checking_data">Checking data…</string>
-
+    <string name="loading_checking_data">Checking data...</string>
     <string name="target_ai_replace_title">AI Image Replace</string>
     <string name="target_ai_replace_desc">Upload your workout photo for AI analysis. It will replace the sample if your pose is correct.</string>
     <string name="target_pose_sample_title">Sample Pose</string>
@@ -239,4 +238,13 @@
     <string name="legend_need_adjust">Need adjustment</string>
     <string name="legend_wrong_pose">Wrong pose</string>
     <string name="legend_btn_got_it">Got it</string>
+    <string name="chart_title_calories">Calories (kcal)</string>
+    <string name="chart_title_accuracy">Accuracy Trend (%)</string>
+    <string name="chart_title_top_poses">Top 5 Practice Time (min)</string>
+    <string name="unit_min">min</string>
+    <string name="unknown_pose">Unknown</string>
+    <string name="error_invalid_age">Age must be between 10 and 100</string>
+    <string name="error_invalid_weight">Weight must be between 20 and 250 kg</string>
+    <string name="error_invalid_height">Height must be between 50 and 250 cm</string>
+    <string name="chat_input_hint">Type a message...</string>
 </resources>

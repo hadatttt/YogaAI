@@ -162,7 +162,8 @@ class SequencesFragment : BaseFragment<FragmentSequencesBinding, SequencesViewMo
                     level = level,
                     coverUrl = url,
                     userId = userId,
-                    isPublic = args.detailSequence!!.isPublic
+                    isPublic = args.detailSequence!!.isPublic,
+                    createdAt = args.detailSequence!!.createdAt
                 )
             } else {
                 viewModel.saveSequence(name, level, url, userId)

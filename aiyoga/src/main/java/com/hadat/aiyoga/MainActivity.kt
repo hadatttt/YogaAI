@@ -49,6 +49,9 @@ class MainActivity : AppCompatActivity() {
 
         super.onCreate(savedInstanceState)
         FirebaseApp.initializeApp(applicationContext)
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+            AppPreferences.updateLastAppOpenDate(this)
+        }
         enableEdgeToEdge()
         setContentView(R.layout.activity_main)
 
@@ -65,7 +68,7 @@ class MainActivity : AppCompatActivity() {
                 manageAIResources()
             }
         }, 800)
-        setupNavigation()
+        setupNavigation(savedInstanceState)
     }
 
     private fun manageAIResources() {
@@ -96,26 +99,30 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun setupNavigation() {
-        val navHostFragment = supportFragmentManager.findFragmentById(R.id.navHostFragment) as NavHostFragment
+    private fun setupNavigation(savedInstanceState: Bundle?) {
+        val navHostFragment =
+            supportFragmentManager.findFragmentById(R.id.navHostFragment) as NavHostFragment
         navController = navHostFragment.navController
         bottomNavigation = findViewById(R.id.bottomNavigation)
         setUpBottomNavigation()
-
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.navHostFragment)) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, 0)
             insets
         }
 
-        val navGraph = navController.navInflater.inflate(R.navigation.app_nav)
-        val startDestination = when {
-            !AppPreferences.isLoggedIn(this) -> R.id.loginFragment
-            !AppPreferences.isHealthProfileCompleted(this) -> R.id.informationFragment
-            else -> R.id.homeFragment
+        if (savedInstanceState == null) {
+            val navGraph = navController.navInflater.inflate(R.navigation.app_nav)
+
+            val startDestination = when {
+                !AppPreferences.isLoggedIn(this) -> R.id.loginFragment
+                !AppPreferences.isHealthProfileCompleted(this) -> R.id.informationFragment
+                else -> R.id.homeFragment
+            }
+
+            navGraph.setStartDestination(startDestination)
+            navController.graph = navGraph
         }
-        navGraph.setStartDestination(startDestination)
-        navController.graph = navGraph
     }
 
     private fun setUpBottomNavigation() {
@@ -129,8 +136,6 @@ class MainActivity : AppCompatActivity() {
 
         bottomNavigation.apply {
             items.forEach { add(it) }
-
-            // 2. Cập nhật Listener: Chỉ navigate nếu nhấn vào tab khác tab hiện tại
             setOnClickMenuListener { item ->
                 if (currentSelectedBottomItem != item.id) {
                     currentSelectedBottomItem = item.id

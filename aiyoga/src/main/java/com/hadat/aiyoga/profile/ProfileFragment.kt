@@ -41,7 +41,9 @@ class ProfileFragment : BaseFragment<FragmentProfileBinding, ProfileViewModel>()
 
     private val notificationPermissionLauncher =
         registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
-            if (!granted && Build.VERSION.SDK_INT >= 33) {
+            if (granted) {
+                NotificationWorker.scheduleDailyNotifications(requireContext(), listOf(reminderTime))
+            } else if (Build.VERSION.SDK_INT >= 33) {
                 NotificationHelper.showSettingsDialog(requireActivity())
             }
         }
@@ -169,11 +171,17 @@ class ProfileFragment : BaseFragment<FragmentProfileBinding, ProfileViewModel>()
             .setSingleChoiceItems(languageLabels, checkedIndex) { dialog, which ->
                 val selectedCode = languageCodes[which]
                 AppPreferences.setLanguageCode(requireContext(), selectedCode)
-                AppCompatDelegate.setApplicationLocales(LocaleListCompat.forLanguageTags(selectedCode))
-                renderLanguage()
                 dialog.dismiss()
                 YogaDataUtils.prefetchData(requireContext(), forceRefresh = true) {
-                    if (isAdded && activity != null) {
+                    if (!isAdded) return@prefetchData
+                    requireActivity().runOnUiThread {
+                        AppCompatDelegate.setApplicationLocales(
+                            LocaleListCompat.forLanguageTags(selectedCode)
+                        )
+                        renderLanguage()
+                        val userId = AppPreferences.getUserId(requireContext()) ?: return@runOnUiThread
+                        viewModel.loadUser(userId)
+                        viewModel.loadHealthProfile(userId)
                         requireActivity().recreate()
                     }
                 }

@@ -8,7 +8,6 @@ import android.util.Log
 import com.google.mediapipe.tasks.vision.core.RunningMode
 import com.hadat.aiyoga.utils.yogautils.PoseLandmarkerHelper
 import org.tensorflow.lite.Interpreter
-import org.tensorflow.lite.gpu.GpuDelegate
 import java.io.File
 import java.util.concurrent.Executors
 
@@ -47,17 +46,11 @@ object AIManager {
         val file = File(context.filesDir, "yoga_model.tflite")
         if (!file.exists()) return
 
-        val options = Interpreter.Options()
-
-        try {
-            val gpuDelegate = GpuDelegate()
-            options.addDelegate(gpuDelegate)
-            Log.d("AIManager", "Classifier using GPU")
-        } catch (e: Exception) {
-            options.setNumThreads(4)
-            options.setUseNNAPI(true)
-            Log.d("AIManager", "Classifier using CPU")
+        val options = Interpreter.Options().apply {
+            setNumThreads(4) // 2–4 tuỳ máy, 4 là ổn
         }
+
+        Log.d("AIManager", "Classifier using CPU")
 
         classifierInterpreter = Interpreter(file, options)
     }

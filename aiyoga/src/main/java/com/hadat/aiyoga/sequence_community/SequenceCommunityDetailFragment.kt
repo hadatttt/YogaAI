@@ -1,5 +1,6 @@
 package com.hadat.aiyoga.sequence_community
 
+import android.os.Bundle
 import android.widget.Toast
 import androidx.navigation.fragment.navArgs
 import com.hadat.aiyoga.R
@@ -8,6 +9,7 @@ import com.hadat.aiyoga.utils.service.AppPreferences
 import com.hadat.aiyoga.utils.view.loadImageFromNetwork
 import com.hadat.aiyoga.detailsequence.PoseDetailAdapter
 import hoang.dqm.codebase.base.activity.BaseFragment
+import hoang.dqm.codebase.base.activity.navigate
 import hoang.dqm.codebase.base.activity.popBackStack
 import hoang.dqm.codebase.utils.singleClick
 
@@ -29,7 +31,13 @@ class SequenceCommunityDetailFragment :
 
     override fun initListener() {
         binding.ivBack.singleClick { popBackStack() }
-
+        binding.btnStartWorkout.singleClick {
+            val sequence = viewModel.sequenceData.value ?: return@singleClick
+            val bundle = Bundle().apply {
+                putParcelable("detail_sequence", sequence)
+            }
+            navigate(R.id.multiModeYogaFragment, bundle, isPop = true)
+        }
         binding.btnLikeAction.singleClick {
             val userId = AppPreferences.getUserId(requireContext()) ?: "guest"
             viewModel.toggleLike(userId)

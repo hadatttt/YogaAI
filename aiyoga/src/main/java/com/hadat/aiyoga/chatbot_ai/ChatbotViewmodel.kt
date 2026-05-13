@@ -68,9 +68,9 @@ class ChatbotViewModel : BaseViewModel() {
     }
 
     fun getSuggestionIds() = listOf(
-        R.string.chatbot_suggestion_warrior1,
-        R.string.chatbot_suggestion_back_pain,
-        R.string.chatbot_suggestion_crow_pose,
-        R.string.chatbot_suggestion_daily_yoga
+        R.string.chatbot_suggestion_1,
+        R.string.chatbot_suggestion_2,
+        R.string.chatbot_suggestion_3,
+        R.string.chatbot_suggestion_4
     )
 }

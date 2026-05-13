@@ -8,7 +8,14 @@ import hoang.dqm.codebase.base.activity.BaseFragment
 import hoang.dqm.codebase.base.activity.navigate
 
 class InformationFragment : BaseFragment<FragmentInformationBinding, InformationViewModel>() {
-
+    companion object {
+        private const val MIN_AGE = 10
+        private const val MAX_AGE = 100
+        private const val MIN_WEIGHT = 20f
+        private const val MAX_WEIGHT = 250f
+        private const val MIN_HEIGHT = 50f
+        private const val MAX_HEIGHT = 250f
+    }
     private val genders by lazy {
         listOf(
             getString(R.string.gender_male),
@@ -87,22 +94,45 @@ class InformationFragment : BaseFragment<FragmentInformationBinding, Information
     }
 
     private fun validateAndSave() {
-        val age = binding.edtAge.text.toString()
-        val weight = binding.edtWeight.text.toString()
-        val height = binding.edtHeight.text.toString()
+        val ageStr = binding.edtAge.text.toString().trim()
+        val weightStr = binding.edtWeight.text.toString().trim()
+        val heightStr = binding.edtHeight.text.toString().trim()
 
-        if (age.isBlank() || weight.isBlank() || height.isBlank()) {
-            Toast.makeText(requireContext(), getString(R.string.msg_fill_all), Toast.LENGTH_SHORT).show()
+        if (ageStr.isBlank() || weightStr.isBlank() || heightStr.isBlank()) {
+            showToast(getString(R.string.msg_fill_all))
             return
         }
+        val age = ageStr.toIntOrNull() ?: 0
+        val weight = weightStr.toFloatOrNull() ?: 0f
+        val height = heightStr.toFloatOrNull() ?: 0f
 
-        viewModel.saveHealthProfile(
-            context = requireContext(),
-            gender = binding.spGender.selectedItem.toString(),
-            age = age.toInt(),
-            weight = weight.toFloat(),
-            height = height.toFloat(),
-            activityLevelPos = binding.spActivity.selectedItemPosition
-        )
+        when {
+            age !in MIN_AGE..MAX_AGE -> {
+                showToast(getString(R.string.error_invalid_age))
+                binding.edtAge.requestFocus()
+            }
+            weight !in MIN_WEIGHT..MAX_WEIGHT -> {
+                showToast(getString(R.string.error_invalid_weight))
+                binding.edtWeight.requestFocus()
+            }
+            height !in MIN_HEIGHT..MAX_HEIGHT -> {
+                showToast(getString(R.string.error_invalid_height))
+                binding.edtHeight.requestFocus()
+            }
+            else -> {
+                viewModel.saveHealthProfile(
+                    context = requireContext(),
+                    gender = binding.spGender.selectedItem.toString(),
+                    age = age,
+                    weight = weight,
+                    height = height,
+                    activityLevelPos = binding.spActivity.selectedItemPosition
+                )
+            }
+        }
+    }
+
+    private fun showToast(message: String) {
+        Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show()
     }
 }

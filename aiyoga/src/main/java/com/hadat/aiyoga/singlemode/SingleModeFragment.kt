@@ -46,6 +46,7 @@ class SingleModeFragment : BaseFragment<FragmentSingleModeBinding, SingleModeVie
     }
     override fun onResume() {
         super.onResume()
+        viewModel.fetchData(requireContext())
         val currentSearch = binding.edtSearch.text.toString().trim()
         viewModel.setSearchQuery(requireContext(), currentSearch)
         viewModel.updateTodayPickFromLocal(requireContext())

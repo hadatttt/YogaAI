@@ -9,8 +9,8 @@ data class WorkoutResultModel(
     val poseId: Int = 0,
     val poseUrl: String = "",
     val poseName: String = "",
-    val durationInSeconds: Int = 0,
+    var durationInSeconds: Int = 0,
     val date: String = "",
-    val errorCount: Int = 0,
+    var errorCount: Int = 0,
     val workoutTimestamp: Long = 0L
 ) : Parcelable

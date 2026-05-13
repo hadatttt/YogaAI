@@ -42,7 +42,7 @@ import com.takusemba.spotlight.Target as SpotlightTarget
 class SingleYogaFragment : BaseFragment<FragmentSingleYogaBinding, SingleYogaViewModel>(),
     PoseLandmarkerHelper.LandmarkerListener {
     private var lastProcessTime = 0L
-    private val PROCESS_INTERVAL = 33L // ~30 FPS cho logic
+    private val PROCESS_INTERVAL = 33L
     private val args by navArgs<SingleYogaFragmentArgs>()
     private lateinit var spotlight: Spotlight
     private lateinit var backgroundExecutor: ExecutorService
@@ -96,7 +96,6 @@ class SingleYogaFragment : BaseFragment<FragmentSingleYogaBinding, SingleYogaVie
     }
 
     override fun onDestroyView() {
-        binding.overlayView.clear()
         viewModel.stopTracking()
         progressAnimator?.cancel()
         progressAnimator = null
@@ -143,10 +142,8 @@ class SingleYogaFragment : BaseFragment<FragmentSingleYogaBinding, SingleYogaVie
     @SuppressLint("UnsafeOptInUsageError")
     private fun bindCameraUseCases() {
         if (!isAdded || view == null) return
-
         val cameraProvider = cameraProvider
             ?: throw IllegalStateException("Camera initialization failed.")
-
         val cameraSelector = CameraSelector.Builder()
             .requireLensFacing(lensFacing)
             .build()
@@ -189,27 +186,20 @@ class SingleYogaFragment : BaseFragment<FragmentSingleYogaBinding, SingleYogaVie
         val result = resultBundle.results.firstOrNull() ?: return
 
         binding.overlayView.post {
-            if (view == null) return@post
-
-            binding.overlayView.setResults(
-                result,
-                resultBundle.inputImageHeight,
-                resultBundle.inputImageWidth,
-                RunningMode.LIVE_STREAM
-            )
+            binding.overlayView.setResults(result, resultBundle.inputImageHeight, resultBundle.inputImageWidth, RunningMode.LIVE_STREAM)
         }
         val now = System.currentTimeMillis()
         if (now - lastProcessTime < PROCESS_INTERVAL) return
         lastProcessTime = now
         backgroundExecutor.execute {
-            val rays = YogaCoachUtils.getCorrectionRays(
+            val bones = YogaCoachUtils.getBoneErrors(
                 args.yogaPoseItem.id,
                 result
             )
             val context = context ?: return@execute
             activity?.runOnUiThread {
                 if (view == null) return@runOnUiThread
-                binding.overlayView.setCorrectionRays(rays)
+                binding.overlayView.setWrongBones(bones)
                 viewModel.processCoachLogic(
                     context,
                     result,
@@ -226,7 +216,6 @@ class SingleYogaFragment : BaseFragment<FragmentSingleYogaBinding, SingleYogaVie
     }
 
     override fun initData() {
-        viewModel.resetData()
         val initialPose = args.yogaPoseItem
         if (!initialPose.photo_url.isNullOrEmpty()) {
             binding.ivYogaSample.visibility = View.VISIBLE
@@ -290,7 +279,7 @@ class SingleYogaFragment : BaseFragment<FragmentSingleYogaBinding, SingleYogaVie
             addListener(object : android.animation.AnimatorListenerAdapter() {
                 override fun onAnimationEnd(animation: android.animation.Animator) {
                     if (binding.progressAround.progress >= 100f) {
-                        navigateToResult()
+                        showPoseDoneAnimation()
                     }
                 }
             })
@@ -525,5 +514,24 @@ class SingleYogaFragment : BaseFragment<FragmentSingleYogaBinding, SingleYogaVie
             .setShape(shape)
             .setOverlay(overlayView)
             .build()
+    }
+    private fun showPoseDoneAnimation() {
+        binding.lottiePoseDone.apply {
+            visibility = View.VISIBLE
+            playAnimation()
+
+            addAnimatorListener(object : android.animation.Animator.AnimatorListener {
+                override fun onAnimationStart(animation: android.animation.Animator) {}
+
+                override fun onAnimationEnd(animation: android.animation.Animator) {
+                    visibility = View.GONE
+                    removeAllAnimatorListeners()
+                    navigateToResult()
+                }
+
+                override fun onAnimationCancel(animation: android.animation.Animator) {}
+                override fun onAnimationRepeat(animation: android.animation.Animator) {}
+            })
+        }
     }
 }

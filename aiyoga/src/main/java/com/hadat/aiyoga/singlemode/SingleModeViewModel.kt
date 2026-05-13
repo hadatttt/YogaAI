@@ -23,9 +23,10 @@ class SingleModeViewModel : BaseViewModel() {
     private var fullYogaList = listOf<YogaPoseModel>()
     private var currentCategory = "All"
     private var currentSearchQuery = ""
+    private var loadedDataVersion = -1
 
-    fun fetchData(context: Context) {
-        if (fullYogaList.isNotEmpty()) return
+    fun fetchData(context: Context, forceRefresh: Boolean = false) {
+        if (!forceRefresh && fullYogaList.isNotEmpty() && loadedDataVersion == YogaDataUtils.dataVersion) return
         val localCategories = YogaDataUtils.getLocalYogaCategories()
         categoryList.value = localCategories.map { category ->
             category.copy(
@@ -35,6 +36,7 @@ class SingleModeViewModel : BaseViewModel() {
         val poses = YogaDataUtils.getAllPoses()
         if (poses.isNotEmpty()) {
             fullYogaList = poses
+            loadedDataVersion = YogaDataUtils.dataVersion
             applyFilterAndSearch(context)
             fetchTodayPick(context)
         }

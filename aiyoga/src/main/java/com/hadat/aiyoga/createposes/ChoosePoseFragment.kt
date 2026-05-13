@@ -105,6 +105,12 @@ class ChoosePoseFragment : BaseFragment<FragmentChoosePosesBinding, ChoosePoseVi
         navigate(R.id.detailYogaFragment, bundle)
     }
     override fun initData() {
+        viewModel.fetchData(requireContext())
+    }
 
+    override fun onResume() {
+        super.onResume()
+        viewModel.fetchData(requireContext())
+        viewModel.setSearchQuery(binding.edtSearch.text.toString().trim())
     }
 }

@@ -116,8 +116,8 @@ class MapFragment : BaseFragment<FragmentMapBinding, MapViewModel>(), OnMapReady
             val lng = location.longitude
             val mapLink = "https://www.google.com/maps/search/?api=1&query=$lat,$lng"
             val shareBody = """
-        🧘‍♂️ Cùng tập Yoga tại địa điểm này nhé!
-        🔗 Xem trên Google Maps: $mapLink
+🧘‍♂️ Cùng tập Yoga tại địa điểm này nhé!
+🔗 Xem trên Google Maps: $mapLink
     """.trimIndent()
             val shareIntent = Intent(Intent.ACTION_SEND).apply {
                 type = "text/plain"

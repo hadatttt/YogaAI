@@ -48,7 +48,7 @@ class YogaFragment : BaseFragment<FragmentSingleYogaBinding, YogaViewModel>(),
     PoseLandmarkerHelper.LandmarkerListener {
     private lateinit var spotlight: Spotlight
     private var cameraProvider: ProcessCameraProvider? = null
-    private val TAG = "YogaAI_Debug"
+    private var lastSpeakTime = 0L
     private lateinit var backgroundExecutor: ExecutorService
     private val classifierExecutor: ExecutorService by lazy { Executors.newSingleThreadExecutor() }
 
@@ -88,7 +88,6 @@ class YogaFragment : BaseFragment<FragmentSingleYogaBinding, YogaViewModel>(),
             binding.loadingView.root.visibility = View.GONE
         } else if (isAdded) {
             binding.loadingView.root.visibility = View.GONE
-            Log.e("YogaFragment", "Failed to load reference data")
         }
     }
     override fun onResume() {
@@ -109,40 +108,39 @@ class YogaFragment : BaseFragment<FragmentSingleYogaBinding, YogaViewModel>(),
         try {
             cameraProvider?.unbindAll()
         } catch (e: Exception) {
-            Log.e(TAG, "Error unbinding camera: ${e.message}")
         }
         cameraProvider = null
     }
+
     override fun onResults(resultBundle: PoseLandmarkerHelper.ResultBundle) {
+        val result = resultBundle.results.firstOrNull() ?: return
+
         activity?.runOnUiThread {
             if (view == null) return@runOnUiThread
-            val result = resultBundle.results.first()
-
-            binding.overlayView.visibility = View.VISIBLE
             binding.overlayView.setResults(
                 result,
                 resultBundle.inputImageHeight,
                 resultBundle.inputImageWidth,
                 RunningMode.LIVE_STREAM
             )
+        }
+
+        backgroundExecutor.execute {
             val currentPoseId = viewModel.previewPoseId.value ?: -1
-            if (currentPoseId != -1) {
-                val rays = YogaCoachUtils.getCorrectionRays(currentPoseId, result)
-                binding.overlayView.setCorrectionRays(rays)
-            } else {
-                binding.overlayView.setCorrectionRays(emptyList())
-            }
-            binding.overlayView.invalidate()
-            val now = System.currentTimeMillis()
-            if (now - lastCoachTime >= COACH_INTERVAL) {
-                viewModel.processCoachLogic(requireContext(), result)
-                lastCoachTime = now
+            val bones = if (currentPoseId != -1) {
+                YogaCoachUtils.getBoneErrors(currentPoseId, result)
+            } else emptyMap()
+            viewModel.processCoachLogic(requireContext(), result)
+            activity?.runOnUiThread {
+                if (view != null) {
+                    binding.overlayView.setWrongBones(bones)
+                    binding.overlayView.invalidate()
+                }
             }
         }
     }
 
     override fun onError(error: String, errorCode: Int) {
-        Log.e(TAG, "MediaPipe Error: $error")
     }
 
     private fun startCamera() {
@@ -188,7 +186,6 @@ class YogaFragment : BaseFragment<FragmentSingleYogaBinding, YogaViewModel>(),
                 imageProxy.close()
             }
         } catch (e: Exception) {
-            Log.e(TAG, "Error processing frame: ${e.message}")
             imageProxy.close()
         }
     }
@@ -213,7 +210,6 @@ class YogaFragment : BaseFragment<FragmentSingleYogaBinding, YogaViewModel>(),
                 try {
                     interpreter.runForMultipleInputsOutputs(arrayOf(buffer), outputs)
                 } catch (e: Exception) {
-                    Log.e(TAG, "TFLite runtime error: ${e.message}")
                 }
             }
 
@@ -231,7 +227,11 @@ class YogaFragment : BaseFragment<FragmentSingleYogaBinding, YogaViewModel>(),
 
                 if (poseCounter >= STABLE_THRESHOLD) {
                     activity?.runOnUiThread {
-                        viewModel.handlePoseInference(requireContext(), maxIdx)
+                        if (isAdded && context != null && view != null) {
+                            viewModel.handlePoseInference(requireContext(), maxIdx)
+                        } else {
+                            return@runOnUiThread
+                        }
                     }
                 }
             }
@@ -241,7 +241,6 @@ class YogaFragment : BaseFragment<FragmentSingleYogaBinding, YogaViewModel>(),
             scaled.recycle()
 
         } catch (e: Exception) {
-            Log.e(TAG, "Classifier thread error: ${e.message}")
         }
     }
 
@@ -258,7 +257,6 @@ class YogaFragment : BaseFragment<FragmentSingleYogaBinding, YogaViewModel>(),
     }
 
     override fun initData() {
-        viewModel.resetData()
         viewModel.currentPoseName.observe(viewLifecycleOwner) { name ->
             binding.tvYogaName.text = name
         }
@@ -279,11 +277,7 @@ class YogaFragment : BaseFragment<FragmentSingleYogaBinding, YogaViewModel>(),
         viewModel.currentGuideText.observe(viewLifecycleOwner) { binding.tvGuide.text = it }
         viewModel.timerText.observe(viewLifecycleOwner) { binding.tvTimer.text = it }
 
-        viewModel.speakCommand.observe(viewLifecycleOwner) { text ->
-            if (text.isNotEmpty() && !isMuted) {
-                tts?.speak(text, TextToSpeech.QUEUE_FLUSH, null, null)
-            }
-        }
+        viewModel.speakCommand.observe(viewLifecycleOwner) { speak(it) }
         viewModel.previewPoseId.observe(viewLifecycleOwner) { id ->
             val poseList = viewModel.yogaPoseDataList.value
             val currentPose = poseList?.find { it.id == id }
@@ -321,11 +315,11 @@ class YogaFragment : BaseFragment<FragmentSingleYogaBinding, YogaViewModel>(),
             viewModel.toggleCaptureWait()
         }
         binding.ivBack.singleClick {
-            viewModel.clearData()
+            viewModel.resetData()
             popBackStack()
         }
         onBackPressed {
-            viewModel.clearData()
+            viewModel.resetData()
             popBackStack()
         }
         binding.ivFlip.singleClick {
@@ -342,7 +336,7 @@ class YogaFragment : BaseFragment<FragmentSingleYogaBinding, YogaViewModel>(),
             addListener(object : android.animation.AnimatorListenerAdapter() {
                 override fun onAnimationEnd(animation: android.animation.Animator) {
                     if (binding.progressAround.progress >= 100f) {
-                        navigateToResult()
+                        showPoseDoneAnimation()
                     }
                 }
             })
@@ -395,32 +389,25 @@ class YogaFragment : BaseFragment<FragmentSingleYogaBinding, YogaViewModel>(),
         super.onDestroyView()
     }
     private fun navigateToResult() {
-        val results = viewModel.getFinalSequenceList().map { sequence ->
-            WorkoutResultModel(
-                userId = AppPreferences.getUserId(requireContext()) ?: "guest",
-                poseUrl = sequence.photoUrl,
-                poseId = sequence.id,
-                poseName = sequence.name,
-                durationInSeconds = timeStringToSeconds(sequence.duration),
-                date = java.text.SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date()),
-                errorCount = 0,
-                workoutTimestamp = System.currentTimeMillis()
-            )
-        }.toTypedArray()
+        val results = viewModel.getFinalWorkoutResults()
+
         val capturedImagesArray = viewModel.getCapturedImages().toTypedArray()
+
+        if (results.isEmpty()) {
+            Toast.makeText(requireContext(), getString(com.hadat.aiyoga.R.string.no_image_to_share), Toast.LENGTH_SHORT).show()
+            popBackStack()
+            return
+        }
 
         val bundle = Bundle().apply {
             putParcelableArray("workout_result_list", results)
             putStringArray("captured_images_list", capturedImagesArray)
         }
-        navigate(com.hadat.aiyoga.R.id.resultFragment, bundle,isPop = true)
-        viewModel.clearData()
+
+        navigate(com.hadat.aiyoga.R.id.resultFragment, bundle, isPop = true)
+        viewModel.resetData()
     }
 
-    private fun timeStringToSeconds(time: String): Int {
-        val parts = time.split(":")
-        return if (parts.size == 2) parts[0].toInt() * 60 + parts[1].toInt() else 0
-    }
     private fun animatePhotoCapture() {
         triggerFlashEffect()
         val bitmap = binding.viewFinder.bitmap ?: return
@@ -470,6 +457,14 @@ class YogaFragment : BaseFragment<FragmentSingleYogaBinding, YogaViewModel>(),
             ).show()
         }
     }
+    private fun speak(text: String) {
+        if (text.isEmpty() || isMuted) return
+        val now = System.currentTimeMillis()
+        if (now - lastSpeakTime < 2500) return
+        lastSpeakTime = now
+        tts?.speak(text, TextToSpeech.QUEUE_FLUSH, null, null)
+    }
+
     private fun triggerFlashEffect() {
         binding.viewFlash.visibility = View.VISIBLE
         binding.viewFlash.alpha = 1f
@@ -585,5 +580,24 @@ class YogaFragment : BaseFragment<FragmentSingleYogaBinding, YogaViewModel>(),
             .setShape(shape)
             .setOverlay(overlayView)
             .build()
+    }
+    private fun showPoseDoneAnimation() {
+        binding.lottiePoseDone.apply {
+            visibility = View.VISIBLE
+            playAnimation()
+
+            addAnimatorListener(object : android.animation.Animator.AnimatorListener {
+                override fun onAnimationStart(animation: android.animation.Animator) {}
+
+                override fun onAnimationEnd(animation: android.animation.Animator) {
+                    visibility = View.GONE
+                    removeAllAnimatorListeners()
+                    navigateToResult()
+                }
+
+                override fun onAnimationCancel(animation: android.animation.Animator) {}
+                override fun onAnimationRepeat(animation: android.animation.Animator) {}
+            })
+        }
     }
 }

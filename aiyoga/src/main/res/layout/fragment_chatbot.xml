@@ -30,13 +30,13 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="@id/iv_back">
 
-        <ImageView
+        <com.airbnb.lottie.LottieAnimationView
                 android:id="@+id/iv_bot_avatar"
-                android:layout_width="@dimen/_38sdp"
-                android:layout_height="@dimen/_38sdp"
-                android:background="@drawable/shape_circle"
-                android:padding="@dimen/_4sdp"
-                android:src="@drawable/chatbot" />
+                android:layout_width="@dimen/_40sdp"
+                android:layout_height="@dimen/_40sdp"
+                app:lottie_autoPlay="true"
+                app:lottie_loop="true"
+                app:lottie_rawRes="@raw/chatbot" />
 
         <LinearLayout
                 android:layout_width="wrap_content"
@@ -133,7 +133,7 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:background="@drawable/bg_tab_unselected"
-                    android:hint="Type a message..."
+                    android:hint="@string/chat_input_hint"
                     android:paddingHorizontal="@dimen/_16sdp"
                     android:paddingVertical="@dimen/_10sdp"
                     android:textSize="@dimen/_13sdp" />

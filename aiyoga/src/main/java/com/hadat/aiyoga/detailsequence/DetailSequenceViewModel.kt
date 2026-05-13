@@ -33,7 +33,7 @@ class DetailSequenceViewModel : BaseViewModel() {
         visibilityUpdating.value = true
         viewModelScope.launch {
             val updated = current.copy(isPublic = newStatus)
-            val isSuccess = sequenceRepository.updateSequence(updated)
+            val isSuccess = sequenceRepository.updateSequenceVisibility(current.id, newStatus)
             if (isSuccess) {
                 sequenceData.postValue(updated)
             } else {
