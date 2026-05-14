@@ -78,8 +78,9 @@ class WorkoutOverviewFragment : BaseFragment<FragmentWorkoutOverviewBinding, Wor
             totalCalo += HealthCalculatorUtils.calculateWorkoutCaloriesByMet(metMap[it.poseId] ?: 3.0, weight, it.durationInSeconds)
         }
 
-        val totalAcc = list.map { HealthCalculatorUtils.calculateAccuracy(it.durationInSeconds, it.errorCount) }
-            .let { if (it.isEmpty()) 100f else it.average().toFloat() }
+        val aiList = list.filter { it.isAiMode }
+        val totalAcc = aiList.map { HealthCalculatorUtils.calculateAccuracy(it.durationInSeconds, it.errorCount) }
+            .let { if (it.isEmpty()) 0f else it.average().toFloat() }
 
         updateProgressUI(totalCalo, totalSec / 60f, totalAcc, totalRangeGoal)
 
@@ -92,7 +93,12 @@ class WorkoutOverviewFragment : BaseFragment<FragmentWorkoutOverviewBinding, Wor
             val x = index.toFloat()
             labels.add(dateFormatLabel.format(Date(sessions.first().workoutTimestamp)))
             val dCalo = sessions.sumOf { HealthCalculatorUtils.calculateWorkoutCaloriesByMet(metMap[it.poseId] ?: 3.0, weight, it.durationInSeconds).toDouble() }.toFloat()
-            val dAcc = sessions.map { HealthCalculatorUtils.calculateAccuracy(it.durationInSeconds, it.errorCount) }.average().toFloat()
+            val aiSessions = sessions.filter { it.isAiMode }
+            val dAcc = if (aiSessions.isEmpty()) {
+                0f
+            } else {
+                aiSessions.map { HealthCalculatorUtils.calculateAccuracy(it.durationInSeconds, it.errorCount) }.average().toFloat()
+            }
             caloEntries.add(BarEntry(x, dCalo))
             accTrendEntries.add(Entry(x, dAcc))
         }

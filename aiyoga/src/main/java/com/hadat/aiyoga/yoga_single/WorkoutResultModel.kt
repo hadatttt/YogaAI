@@ -12,5 +12,6 @@ data class WorkoutResultModel(
     var durationInSeconds: Int = 0,
     val date: String = "",
     var errorCount: Int = 0,
-    val workoutTimestamp: Long = 0L
+    val workoutTimestamp: Long = 0L,
+    val isAiMode: Boolean = true
 ) : Parcelable

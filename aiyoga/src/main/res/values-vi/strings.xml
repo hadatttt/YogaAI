@@ -68,6 +68,7 @@
     <string name="chatbot_suggestion_4">Bài giãn cơ toàn thân nhanh</string>
     <string name="workout_overview">Tổng quan buổi tập</string>
     <string name="kcal_unit">kcal</string>
+    <string name="calories_target_label">trên %1$d kcal</string>
     <string name="duration">Thời lượng</string>
     <string name="accuracy">Độ chính xác</string>
     <string name="stand_back_full_body">Lùi lại để thấy toàn thân</string>
@@ -255,4 +256,13 @@
     <string name="error_invalid_height">Chiều cao phải từ 50 đến 250 cm</string>
     <string name="chat_input_hint">Nhập tin nhắn...</string>
     <string name="clear_chat">Xóa trò chuyện</string>
+    <string name="choose_practice_mode">Chọn chế độ tập</string>
+    <string name="normal_practice">Tập bình thường</string>
+    <string name="normal_practice_desc">Tập theo ảnh mẫu và đồng hồ đếm giờ.</string>
+    <string name="ai_practice">Tập với AI</string>
+    <string name="ai_practice_desc">Dùng camera để sửa tư thế và nhận phản hồi AI.</string>
+    <string name="tap_to_start">Chạm để bắt đầu</string>
+    <string name="hold_to_finish">Giữ để kết thúc</string>
+    <string name="normal_mode_hint">Làm theo ảnh mẫu và giữ nút giữa để hoàn thành.</string>
+    <string name="no_ai_accuracy">--</string>
 </resources>

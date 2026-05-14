@@ -11,6 +11,7 @@ import com.hadat.aiyoga.utils.view.ViewUtils
 import com.hadat.aiyoga.utils.view.loadImageFromNetwork
 import hoang.dqm.codebase.base.activity.BaseFragment
 import hoang.dqm.codebase.base.activity.navigate
+import hoang.dqm.codebase.base.activity.popBackStack
 import hoang.dqm.codebase.base.adapter.animation.AnimationType
 import hoang.dqm.codebase.utils.singleClick
 
@@ -52,6 +53,9 @@ class SingleModeFragment : BaseFragment<FragmentSingleModeBinding, SingleModeVie
         viewModel.updateTodayPickFromLocal(requireContext())
     }
     override fun initListener() {
+        binding.ivBack.singleClick {
+            popBackStack()
+        }
         categoryAdapter.setOnClickItemRecyclerView { category, position ->
             categoryAdapter.setSelectedPosition(position)
             ViewUtils.scrollToCenter(binding.rvCategory, position)

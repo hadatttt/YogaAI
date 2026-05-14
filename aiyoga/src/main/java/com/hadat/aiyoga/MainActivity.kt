@@ -150,7 +150,10 @@ class MainActivity : AppCompatActivity() {
                 R.id.singleYogaFragment,
                 R.id.informationFragment,
                 R.id.multiModeYogaFragment,
+                R.id.multiNormalYogaFragment,
                 R.id.yogaFragment,
+                R.id.chooseModeFragment,
+                R.id.singleNormalYogaFragment,
             )
 
             if (hideNav.contains(destination.id)) {

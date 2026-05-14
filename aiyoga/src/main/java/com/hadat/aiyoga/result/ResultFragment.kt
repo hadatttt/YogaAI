@@ -2,6 +2,7 @@ package com.hadat.aiyoga.result
 
 import android.graphics.Color
 import android.os.Bundle
+import android.view.View
 import android.widget.Toast
 import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -62,6 +63,7 @@ class ResultFragment : BaseFragment<FragmentResultBinding, ResultViewModel>() {
         if (capturedImages.isNotEmpty()) {
             capturedAdapter.setList(capturedImages)
         }
+        bindCapturedImagesVisibility(capturedImages)
 
         val userId = AppPreferences.getUserId(requireContext()) ?: "guest"
 
@@ -102,7 +104,8 @@ class ResultFragment : BaseFragment<FragmentResultBinding, ResultViewModel>() {
         val animationDuration = 1500L
 
         val totalSeconds = list.sumOf { it.durationInSeconds }
-        val totalError = list.sumOf { it.errorCount }
+        val aiResults = list.filter { it.isAiMode }
+        val totalError = aiResults.sumOf { it.errorCount }
 
         val weight = healthProfile?.weight ?: 60f
         val totalCalories = HealthCalculatorUtils.calculateTotalCalories(list, weight)
@@ -115,7 +118,7 @@ class ResultFragment : BaseFragment<FragmentResultBinding, ResultViewModel>() {
 
         val targetKcal = healthProfile?.tdee?.toInt() ?: 2000
         binding.tvCaloriesValue.text = String.format("%.1f", totalCalories)
-        binding.tvCaloriesLabel.text = "of $targetKcal kcal"
+        binding.tvCaloriesLabel.text = getString(R.string.calories_target_label, targetKcal)
         val targetSeconds = 60f
 
         binding.progressTime.apply {
@@ -127,7 +130,15 @@ class ResultFragment : BaseFragment<FragmentResultBinding, ResultViewModel>() {
 
 
 
-        val accuracyPercent = HealthCalculatorUtils.calculateAccuracy(totalSeconds,totalError)
+        if (aiResults.isEmpty()) {
+            binding.layoutAccuracy.visibility = View.GONE
+            return
+        }
+
+        binding.layoutAccuracy.visibility = View.VISIBLE
+
+        val aiSeconds = aiResults.sumOf { it.durationInSeconds }
+        val accuracyPercent = HealthCalculatorUtils.calculateAccuracy(aiSeconds,totalError)
 
         binding.progressAccuracy.apply {
             progressMax = 100f
@@ -138,11 +149,16 @@ class ResultFragment : BaseFragment<FragmentResultBinding, ResultViewModel>() {
             }
             setProgressWithAnimation(accuracyPercent, animationDuration)
         }
-
         binding.tvAccuracyValue.text = "${accuracyPercent.toInt()}%"
     }
 
-
+    private fun bindCapturedImagesVisibility(images: List<String>) {
+        val hasImages = images.any { it.isNotBlank() }
+        val visibility = if (hasImages) View.VISIBLE else View.GONE
+        binding.tvPhotosTitle.visibility = visibility
+        binding.rvCapturedImages.visibility = visibility
+        binding.btnSharePlace.visibility = visibility
+    }
 
 
     private fun showToast(message: String) {

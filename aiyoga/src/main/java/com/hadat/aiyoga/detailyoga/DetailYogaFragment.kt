@@ -190,7 +190,7 @@ class DetailYogaFragment : BaseFragment<FragmentDetailYogaBinding, DetailYogaVie
         }
         binding.layoutNext.singleClick {
             val bundle = Bundle().apply { putParcelable("yogaPoseItem", args.yogaPoseItem) }
-            navigate(R.id.singleYogaFragment, bundle)
+            navigate(R.id.chooseModeFragment, bundle)
         }
     }
 

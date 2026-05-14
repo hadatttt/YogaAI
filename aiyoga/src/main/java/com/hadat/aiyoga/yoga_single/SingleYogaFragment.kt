@@ -403,7 +403,7 @@ class SingleYogaFragment : BaseFragment<FragmentSingleYogaBinding, SingleYogaVie
             putStringArray("captured_images_list", imagesArray)
         }
 
-        navigate(com.hadat.aiyoga.R.id.resultFragment, bundle)
+        navigate(com.hadat.aiyoga.R.id.resultFragment, bundle, isPop = true)
     }
     private fun startYogaTutorial() {
         val targets = ArrayList<SpotlightTarget>()
