@@ -82,7 +82,7 @@ class DetailSequenceFragment : BaseFragment<FragmentSequenceDetailBinding, Detai
             val bundle = Bundle().apply {
                 putParcelable("detail_sequence", sequence)
             }
-            navigate(R.id.multiModeYogaFragment, bundle, isPop = true)
+            navigate(R.id.chooseModeFragment, bundle)
         }
     }
 

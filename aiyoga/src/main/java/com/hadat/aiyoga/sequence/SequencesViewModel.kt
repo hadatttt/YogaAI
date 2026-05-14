@@ -21,16 +21,17 @@ class SequencesViewModel : BaseViewModel() {
     val saveStatus = MutableLiveData<Boolean?>()
 
     private var allPoses = listOf<YogaPoseModel>()
+    private var loadedDataVersion = -1
     fun resetSaveStatus() {
         saveStatus.value = null
     }
-    fun fetchAllPoses(context: Context) {
-        if (allPoses.isNotEmpty()) return
-        YogaDataUtils.getRemoteYogaPoses(context.applicationContext) { poses ->
-            poses?.let {
-                allPoses = it
-                getRecommendations()
-            }
+    fun fetchAllPoses() {
+        if (allPoses.isNotEmpty() && loadedDataVersion == YogaDataUtils.dataVersion) return
+        val poses = YogaDataUtils.getAllPoses()
+        if (poses.isNotEmpty()) {
+            allPoses = poses
+            loadedDataVersion = YogaDataUtils.dataVersion
+            getRecommendations()
         }
     }
 
@@ -76,7 +77,7 @@ class SequencesViewModel : BaseViewModel() {
                 coverImageUrl = coverUrl,
                 totalDuration = String.format("%02d:%02d", totalSeconds / 60, totalSeconds % 60),
                 level = level,
-                isPublic = true,
+                isPublic = false,
                 poses = currentPoses,
                 createdAt = null
             )
@@ -96,7 +97,8 @@ class SequencesViewModel : BaseViewModel() {
         level: Int,
         coverUrl: String,
         userId: String,
-        isPublic: Boolean
+        isPublic: Boolean,
+        createdAt: java.util.Date?
     ) {
         val currentPoses = sequenceList.value ?: emptyList()
 
@@ -107,19 +109,23 @@ class SequencesViewModel : BaseViewModel() {
             (mins * 60) + secs
         }
 
-        val updatedSequence = WorkoutSequenceModel(
-            id = id,
-            userId = userId,
-            title = title,
-            coverImageUrl = coverUrl,
-            totalDuration = String.format("%02d:%02d", totalSeconds / 60, totalSeconds % 60),
-            level = level,
-            isPublic = isPublic,
-            poses = currentPoses,
-            createdAt = null
-        )
-
         viewModelScope.launch {
+            val user = userRepository.getUser(userId)
+            val authorName = user?.displayName ?: ""
+
+            val updatedSequence = WorkoutSequenceModel(
+                id = id,
+                userId = userId,
+                authorName = authorName,
+                title = title,
+                coverImageUrl = coverUrl,
+                totalDuration = String.format("%02d:%02d", totalSeconds / 60, totalSeconds % 60),
+                level = level,
+                isPublic = isPublic,
+                poses = currentPoses,
+                createdAt = createdAt
+            )
+
             val result = repository.updateSequence(updatedSequence)
             if (result) {
                 lastSavedSequence.postValue(updatedSequence)

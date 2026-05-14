@@ -23,7 +23,8 @@ import com.hadat.aiyoga.databinding.FragmentSingleYogaBinding
 import com.hadat.aiyoga.manager_ai.AIManager
 import com.hadat.aiyoga.utils.service.AppPreferences
 import com.hadat.aiyoga.utils.yogautils.PoseLandmarkerHelper
-import com.hadat.aiyoga.utils.view.loadImageFromNetwork
+import com.hadat.aiyoga.utils.view.getYogaPoseGithubRawImageUrl
+import com.hadat.aiyoga.utils.view.loadYogaPoseGithubImage
 import com.hadat.aiyoga.utils.yogautils.YogaCoachUtils
 import com.hadat.aiyoga.yoga_ai.DialogZoom
 import com.takusemba.spotlight.OnSpotlightListener
@@ -41,7 +42,8 @@ import com.takusemba.spotlight.Target as SpotlightTarget
 
 class SingleYogaFragment : BaseFragment<FragmentSingleYogaBinding, SingleYogaViewModel>(),
     PoseLandmarkerHelper.LandmarkerListener {
-
+    private var lastProcessTime = 0L
+    private val PROCESS_INTERVAL = 33L
     private val args by navArgs<SingleYogaFragmentArgs>()
     private lateinit var spotlight: Spotlight
     private lateinit var backgroundExecutor: ExecutorService
@@ -54,8 +56,6 @@ class SingleYogaFragment : BaseFragment<FragmentSingleYogaBinding, SingleYogaVie
     private var cameraProvider: ProcessCameraProvider? = null
 
     private var lastSpeakTime = 0L
-    private var lastCoachTime = 0L
-    private val COACH_INTERVAL = 2000L
     private var progressAnimator: ObjectAnimator? = null
     private var isMuted = false
 
@@ -69,14 +69,12 @@ class SingleYogaFragment : BaseFragment<FragmentSingleYogaBinding, SingleYogaVie
         poseLandmarkerHelper = AIManager.getLandmarker()
         AIManager.setListener(this)
 
-        YogaCoachUtils.loadReferenceData { isSuccess ->
-            if (isSuccess && isAdded) {
-                activity?.runOnUiThread {
-                    viewModel.fetchYogaPoses(requireContext().applicationContext)
-                    viewModel.startSinglePoseTracking(requireContext(), args.yogaPoseItem.id)
-                    binding.loadingView.root.visibility = View.GONE
-                }
-            }
+        if (YogaCoachUtils.loadReferenceData() && isAdded) {
+            viewModel.fetchYogaPoses()
+            viewModel.startSinglePoseTracking(requireContext(),args.yogaPoseItem.id)
+            binding.loadingView.root.visibility = View.GONE
+        } else if (isAdded) {
+            binding.loadingView.root.visibility = View.GONE
         }
     }
     override fun onResume() {
@@ -99,7 +97,6 @@ class SingleYogaFragment : BaseFragment<FragmentSingleYogaBinding, SingleYogaVie
     }
 
     override fun onDestroyView() {
-        binding.overlayView.clear()
         viewModel.stopTracking()
         progressAnimator?.cancel()
         progressAnimator = null
@@ -146,10 +143,8 @@ class SingleYogaFragment : BaseFragment<FragmentSingleYogaBinding, SingleYogaVie
     @SuppressLint("UnsafeOptInUsageError")
     private fun bindCameraUseCases() {
         if (!isAdded || view == null) return
-
         val cameraProvider = cameraProvider
             ?: throw IllegalStateException("Camera initialization failed.")
-
         val cameraSelector = CameraSelector.Builder()
             .requireLensFacing(lensFacing)
             .build()
@@ -189,32 +184,28 @@ class SingleYogaFragment : BaseFragment<FragmentSingleYogaBinding, SingleYogaVie
     }
 
     override fun onResults(resultBundle: PoseLandmarkerHelper.ResultBundle) {
-        activity?.runOnUiThread {
-            if (view == null) return@runOnUiThread
+        val result = resultBundle.results.firstOrNull() ?: return
 
-            val result = resultBundle.results.first()
-
-            binding.overlayView.setResults(
-                result,
-                resultBundle.inputImageHeight,
-                resultBundle.inputImageWidth,
-                RunningMode.LIVE_STREAM
-            )
-
-            val rays = YogaCoachUtils.getCorrectionRays(
+        binding.overlayView.post {
+            binding.overlayView.setResults(result, resultBundle.inputImageHeight, resultBundle.inputImageWidth, RunningMode.LIVE_STREAM)
+        }
+        val now = System.currentTimeMillis()
+        if (now - lastProcessTime < PROCESS_INTERVAL) return
+        lastProcessTime = now
+        backgroundExecutor.execute {
+            val bones = YogaCoachUtils.getBoneErrors(
                 args.yogaPoseItem.id,
                 result
             )
-            binding.overlayView.setCorrectionRays(rays)
-
-            val now = System.currentTimeMillis()
-            if (now - lastCoachTime >= COACH_INTERVAL) {
+            val context = context ?: return@execute
+            activity?.runOnUiThread {
+                if (view == null) return@runOnUiThread
+                binding.overlayView.setWrongBones(bones)
                 viewModel.processCoachLogic(
-                    requireContext(),
+                    context,
                     result,
                     args.yogaPoseItem.id
                 )
-                lastCoachTime = now
             }
         }
     }
@@ -226,11 +217,10 @@ class SingleYogaFragment : BaseFragment<FragmentSingleYogaBinding, SingleYogaVie
     }
 
     override fun initData() {
-        viewModel.resetData()
         val initialPose = args.yogaPoseItem
-        if (!initialPose.photo_url.isNullOrEmpty()) {
+        if (initialPose.id in 0..81) {
             binding.ivYogaSample.visibility = View.VISIBLE
-            binding.ivYogaSample.loadImageFromNetwork(initialPose.photo_url)
+            binding.ivYogaSample.loadYogaPoseGithubImage(initialPose.id)
         }
         binding.tvYogaName.text = initialPose.name
         viewModel.currentGuideText.observe(viewLifecycleOwner) { binding.tvGuide.text = it }
@@ -256,9 +246,9 @@ class SingleYogaFragment : BaseFragment<FragmentSingleYogaBinding, SingleYogaVie
     @SuppressLint("ClickableViewAccessibility")
     override fun initListener() {
         binding.ivYogaSample.singleClick {
-            val imageUrl = args.yogaPoseItem.photo_url
-            if (!imageUrl.isNullOrEmpty()) {
-                DialogZoom.newInstance(imageUrl)
+            val poseId = args.yogaPoseItem.id
+            if (poseId in 0..81) {
+                DialogZoom.newInstance(getYogaPoseGithubRawImageUrl(poseId))
                     .show(parentFragmentManager, "DialogZoom")
             }
         }
@@ -290,7 +280,7 @@ class SingleYogaFragment : BaseFragment<FragmentSingleYogaBinding, SingleYogaVie
             addListener(object : android.animation.AnimatorListenerAdapter() {
                 override fun onAnimationEnd(animation: android.animation.Animator) {
                     if (binding.progressAround.progress >= 100f) {
-                        navigateToResult()
+                        showPoseDoneAnimation()
                     }
                 }
             })
@@ -413,7 +403,7 @@ class SingleYogaFragment : BaseFragment<FragmentSingleYogaBinding, SingleYogaVie
             putStringArray("captured_images_list", imagesArray)
         }
 
-        navigate(com.hadat.aiyoga.R.id.resultFragment, bundle)
+        navigate(com.hadat.aiyoga.R.id.resultFragment, bundle, isPop = true)
     }
     private fun startYogaTutorial() {
         val targets = ArrayList<SpotlightTarget>()
@@ -525,5 +515,24 @@ class SingleYogaFragment : BaseFragment<FragmentSingleYogaBinding, SingleYogaVie
             .setShape(shape)
             .setOverlay(overlayView)
             .build()
+    }
+    private fun showPoseDoneAnimation() {
+        binding.lottiePoseDone.apply {
+            visibility = View.VISIBLE
+            playAnimation()
+
+            addAnimatorListener(object : android.animation.Animator.AnimatorListener {
+                override fun onAnimationStart(animation: android.animation.Animator) {}
+
+                override fun onAnimationEnd(animation: android.animation.Animator) {
+                    visibility = View.GONE
+                    removeAllAnimatorListeners()
+                    navigateToResult()
+                }
+
+                override fun onAnimationCancel(animation: android.animation.Animator) {}
+                override fun onAnimationRepeat(animation: android.animation.Animator) {}
+            })
+        }
     }
 }

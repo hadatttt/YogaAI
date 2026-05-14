@@ -10,14 +10,14 @@
         android:paddingEnd="56dp"
         android:paddingBottom="6dp">
 
-    <ImageView
+    <com.airbnb.lottie.LottieAnimationView
             android:layout_width="@dimen/_34sdp"
             android:layout_height="@dimen/_34sdp"
             android:layout_marginTop="@dimen/_2sdp"
             android:layout_marginEnd="@dimen/_8sdp"
-            android:background="@drawable/shape_circle"
-            android:padding="@dimen/_4sdp"
-            android:src="@drawable/chatbot" />
+            app:lottie_autoPlay="true"
+            app:lottie_loop="true"
+            app:lottie_rawRes="@raw/chatbot" />
 
     <com.airbnb.lottie.LottieAnimationView
             android:id="@+id/lottie_typing"

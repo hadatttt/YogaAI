@@ -4,21 +4,31 @@ import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
 import com.google.firebase.firestore.SetOptions
+import com.hadat.aiyoga.data.remoteconfig.YogaDataUtils
 import com.hadat.aiyoga.sequence.WorkoutSequenceModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
-import java.util.Date
 
 class SequenceRepository {
     private val db = FirebaseFirestore.getInstance()
-    private val sequenceCollection = db.collection("yoga_sequences")
+    private val sequenceCollection = db.collection(COLLECTION_SEQUENCES)
+
+    companion object {
+        private const val COLLECTION_SEQUENCES = "yoga_sequences"
+    }
 
     private fun isRealUser(userId: String): Boolean = userId.isNotBlank() && userId != "guest"
 
     suspend fun saveSequence(sequence: WorkoutSequenceModel): Boolean = withContext(Dispatchers.IO) {
         return@withContext try {
-            val docRef = sequenceCollection.document()
+            val docRef = if (sequence.id.isEmpty()) sequenceCollection.document() else sequenceCollection.document(sequence.id)
+            sequence.id = docRef.id
+
+            // Tối ưu: Chỉ lưu ID và Duration, xóa các field còn lại để nhẹ Database
+            val cleanedPoses = sequence.poses.map {
+                it.copy(name = "", photoUrl = "", category = "")
+            }
 
             val data = hashMapOf(
                 "id" to docRef.id,
@@ -29,16 +39,15 @@ class SequenceRepository {
                 "totalDuration" to sequence.totalDuration,
                 "level" to sequence.level,
                 "isPublic" to sequence.isPublic,
-                "poses" to sequence.poses,
-                "likeCount" to 0,
-                "viewCount" to 0,
-                "createdAt" to FieldValue.serverTimestamp()
+                "poses" to cleanedPoses,
+                "likeCount" to sequence.likeCount,
+                "viewCount" to sequence.viewCount,
+                "createdAt" to (sequence.createdAt ?: FieldValue.serverTimestamp())
             )
 
-            docRef.set(data).await()
+            docRef.set(data, SetOptions.merge()).await()
             true
         } catch (e: Exception) {
-            e.printStackTrace()
             false
         }
     }
@@ -51,12 +60,11 @@ class SequenceRepository {
                 .get()
                 .await()
                 .toObjects(WorkoutSequenceModel::class.java)
+                .map { mapSequenceMetadata(it) }
         } catch (e: Exception) {
-            e.printStackTrace()
             emptyList()
         }
     }
-
 
     suspend fun getAllSequences(): List<WorkoutSequenceModel> = withContext(Dispatchers.IO) {
         return@withContext try {
@@ -66,6 +74,7 @@ class SequenceRepository {
                 .get()
                 .await()
                 .toObjects(WorkoutSequenceModel::class.java)
+                .map { mapSequenceMetadata(it) }
         } catch (e: Exception) {
             emptyList()
         }
@@ -75,44 +84,40 @@ class SequenceRepository {
         return@withContext try {
             getAllSequences().filterNot { isRealUser(excludeUserId) && it.userId == excludeUserId }
         } catch (e: Exception) {
-            e.printStackTrace()
             emptyList()
         }
     }
 
-    suspend fun getTopLikedCommunitySequences(excludeUserId: String, limit: Long = 10): List<WorkoutSequenceModel> =
-        withContext(Dispatchers.IO) {
-            try {
-                getTopLikedSequences(limit = 200)
-                    .filterNot { isRealUser(excludeUserId) && it.userId == excludeUserId }
-                    .take(limit.toInt())
-            } catch (e: Exception) {
-                e.printStackTrace()
-                emptyList()
-            }
+    suspend fun getTopLikedCommunitySequences(excludeUserId: String, limit: Long = 10): List<WorkoutSequenceModel> = withContext(Dispatchers.IO) {
+        try {
+            getTopLikedSequences(limit = 200)
+                .filterNot { isRealUser(excludeUserId) && it.userId == excludeUserId }
+                .take(limit.toInt())
+        } catch (e: Exception) {
+            emptyList()
         }
+    }
 
-    suspend fun getTrendingCommunitySequences(excludeUserId: String, limit: Long = 10): List<WorkoutSequenceModel> =
-        withContext(Dispatchers.IO) {
-            try {
-                getTrendingSequences(limit = 200)
-                    .filterNot { isRealUser(excludeUserId) && it.userId == excludeUserId }
-                    .take(limit.toInt())
-            } catch (e: Exception) {
-                e.printStackTrace()
-                emptyList()
-            }
+    suspend fun getTrendingCommunitySequences(excludeUserId: String, limit: Long = 10): List<WorkoutSequenceModel> = withContext(Dispatchers.IO) {
+        try {
+            getTrendingSequences(limit = 200)
+                .filterNot { isRealUser(excludeUserId) && it.userId == excludeUserId }
+                .take(limit.toInt())
+        } catch (e: Exception) {
+            emptyList()
         }
+    }
 
     suspend fun getSequenceById(sequenceId: String): WorkoutSequenceModel? = withContext(Dispatchers.IO) {
         return@withContext try {
             if (sequenceId.isBlank()) return@withContext null
-            sequenceCollection.document(sequenceId).get().await().toObject(WorkoutSequenceModel::class.java)
+            val sequence = sequenceCollection.document(sequenceId).get().await().toObject(WorkoutSequenceModel::class.java)
+            sequence?.let { mapSequenceMetadata(it) }
         } catch (e: Exception) {
-            e.printStackTrace()
             null
         }
     }
+
     suspend fun getTrendingSequences(limit: Long = 10): List<WorkoutSequenceModel> = withContext(Dispatchers.IO) {
         return@withContext try {
             sequenceCollection
@@ -122,33 +127,12 @@ class SequenceRepository {
                 .get()
                 .await()
                 .toObjects(WorkoutSequenceModel::class.java)
+                .map { mapSequenceMetadata(it) }
         } catch (e: Exception) {
             emptyList()
         }
     }
-    suspend fun updateSequence(sequence: WorkoutSequenceModel): Boolean = withContext(Dispatchers.IO) {
-        return@withContext try {
-            if (sequence.id.isEmpty()) return@withContext false
 
-            val updateData = hashMapOf(
-                "title" to sequence.title,
-                "coverImageUrl" to sequence.coverImageUrl,
-                "totalDuration" to sequence.totalDuration,
-                "level" to sequence.level,
-                "isPublic" to sequence.isPublic,
-                "poses" to sequence.poses
-            )
-
-            sequenceCollection.document(sequence.id)
-                .set(updateData, SetOptions.merge())
-                .await()
-
-            true
-        } catch (e: Exception) {
-            e.printStackTrace()
-            false
-        }
-    }
     suspend fun getTopLikedSequences(limit: Long = 10): List<WorkoutSequenceModel> = withContext(Dispatchers.IO) {
         return@withContext try {
             sequenceCollection
@@ -158,23 +142,52 @@ class SequenceRepository {
                 .get()
                 .await()
                 .toObjects(WorkoutSequenceModel::class.java)
+                .map { mapSequenceMetadata(it) }
         } catch (e: Exception) {
-            e.printStackTrace()
             emptyList()
         }
     }
+
+    suspend fun updateSequence(sequence: WorkoutSequenceModel): Boolean = withContext(Dispatchers.IO) {
+        return@withContext try {
+            if (sequence.id.isEmpty()) return@withContext false
+            saveSequence(sequence) // Tận dụng logic cleanedPoses ở hàm save
+        } catch (e: Exception) {
+            false
+        }
+    }
+
     suspend fun deleteSequence(sequenceId: String): Boolean = withContext(Dispatchers.IO) {
         return@withContext try {
             if (sequenceId.isBlank()) return@withContext false
-
-            sequenceCollection.document(sequenceId)
-                .delete()
-                .await()
-
+            sequenceCollection.document(sequenceId).delete().await()
             true
         } catch (e: Exception) {
-            e.printStackTrace()
             false
         }
+    }
+
+    suspend fun updateSequenceVisibility(sequenceId: String, isPublic: Boolean): Boolean = withContext(Dispatchers.IO) {
+        return@withContext try {
+            if (sequenceId.isBlank()) return@withContext false
+            sequenceCollection.document(sequenceId)
+                .update("isPublic", isPublic)
+                .await()
+            true
+        } catch (e: Exception) {
+            false
+        }
+    }
+
+    private fun mapSequenceMetadata(sequence: WorkoutSequenceModel): WorkoutSequenceModel {
+        val mappedPoses = sequence.poses.map { pose ->
+            val poseInfo = YogaDataUtils.getPoseById(pose.id)
+            pose.copy(
+                name = poseInfo?.name ?: "Unknown",
+                photoUrl = poseInfo?.photo_url ?: "",
+                category = poseInfo?.category ?: ""
+            )
+        }
+        return sequence.copy(poses = mappedPoses)
     }
 }

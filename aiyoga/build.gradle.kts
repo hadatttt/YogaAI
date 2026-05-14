@@ -19,6 +19,9 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        ndk {
+            abiFilters += listOf("arm64-v8a")
+        }
     }
 
     buildTypes {
@@ -109,10 +112,6 @@ dependencies {
     val tfliteVersion = "2.14.0"
 
     implementation("org.tensorflow:tensorflow-lite:$tfliteVersion")
-    implementation("org.tensorflow:tensorflow-lite-support:0.4.4")
-    implementation("org.tensorflow:tensorflow-lite-metadata:0.4.4")
-    implementation("org.tensorflow:tensorflow-lite-gpu:$tfliteVersion")
-    implementation("org.tensorflow:tensorflow-lite-gpu-api:$tfliteVersion")
 
     // MediaPipe (Dùng để lấy Pose Landmarks)
     implementation("com.google.mediapipe:tasks-vision:0.10.14")
@@ -122,8 +121,6 @@ dependencies {
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
     implementation("com.github.qamarelsafadi:CurvedBottomNavigation:0.1.3")
-    // help
-    implementation("com.github.takusemba:spotlight:2.0.3")
     // room
     val room_version = "2.6.1"
     ksp("androidx.room:room-compiler:$room_version")

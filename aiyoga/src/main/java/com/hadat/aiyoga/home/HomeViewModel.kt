@@ -24,22 +24,27 @@ class HomeViewModel : BaseViewModel() {
     val todayPickPose = MutableLiveData<YogaPoseModel?>()
     private var fullYogaList = listOf<YogaPoseModel>()
 
-    fun fetchData(context: Context) {
+    fun fetchData() {
         val uid = auth.currentUser?.uid ?: return
+
         viewModelScope.launch {
             val user = userRepository.getUser(uid)
-            userData.postValue(user)
+            userData.value = user
+
             val sequences = sequenceRepository.getMySequences(uid)
-            recentSequences.postValue(sequences)
-            YogaDataUtils.getRemoteYogaPoses(context.applicationContext) { poses ->
-                poses?.let {
-                    fullYogaList = it
-                    fetchTodayPick()
-                }
-            }
+            recentSequences.value = sequences
+
+            waitForYogaData()
+
+            fullYogaList = YogaDataUtils.getAllPoses()
+            fetchTodayPick()
         }
     }
-
+    private suspend fun waitForYogaData() {
+        while (!YogaDataUtils.isDataReady) {
+            kotlinx.coroutines.delay(100)
+        }
+    }
     private fun fetchTodayPick() {
         viewModelScope.launch {
             val trendingId = yogaRepository.getTodayTrendingPoseId()?.toString()

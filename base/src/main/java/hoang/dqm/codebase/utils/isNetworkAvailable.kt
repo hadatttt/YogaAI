@@ -11,24 +11,7 @@ import androidx.fragment.app.FragmentActivity
 import hoang.dqm.codebase.base.application.getBaseApplication
 
 @RequiresPermission(Manifest.permission.ACCESS_NETWORK_STATE)
-fun isNetworkAvailable(): Boolean {
-    val context = getBaseApplication()
-    try {
-        val connectivityManager =
-            context.getSystemService(Context.CONNECTIVITY_SERVICE) as? ConnectivityManager
-        val capabilities =
-            connectivityManager?.getNetworkCapabilities(connectivityManager.activeNetwork)
-        capabilities?.let {
-            return capabilities.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) ||
-                    capabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) ||
-                    capabilities.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET)
-        }
-    } catch (e: Exception) {
-        e.printStackTrace()
-        return false
-    }
-    return false
-}
+
 
 
 fun FragmentActivity.openSettingNetWork() {

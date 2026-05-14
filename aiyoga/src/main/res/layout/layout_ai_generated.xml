@@ -11,21 +11,20 @@
         android:paddingEnd="56dp"
         android:paddingBottom="6dp">
 
-    <!-- ================= CHAT BUBBLE ================= -->
     <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:gravity="start">
 
-        <ImageView
+        <com.airbnb.lottie.LottieAnimationView
                 android:layout_width="@dimen/_34sdp"
                 android:layout_height="@dimen/_34sdp"
                 android:layout_marginTop="@dimen/_2sdp"
                 android:layout_marginEnd="@dimen/_8sdp"
-                android:background="@drawable/shape_circle"
-                android:padding="@dimen/_4sdp"
-                android:src="@drawable/chatbot" />
+                app:lottie_autoPlay="true"
+                app:lottie_loop="false"
+                app:lottie_rawRes="@raw/chatbot" />
 
         <com.google.android.material.card.MaterialCardView
                 android:layout_width="wrap_content"
@@ -43,14 +42,12 @@
                     android:fontFamily="@font/font_bold"
                     android:paddingHorizontal="16dp"
                     android:paddingVertical="12dp"
-                    android:text="Tôi đã tạo cho bạn một bài tập phù hợp 👇"
                     android:textColor="@color/text_gray"
                     android:textSize="@dimen/_13sdp" />
         </com.google.android.material.card.MaterialCardView>
 
     </LinearLayout>
 
-    <!-- ================= CARD KẾT QUẢ ================= -->
     <com.google.android.material.card.MaterialCardView
             android:layout_width="@dimen/_240sdp"
             android:layout_height="wrap_content"
@@ -112,23 +109,22 @@
                     android:id="@+id/btn_save_ai_sequence"
                     android:layout_width="match_parent"
                     android:layout_marginHorizontal="@dimen/_20sdp"
-                    android:layout_height="@dimen/_30sdp"
+                    android:layout_height="wrap_content"
                     android:layout_marginTop="@dimen/_10sdp"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintWidth_percent="0.5"
-                    android:text="Lưu"
+                    android:text="@string/create_sequence"
                     android:gravity="center"
                     android:textAllCaps="false"
                     android:textColor="@color/white"
-                    android:textSize="@dimen/_10sdp"
+                    android:textSize="@dimen/_12ssp"
                     android:fontFamily="@font/font_bold"
                     android:background="@drawable/bg_btn_create"
                     app:backgroundTint="@null"
                     app:cornerRadius="@dimen/_10sdp"
                     app:icon="@drawable/ic_add"
                     app:iconGravity="textStart"
-                    app:iconPadding="@dimen/_4sdp"
+                    app:iconSize="@dimen/_15dp"
                     app:iconTint="@android:color/white" />
 
         </LinearLayout>

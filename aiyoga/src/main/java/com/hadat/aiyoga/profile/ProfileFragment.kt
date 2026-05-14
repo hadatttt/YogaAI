@@ -11,6 +11,7 @@ import com.google.android.material.timepicker.MaterialTimePicker
 import com.google.android.material.timepicker.TimeFormat
 import com.hadat.aiyoga.MainActivity
 import com.hadat.aiyoga.R
+import com.hadat.aiyoga.data.remoteconfig.YogaDataUtils
 import com.hadat.aiyoga.databinding.FragmentProfileBinding
 import com.hadat.aiyoga.utils.service.AppPreferences
 import com.hadat.aiyoga.utils.service.NotificationHelper
@@ -40,7 +41,9 @@ class ProfileFragment : BaseFragment<FragmentProfileBinding, ProfileViewModel>()
 
     private val notificationPermissionLauncher =
         registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
-            if (!granted && Build.VERSION.SDK_INT >= 33) {
+            if (granted) {
+                NotificationWorker.scheduleDailyNotifications(requireContext(), listOf(reminderTime))
+            } else if (Build.VERSION.SDK_INT >= 33) {
                 NotificationHelper.showSettingsDialog(requireActivity())
             }
         }
@@ -168,10 +171,20 @@ class ProfileFragment : BaseFragment<FragmentProfileBinding, ProfileViewModel>()
             .setSingleChoiceItems(languageLabels, checkedIndex) { dialog, which ->
                 val selectedCode = languageCodes[which]
                 AppPreferences.setLanguageCode(requireContext(), selectedCode)
-                AppCompatDelegate.setApplicationLocales(LocaleListCompat.forLanguageTags(selectedCode))
-                renderLanguage()
                 dialog.dismiss()
-                requireActivity().recreate()
+                YogaDataUtils.prefetchData(requireContext(), forceRefresh = true) {
+                    if (!isAdded) return@prefetchData
+                    requireActivity().runOnUiThread {
+                        AppCompatDelegate.setApplicationLocales(
+                            LocaleListCompat.forLanguageTags(selectedCode)
+                        )
+                        renderLanguage()
+                        val userId = AppPreferences.getUserId(requireContext()) ?: return@runOnUiThread
+                        viewModel.loadUser(userId)
+                        viewModel.loadHealthProfile(userId)
+                        requireActivity().recreate()
+                    }
+                }
             }
             .setNegativeButton(getString(R.string.title_cancel), null)
             .show()

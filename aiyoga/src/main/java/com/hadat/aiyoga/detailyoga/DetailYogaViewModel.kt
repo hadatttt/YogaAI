@@ -26,6 +26,7 @@ class DetailYogaViewModel : BaseViewModel() {
 
     private val _selectedCategoryId = MutableLiveData(0)
     val selectedCategoryId: LiveData<Int> get() = _selectedCategoryId
+    private var loadedDetailDataVersion = -1
 
     private fun getDao(context: Context) = AppDatabase.getDatabase(context).poseMetadataDao()
 
@@ -39,11 +40,12 @@ class DetailYogaViewModel : BaseViewModel() {
         }
     }
 
-    fun fetchYogaDetail(context: Context, poseId: Int) {
-        if (_yogaDetail.value?.id == poseId) return
-
-        YogaDataUtils.getRemoteYogaDetail(context.applicationContext, poseId) { detail ->
-            _yogaDetail.postValue(detail)
+    fun fetchYogaDetail(poseId: Int) {
+        if (_yogaDetail.value?.id == poseId && loadedDetailDataVersion == YogaDataUtils.dataVersion) return
+        val detail = YogaDataUtils.getPoseDetail(poseId)
+        if (detail != null) {
+            loadedDetailDataVersion = YogaDataUtils.dataVersion
+            _yogaDetail.value = detail
         }
     }
 

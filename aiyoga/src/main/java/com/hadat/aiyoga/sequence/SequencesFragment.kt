@@ -54,11 +54,11 @@ class SequencesFragment : BaseFragment<FragmentSequencesBinding, SequencesViewMo
 
     override fun initView() {
         if (args.isEdit) {
-            binding.tvTitle.text = "Edit Sequence"
-            binding.btnCreate.text = "Update Sequence"
+            binding.tvTitle.text = getString(R.string.edit_sequence)
+            binding.btnCreate.text = getString(R.string.update_sequence)
         } else {
-            binding.tvTitle.text = "Sequence Settings"
-            binding.btnCreate.text = "Create Sequence"
+            binding.tvTitle.text = getString(R.string.sequence_settings)
+            binding.btnCreate.text = getString(R.string.create_sequence)
         }
         binding.rcvPeakOptions.apply {
             layoutManager = LinearLayoutManager(context)
@@ -162,7 +162,8 @@ class SequencesFragment : BaseFragment<FragmentSequencesBinding, SequencesViewMo
                     level = level,
                     coverUrl = url,
                     userId = userId,
-                    isPublic = args.detailSequence!!.isPublic
+                    isPublic = args.detailSequence!!.isPublic,
+                    createdAt = args.detailSequence!!.createdAt
                 )
             } else {
                 viewModel.saveSequence(name, level, url, userId)
@@ -181,7 +182,7 @@ class SequencesFragment : BaseFragment<FragmentSequencesBinding, SequencesViewMo
     }
 
     override fun initData() {
-        viewModel.fetchAllPoses(requireContext())
+        viewModel.fetchAllPoses()
         val aiPoses = args.aiPosesList
         if (aiPoses != null) {
             binding.apply {

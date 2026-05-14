@@ -26,12 +26,14 @@
                 app:layout_constraintTop_toTopOf="parent"
                 app:strokeWidth="@dimen/_3sdp"
                 app:strokeColor="@color/primary"
+                app:cardBackgroundColor="@color/white"
                 app:cardCornerRadius="@dimen/_20sdp">
             <com.github.chrisbanes.photoview.PhotoView
                     android:id="@+id/imgCos"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:scaleType="centerCrop" />
+                    android:padding="@dimen/_4sdp"
+                    android:scaleType="fitCenter" />
         </com.google.android.material.card.MaterialCardView>
         <com.airbnb.lottie.LottieAnimationView
                 android:id="@+id/lottie_animation"

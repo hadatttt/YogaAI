@@ -17,12 +17,13 @@ class ChoosePoseViewModel : BaseViewModel() {
     private var fullYogaList = listOf<YogaPoseModel>()
     private var currentCategory = "All"
     private var currentSearchQuery = ""
+    private var loadedDataVersion = -1
     fun resetSelected() {
         selectedPoses.value = mutableListOf()
         selectedIds.value = mutableListOf()
     }
-    fun fetchData(context: android.content.Context) {
-        if (fullYogaList.isNotEmpty()) return
+    fun fetchData(context: android.content.Context, forceRefresh: Boolean = false) {
+        if (!forceRefresh && fullYogaList.isNotEmpty() && loadedDataVersion == YogaDataUtils.dataVersion) return
 
         val localCategories = YogaDataUtils.getLocalYogaCategories()
         categoryList.postValue(
@@ -33,11 +34,16 @@ class ChoosePoseViewModel : BaseViewModel() {
             }
         )
 
-        YogaDataUtils.getRemoteYogaPoses(context.applicationContext) { poses ->
-            poses?.let {
-                fullYogaList = it
-                applyFilterAndSearch()
+        val poses = YogaDataUtils.getAllPoses()
+
+        if (poses.isNotEmpty()) {
+            fullYogaList = poses
+            loadedDataVersion = YogaDataUtils.dataVersion
+            val ids = selectedIds.value.orEmpty()
+            if (ids.isNotEmpty()) {
+                selectedPoses.postValue(fullYogaList.filter { it.id in ids }.toMutableList())
             }
+            applyFilterAndSearch()
         }
     }
 

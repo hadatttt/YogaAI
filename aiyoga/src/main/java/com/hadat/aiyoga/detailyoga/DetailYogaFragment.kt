@@ -16,6 +16,7 @@ import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.mediapipe.tasks.vision.core.RunningMode
 import com.hadat.aiyoga.R
+import com.hadat.aiyoga.data.remoteconfig.YogaDataUtils
 import com.hadat.aiyoga.databinding.FragmentDetailYogaBinding
 import com.hadat.aiyoga.utils.yogautils.PoseLandmarkerHelper
 import com.hadat.aiyoga.utils.view.ViewUtils
@@ -78,7 +79,7 @@ class DetailYogaFragment : BaseFragment<FragmentDetailYogaBinding, DetailYogaVie
         cropImageLauncher.launch(intent)
     }
     private fun setupStaticUI() {
-        val item = args.yogaPoseItem
+        val item = YogaDataUtils.getPoseById(args.yogaPoseItem.id) ?: args.yogaPoseItem
         binding.apply {
             tvPoseName.text = item.name
             tvSanskritName.text = item.name
@@ -168,9 +169,10 @@ class DetailYogaFragment : BaseFragment<FragmentDetailYogaBinding, DetailYogaVie
     }
 
     override fun initData() {
+        setupStaticUI()
         val poseId = args.yogaPoseItem.id
         viewModel.checkFavoriteStatus(requireContext(), poseId)
-        viewModel.fetchYogaDetail(requireContext(), poseId)
+        viewModel.fetchYogaDetail( poseId)
     }
 
     override fun initListener() {
@@ -188,7 +190,7 @@ class DetailYogaFragment : BaseFragment<FragmentDetailYogaBinding, DetailYogaVie
         }
         binding.layoutNext.singleClick {
             val bundle = Bundle().apply { putParcelable("yogaPoseItem", args.yogaPoseItem) }
-            navigate(R.id.singleYogaFragment, bundle)
+            navigate(R.id.chooseModeFragment, bundle)
         }
     }
 

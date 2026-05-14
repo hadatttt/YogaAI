@@ -1,6 +1,7 @@
 package com.hadat.aiyoga.utils.yogautils
 
 
+import com.hadat.aiyoga.data.remoteconfig.YogaDataUtils
 import com.hadat.aiyoga.yoga_single.WorkoutResultModel
 import kotlin.math.pow
 
@@ -64,37 +65,18 @@ object HealthCalculatorUtils {
 
     fun calculateTotalCalories(
         workouts: List<WorkoutResultModel>,
-        weight: Float,
-        onMet: (Int, (Double) -> Unit) -> Unit,
-        onResult: (Float) -> Unit
-    ) {
+        weight: Float
+    ): Float {
+        if (workouts.isEmpty()) return 0f
 
-        var totalCalories = 0f
-        var processed = 0
-
-        if (workouts.isEmpty()) {
-            onResult(0f)
-            return
-        }
-
-        workouts.forEach { workout ->
-
-            onMet(workout.poseId) { met ->
-
-                val calories = calculateWorkoutCaloriesByMet(
-                    met = met,
-                    weight = weight,
-                    durationSec = workout.durationInSeconds
-                )
-
-                totalCalories += calories
-                processed++
-
-                if (processed == workouts.size) {
-                    onResult(totalCalories)
-                }
-            }
-        }
+        return workouts.sumOf { workout ->
+            val met = YogaDataUtils.getMetValue(workout.poseId)
+            calculateWorkoutCaloriesByMet(
+                met = met,
+                weight = weight,
+                durationSec = workout.durationInSeconds
+            ).toDouble()
+        }.toFloat()
     }
     /**
      * Tính Accuracy (%)

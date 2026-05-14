@@ -23,6 +23,7 @@ import android.net.Network
 import android.net.NetworkCapabilities
 import android.net.NetworkRequest
 import com.airbnb.lottie.LottieAnimationView
+import com.hadat.aiyoga.data.remoteconfig.YogaDataUtils
 import java.io.File
 
 class MainActivity : AppCompatActivity() {
@@ -48,6 +49,9 @@ class MainActivity : AppCompatActivity() {
 
         super.onCreate(savedInstanceState)
         FirebaseApp.initializeApp(applicationContext)
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+            AppPreferences.updateLastAppOpenDate(this)
+        }
         enableEdgeToEdge()
         setContentView(R.layout.activity_main)
 
@@ -59,10 +63,12 @@ class MainActivity : AppCompatActivity() {
         }
         loadingView.postDelayed({
             setupNetworkListener()
-            manageAIResources()
+            YogaDataUtils.prefetchData(this) { success ->
+                Log.d("YogaData", "Prefetch: $success")
+                manageAIResources()
+            }
         }, 800)
-
-        setupNavigation()
+        setupNavigation(savedInstanceState)
     }
 
     private fun manageAIResources() {
@@ -93,26 +99,30 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun setupNavigation() {
-        val navHostFragment = supportFragmentManager.findFragmentById(R.id.navHostFragment) as NavHostFragment
+    private fun setupNavigation(savedInstanceState: Bundle?) {
+        val navHostFragment =
+            supportFragmentManager.findFragmentById(R.id.navHostFragment) as NavHostFragment
         navController = navHostFragment.navController
         bottomNavigation = findViewById(R.id.bottomNavigation)
         setUpBottomNavigation()
-
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.navHostFragment)) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, 0)
             insets
         }
 
-        val navGraph = navController.navInflater.inflate(R.navigation.app_nav)
-        val startDestination = when {
-            !AppPreferences.isLoggedIn(this) -> R.id.loginFragment
-            !AppPreferences.isHealthProfileCompleted(this) -> R.id.informationFragment
-            else -> R.id.homeFragment
+        if (savedInstanceState == null) {
+            val navGraph = navController.navInflater.inflate(R.navigation.app_nav)
+
+            val startDestination = when {
+                !AppPreferences.isLoggedIn(this) -> R.id.loginFragment
+                !AppPreferences.isHealthProfileCompleted(this) -> R.id.informationFragment
+                else -> R.id.homeFragment
+            }
+
+            navGraph.setStartDestination(startDestination)
+            navController.graph = navGraph
         }
-        navGraph.setStartDestination(startDestination)
-        navController.graph = navGraph
     }
 
     private fun setUpBottomNavigation() {
@@ -126,8 +136,6 @@ class MainActivity : AppCompatActivity() {
 
         bottomNavigation.apply {
             items.forEach { add(it) }
-
-            // 2. Cập nhật Listener: Chỉ navigate nếu nhấn vào tab khác tab hiện tại
             setOnClickMenuListener { item ->
                 if (currentSelectedBottomItem != item.id) {
                     currentSelectedBottomItem = item.id
@@ -142,18 +150,23 @@ class MainActivity : AppCompatActivity() {
                 R.id.singleYogaFragment,
                 R.id.informationFragment,
                 R.id.multiModeYogaFragment,
+                R.id.multiNormalYogaFragment,
                 R.id.yogaFragment,
+                R.id.chooseModeFragment,
+                R.id.singleNormalYogaFragment,
             )
 
             if (hideNav.contains(destination.id)) {
                 bottomNavigation.visibility = View.GONE
             } else {
                 bottomNavigation.visibility = View.VISIBLE
+
                 val bottomItems = setOf(MAP_ITEM, PRACTICE_ITEM, HOME_ITEM, SEQUENCES_ITEM, PROFILE_ITEM)
+
                 if (bottomItems.contains(destination.id)) {
                     currentSelectedBottomItem = destination.id
+                    bottomNavigation.show(destination.id, true)
                 }
-                bottomNavigation.show(currentSelectedBottomItem, true)
             }
         }
     }

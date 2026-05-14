@@ -1,145 +1,211 @@
 package com.hadat.aiyoga.utils.view
 
 import android.content.Context
-import android.graphics.Canvas
-import android.graphics.Color
-import android.graphics.Paint
+import android.graphics.*
 import android.util.AttributeSet
-import android.view.View
+import android.util.Log
+import android.view.SurfaceHolder
+import android.view.SurfaceView
+import com.google.mediapipe.tasks.components.containers.NormalizedLandmark
 import com.google.mediapipe.tasks.vision.core.RunningMode
 import com.google.mediapipe.tasks.vision.poselandmarker.PoseLandmarker
 import com.google.mediapipe.tasks.vision.poselandmarker.PoseLandmarkerResult
-import com.hadat.aiyoga.yoga_ai.CorrectionRay
 import kotlin.math.max
 import kotlin.math.min
 
-class OverlayView(context: Context?, attrs: AttributeSet?) :
-    View(context, attrs) {
+class OverlayView(context: Context?, attrs: AttributeSet?) : SurfaceView(context, attrs), SurfaceHolder.Callback, Runnable {
 
     private var results: PoseLandmarkerResult? = null
-    private var pointPaint = Paint()
-    private var linePaint = Paint()
+    private var smoothedLandmarks: List<NormalizedLandmark>? = null
 
-    private var scaleFactor: Float = 1f
-    private var imageWidth: Int = 1
-    private var imageHeight: Int = 1
-    private var correctionRays: List<CorrectionRay> = emptyList()
-    private var rayPaint = Paint()
+    private var scaleFactor = 1f
+    private var imageWidth = 1
+    private var imageHeight = 1
+
+    private var wrongBones: Map<String, Int> = emptyMap()
+    private val severityCache = mutableMapOf<String, Float>()
+
+    private val pointPaint = Paint()
+    private val linePaint = Paint()
+
+    // Threading
+    private var drawingThread: Thread? = null
+    private var isRunning = false
+    private val holder: SurfaceHolder = getHolder().apply { addCallback(this@OverlayView) }
+
     init {
         initPaints()
+        // Đảm bảo SurfaceView có nền trong suốt để thấy được Camera phía sau
+        setZOrderOnTop(true)
+        holder.setFormat(PixelFormat.TRANSPARENT)
     }
 
-    fun clear() {
-        results = null
-        pointPaint.reset()
-        linePaint.reset()
-        invalidate()
-        initPaints()
-    }
+    // --- Giữ nguyên các hàm Logic của bạn ---
 
-    private fun initPaints() {
-        rayPaint.color = Color.RED
-        rayPaint.strokeWidth = 8f
-        rayPaint.style = Paint.Style.STROKE
-        linePaint.color = Color.WHITE
-        linePaint.alpha = 100
-        linePaint.strokeWidth = LANDMARK_STROKE_WIDTH
-        linePaint.style = Paint.Style.STROKE
-        linePaint.strokeCap = Paint.Cap.ROUND
-
-        pointPaint.color = Color.WHITE
-        pointPaint.strokeWidth = LANDMARK_STROKE_WIDTH
-        pointPaint.alpha = 150
-        pointPaint.style = Paint.Style.FILL
-    }
-    fun setCorrectionRays(rays: List<CorrectionRay>) {
-        this.correctionRays = rays
-        invalidate()
-    }
-    override fun onDraw(canvas: Canvas) {
-        super.onDraw(canvas)
-
-        results?.let { result ->
-            val landmarksList = result.landmarks()
-            if (landmarksList.isEmpty()) return
-
-            val lm = landmarksList[0]
-
-            // draw points
-            lm.forEach {
-                canvas.drawPoint(
-                    it.x() * imageWidth * scaleFactor,
-                    it.y() * imageHeight * scaleFactor,
-                    pointPaint
-                )
-            }
-
-            // draw skeleton
-            PoseLandmarker.POSE_LANDMARKS.forEach {
-                canvas.drawLine(
-                    lm[it!!.start()].x() * imageWidth * scaleFactor,
-                    lm[it.start()].y() * imageHeight * scaleFactor,
-                    lm[it.end()].x() * imageWidth * scaleFactor,
-                    lm[it.end()].y() * imageHeight * scaleFactor,
-                    linePaint
-                )
-            }
-        }
-
-        // draw rays
-        correctionRays.forEach { ray ->
-
-            rayPaint.color = when (ray.severity) {
-                1 -> Color.YELLOW   // nhẹ
-                2 -> Color.rgb(255,165,0)
-                3 -> Color.RED
-                else -> Color.RED
-            }
-
-            rayPaint.strokeWidth = when (ray.severity) {
-                1 -> 6f
-                2 -> 10f
-                3 -> 14f
-                else -> 8f
-            }
-
-            canvas.drawLine(
-                ray.startX * imageWidth * scaleFactor,
-                ray.startY * imageHeight * scaleFactor,
-                ray.endX * imageWidth * scaleFactor,
-                ray.endY * imageHeight * scaleFactor,
-                rayPaint
-            )
-        }
+    fun setWrongBones(bones: Map<String, Int>) {
+        wrongBones = bones
     }
 
     fun setResults(
         poseLandmarkerResults: PoseLandmarkerResult,
         imageHeight: Int,
         imageWidth: Int,
-        runningMode: RunningMode = RunningMode.IMAGE
+        runningMode: RunningMode
     ) {
         results = poseLandmarkerResults
-
         this.imageHeight = imageHeight
         this.imageWidth = imageWidth
 
-        scaleFactor = when (runningMode) {
-            RunningMode.IMAGE,
-            RunningMode.VIDEO -> {
-                min(width * 1f / imageWidth, height * 1f / imageHeight)
-            }
-            RunningMode.LIVE_STREAM -> {
-                // PreviewView is in FILL_START mode. So we need to scale up the
-                // landmarks to match with the size that the captured images will be
-                // displayed.
-                max(width * 1f / imageWidth, height * 1f / imageHeight)
-            }
-        }
-        invalidate()
+        updateScaleFactor(runningMode)
+        updateSmoothedLandmarks(poseLandmarkerResults)
     }
 
-    companion object {
-        private const val LANDMARK_STROKE_WIDTH = 12F
+    private fun updateSmoothedLandmarks(result: PoseLandmarkerResult) {
+        val newLandmarks = result.landmarks().firstOrNull() ?: return
+        // Tăng alpha lên một chút (0.5 - 0.6) nếu thấy nó phản hồi hơi chậm so với tay chân thật
+        smoothedLandmarks = smooth(smoothedLandmarks, newLandmarks, 0.6f)
+    }
+
+    private fun smooth(
+        old: List<NormalizedLandmark>?,
+        new: List<NormalizedLandmark>,
+        alpha: Float = 0.6f
+    ): List<NormalizedLandmark> {
+        if (old == null) return new
+        return new.mapIndexed { i, lm ->
+            val prev = old.getOrNull(i)
+            if (prev == null) lm
+            else NormalizedLandmark.create(
+                prev.x() * alpha + lm.x() * (1 - alpha),
+                prev.y() * alpha + lm.y() * (1 - alpha),
+                prev.z() * alpha + lm.z() * (1 - alpha)
+            )
+        }
+    }
+
+    private fun updateScaleFactor(runningMode: RunningMode) {
+        scaleFactor = when (runningMode) {
+            RunningMode.IMAGE, RunningMode.VIDEO ->
+                min(width * 1f / imageWidth, height * 1f / imageHeight)
+            RunningMode.LIVE_STREAM ->
+                max(width * 1f / imageWidth, height * 1f / imageHeight)
+        }
+    }
+
+    private fun initPaints() {
+        pointPaint.apply {
+            color = Color.WHITE
+            strokeWidth = 8f
+            alpha = 180
+            style = Paint.Style.FILL
+            isAntiAlias = true
+        }
+        linePaint.apply {
+            color = Color.WHITE
+            strokeWidth = 6f
+            alpha = 120
+            style = Paint.Style.STROKE
+            strokeCap = Paint.Cap.ROUND
+            isAntiAlias = true
+        }
+    }
+
+    // --- Quản lý luồng vẽ (SurfaceView Lifecycle) ---
+
+    override fun surfaceCreated(p0: SurfaceHolder) {
+        isRunning = true
+        drawingThread = Thread(this)
+        drawingThread?.start()
+    }
+
+    override fun surfaceChanged(p0: SurfaceHolder, p1: Int, p2: Int, p3: Int) {}
+
+    override fun surfaceDestroyed(p0: SurfaceHolder) {
+        isRunning = false
+        try {
+            drawingThread?.join()
+        } catch (e: InterruptedException) {
+            Log.e("OverlayView", "Thread error: ${e.message}")
+        }
+    }
+
+    override fun run() {
+        while (isRunning) {
+            if (!holder.surface.isValid) continue
+
+            val canvas = holder.lockCanvas() ?: continue
+
+            // Xóa Canvas cũ (giữ độ trong suốt)
+            canvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR)
+
+            // Vẽ dữ liệu
+            val result = results
+            val lm = smoothedLandmarks
+
+            if (result != null && lm != null) {
+                drawPoints(canvas, lm)
+                drawSkeleton(canvas, lm)
+            }
+
+            holder.unlockCanvasAndPost(canvas)
+
+            // Giới hạn khoảng 60 FPS để không làm nóng máy quá mức
+            Thread.sleep(16)
+        }
+    }
+
+    private fun drawPoints(canvas: Canvas, lm: List<NormalizedLandmark>) {
+        for (p in lm) {
+            canvas.drawPoint(
+                p.x() * imageWidth * scaleFactor,
+                p.y() * imageHeight * scaleFactor,
+                pointPaint
+            )
+        }
+    }
+
+    private fun drawSkeleton(canvas: Canvas, lm: List<NormalizedLandmark>) {
+        for (connection in PoseLandmarker.POSE_LANDMARKS) {
+            val startIdx = connection!!.start()
+            val endIdx = connection.end()
+
+            val key1 = "$startIdx-$endIdx"
+            val key2 = "$endIdx-$startIdx"
+
+            val rawSeverity = wrongBones[key1] ?: wrongBones[key2] ?: 0
+
+            val old = severityCache[key1] ?: rawSeverity.toFloat()
+            val smoothValue = old + 0.35f * (rawSeverity - old)
+            severityCache[key1] = smoothValue
+
+            val severity = smoothValue.toInt()
+
+            linePaint.apply {
+                color = when (severity) {
+                    1 -> Color.YELLOW
+                    2 -> Color.rgb(255, 165, 0)
+                    3 -> Color.RED
+                    else -> Color.WHITE
+                }
+                strokeWidth = when (severity) {
+                    1 -> 8f
+                    2 -> 12f
+                    3 -> 16f
+                    else -> 6f
+                }
+                alpha = if (severity == 0) 120 else 255
+            }
+
+            val start = lm[startIdx]
+            val end = lm[endIdx]
+
+            canvas.drawLine(
+                start.x() * imageWidth * scaleFactor,
+                start.y() * imageHeight * scaleFactor,
+                end.x() * imageWidth * scaleFactor,
+                end.y() * imageHeight * scaleFactor,
+                linePaint
+            )
+        }
     }
 }

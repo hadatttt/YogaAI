@@ -25,21 +25,16 @@ object YogaCoachUtils {
     private const val L_KNEE = 25;     private const val R_KNEE = 26
     private const val L_ANKLE = 27;    private const val R_ANKLE = 28
 
-    fun loadReferenceData(onComplete: (Boolean) -> Unit) {
-        if (referenceData != null) {
-            onComplete(true)
-            return
-        }
-
-        YogaDataUtils.getRemoteYogaAngles { list ->
-            if (list != null) {
-                referenceData = list.associateBy { it.id }
-                Log.d("YogaCoach", "✅ Loaded ${referenceData?.size} poses from Remote Config")
-                onComplete(true)
-            } else {
-                Log.e("YogaCoach", "❌ Load error: Firebase data is null")
-                onComplete(false)
-            }
+    fun loadReferenceData(): Boolean {
+        if (referenceData != null) return true
+        val list = YogaDataUtils.getAllAngles()
+        return if (list.isNotEmpty()) {
+            referenceData = list.associateBy { it.id }
+            Log.d("YogaCoach", "✅ Loaded ${referenceData?.size} poses from Cache")
+            true
+        } else {
+            Log.e("YogaCoach", "❌ Load error: Cache data is empty")
+            false
         }
     }
     fun getSeverityLevel(diff: Double): Int {
@@ -49,43 +44,57 @@ object YogaCoachUtils {
             else -> 1
         }
     }
+    fun getBoneErrors(
+        poseId: Int,
+        result: PoseLandmarkerResult
+    ): Map<String, Int> {
 
-    fun getCorrectionRays(poseId: Int, result: PoseLandmarkerResult): List<CorrectionRay> {
-        val rays = mutableListOf<CorrectionRay>()
-        val drawnBones = mutableSetOf<String>()
+        val errors = mutableMapOf<String, Int>()
+
         val landmarks = result.landmarks()
-        if (landmarks.isNullOrEmpty()) return rays
+        if (landmarks.isNullOrEmpty()) return errors
+
         val lm = landmarks[0]
-        val rawRefModel = referenceData?.get(poseId) ?: return rays
+        val rawRefModel = referenceData?.get(poseId) ?: return errors
 
         val u = getCurrentProcessedAngles(lm)
         val (ref, _) = getBestReferenceMap(u, rawRefModel)
 
-        fun highlightBone(startIdx: Int, endIdx: Int, diff: Double) {
-            val id = "$startIdx-$endIdx"
-            if (drawnBones.contains(id)) return
-            rays.add(CorrectionRay(lm[startIdx].x(), lm[startIdx].y(), lm[endIdx].x(), lm[endIdx].y(), getSeverityLevel(diff)))
-            drawnBones.add(id)
+        fun markBone(start: Int, end: Int, diff: Double) {
+            val severity = getSeverityLevel(diff)
+            errors["$start-$end"] = severity
+            errors["$end-$start"] = severity
         }
 
-        val jointsToCheck = listOf("hip_L" to listOf(L_HIP to L_KNEE), "hip_R" to listOf(R_HIP to R_KNEE),
-            "arm_body_L" to listOf(L_SHOULDER to L_ELBOW), "arm_body_R" to listOf(R_SHOULDER to R_ELBOW))
+        val jointsToCheck = listOf(
+            "hip_L" to listOf(L_HIP to L_KNEE),
+            "hip_R" to listOf(R_HIP to R_KNEE),
+            "arm_body_L" to listOf(L_SHOULDER to L_ELBOW),
+            "arm_body_R" to listOf(R_SHOULDER to R_ELBOW)
+        )
 
         jointsToCheck.forEach { (key, bones) ->
             val diff = angleDiff(u[key]!!, ref[key]!!)
-            if (diff > ANGLE_THRESHOLD) bones.forEach { highlightBone(it.first, it.second, diff) }
+            if (diff > ANGLE_THRESHOLD) {
+                bones.forEach { markBone(it.first, it.second, diff) }
+            }
         }
 
-        val complexJoints = listOf("elbow_L" to listOf(L_SHOULDER to L_ELBOW, L_ELBOW to L_WRIST),
+        val complexJoints = listOf(
+            "elbow_L" to listOf(L_SHOULDER to L_ELBOW, L_ELBOW to L_WRIST),
             "elbow_R" to listOf(R_SHOULDER to R_ELBOW, R_ELBOW to R_WRIST),
             "knee_L" to listOf(L_HIP to L_KNEE, L_KNEE to L_ANKLE),
-            "knee_R" to listOf(R_HIP to R_KNEE, R_KNEE to R_ANKLE))
+            "knee_R" to listOf(R_HIP to R_KNEE, R_KNEE to R_ANKLE)
+        )
 
         complexJoints.forEach { (key, bones) ->
             val diff = angleDiff(u[key]!!, ref[key]!!)
-            if (diff > ANGLE_THRESHOLD) bones.forEach { highlightBone(it.first, it.second, diff) }
+            if (diff > ANGLE_THRESHOLD) {
+                bones.forEach { markBone(it.first, it.second, diff) }
+            }
         }
-        return rays
+
+        return errors
     }
     private fun getAngleMap(model: YogaPoseAngleModel, isSwap: Boolean = false): Map<String, Double> {
         return if (!isSwap) {

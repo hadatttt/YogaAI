@@ -29,6 +29,10 @@ class ChatbotFragment : BaseFragment<FragmentChatbotBinding, ChatbotViewModel>()
     private val suggestionAdapter by lazy { SuggestionAdapter() }
 
     override fun initView() {
+        suggestionAdapter.setList(viewModel.getSuggestionIds().map { getString(it) })
+        viewModel.chatMessages.observe(viewLifecycleOwner) { messages ->
+            updateChatUI(messages)
+        }
         setupChatList()
         setupSuggestionList()
         setupKeyboardHandling()
@@ -37,6 +41,7 @@ class ChatbotFragment : BaseFragment<FragmentChatbotBinding, ChatbotViewModel>()
     override fun initListener() {
         binding.apply {
             ivBack.singleClick { popBackStack() }
+            ivClearChat.singleClick { viewModel.clearConversation() }
 
             btnSend.singleClick {
                 val text = edtMessage.text.toString().trim()
@@ -50,10 +55,7 @@ class ChatbotFragment : BaseFragment<FragmentChatbotBinding, ChatbotViewModel>()
     }
 
     override fun initData() {
-        suggestionAdapter.setList(viewModel.getSuggestionIds().map { getString(it) })
-        viewModel.chatMessages.observe(viewLifecycleOwner) { messages ->
-            updateChatUI(messages)
-        }
+
     }
 
     private fun setupKeyboardHandling() {
@@ -99,7 +101,14 @@ class ChatbotFragment : BaseFragment<FragmentChatbotBinding, ChatbotViewModel>()
     }
 
     private fun updateChatUI(messages: List<ChatMessage>) {
-        if (messages.isEmpty()) return
+        if (messages.isEmpty()) {
+            chatAdapter.setList(emptyList())
+            binding.rvChat.visibility = View.GONE
+            binding.llSuggestionsCenter.visibility = View.VISIBLE
+            binding.btnSend.isEnabled = true
+            binding.btnSend.alpha = 1.0f
+            return
+        }
         showChatAndHideSuggestions()
 
         val isBotProcessing = messages.lastOrNull()?.type == MessageType.TYPING

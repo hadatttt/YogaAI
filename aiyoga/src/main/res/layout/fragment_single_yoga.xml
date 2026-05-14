@@ -127,7 +127,9 @@
                 android:id="@+id/iv_yoga_sample"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:scaleType="centerCrop" />
+                android:background="@color/white"
+                android:padding="@dimen/_3sdp"
+                android:scaleType="fitCenter" />
     </com.google.android.material.card.MaterialCardView>
     <TextView
             android:id="@+id/tv_yoga_name"
@@ -264,4 +266,18 @@
     <include
             android:id="@+id/loadingView"
             layout="@layout/layout_loading"/>
+    <com.airbnb.lottie.LottieAnimationView
+            android:id="@+id/lottie_pose_done"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:visibility="gone"
+            app:layout_constraintDimensionRatio="1:1"
+            app:layout_constraintWidth_percent="0.6"
+            app:lottie_autoPlay="false"
+            app:lottie_loop="false"
+            app:lottie_rawRes="@raw/next"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
 </androidx.constraintlayout.widget.ConstraintLayout>

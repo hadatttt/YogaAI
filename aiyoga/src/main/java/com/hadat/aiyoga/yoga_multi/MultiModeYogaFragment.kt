@@ -27,7 +27,8 @@ import com.hadat.aiyoga.R
 import com.hadat.aiyoga.databinding.FragmentMultiModeYogaBinding
 import com.hadat.aiyoga.utils.service.AppPreferences
 import com.hadat.aiyoga.utils.yogautils.PoseLandmarkerHelper
-import com.hadat.aiyoga.utils.view.loadImageFromNetwork
+import com.hadat.aiyoga.utils.view.getYogaPoseGithubRawImageUrl
+import com.hadat.aiyoga.utils.view.loadYogaPoseGithubImage
 import com.hadat.aiyoga.utils.yogautils.YogaCoachUtils
 import com.hadat.aiyoga.yoga_ai.DialogZoom
 import com.takusemba.spotlight.OnSpotlightListener
@@ -73,15 +74,15 @@ class MultiModeYogaFragment : BaseFragment<FragmentMultiModeYogaBinding, MultiMo
 
     private fun initializePoseLandmarkerHelper() {
         binding.loadingView.root.visibility = View.VISIBLE
+
         poseLandmarkerHelper = AIManager.getLandmarker()
         AIManager.setListener(this)
-        YogaCoachUtils.loadReferenceData { isSuccess ->
-            if (isSuccess && isAdded) {
-                activity?.runOnUiThread {
-                    args.detailSequence?.let { viewModel.startWorkout(requireContext(), it) }
-                    binding.loadingView.root.visibility = View.GONE
-                }
-            }
+
+        if (YogaCoachUtils.loadReferenceData() && isAdded) {
+            args.detailSequence?.let { viewModel.startWorkout( requireContext(),it) }
+            binding.loadingView.root.visibility = View.GONE
+        } else if (isAdded) {
+            binding.loadingView.root.visibility = View.GONE
         }
     }
     override fun onResume() {
@@ -104,7 +105,6 @@ class MultiModeYogaFragment : BaseFragment<FragmentMultiModeYogaBinding, MultiMo
 
 
     override fun onDestroyView() {
-        binding.overlayView.clear()
         viewModel.stopTracking()
         progressAnimator?.cancel()
         progressAnimator = null
@@ -122,11 +122,11 @@ class MultiModeYogaFragment : BaseFragment<FragmentMultiModeYogaBinding, MultiMo
         super.onDestroyView()
     }
 
+    @SuppressLint("SetTextI18n")
     override fun initData() {
-        viewModel.resetData()
         args.detailSequence?.poses?.firstOrNull()?.let { firstPose ->
             binding.tvYogaName.text = firstPose.name
-            binding.ivYogaSample.loadImageFromNetwork(firstPose.photoUrl)
+            binding.ivYogaSample.loadYogaPoseGithubImage(firstPose.id)
             binding.tvPoseIndex.text = "1/${args.detailSequence?.poses?.size ?: 1}"
         }
         viewModel.currentGuideText.observe(viewLifecycleOwner) { binding.tvGuide.text = it }
@@ -136,7 +136,7 @@ class MultiModeYogaFragment : BaseFragment<FragmentMultiModeYogaBinding, MultiMo
         viewModel.currentPose.observe(viewLifecycleOwner) { pose ->
             pose ?: return@observe
             binding.tvYogaName.text = pose.name
-            binding.ivYogaSample.loadImageFromNetwork(pose.photoUrl)
+            binding.ivYogaSample.loadYogaPoseGithubImage(pose.id)
         }
         viewModel.isWaitingForCapture.observe(viewLifecycleOwner) { isWaiting ->
             if (isWaiting) {
@@ -156,7 +156,23 @@ class MultiModeYogaFragment : BaseFragment<FragmentMultiModeYogaBinding, MultiMo
         viewModel.isTrackingStarted.observe(viewLifecycleOwner) { started ->
             binding.lottieStatus.visibility = if (started) View.VISIBLE else View.GONE
         }
-        viewModel.sessionCompleted.observe(viewLifecycleOwner) { navigateToResult() }
+        viewModel.sessionCompleted.observe(viewLifecycleOwner) {
+            if (it != null) {
+                showPoseDoneAnimation {
+                    navigateToResult()
+                }
+                viewModel.clearTriggers()
+            }
+        }
+
+        viewModel.nextPoseTrigger.observe(viewLifecycleOwner) {
+            if (it != null) {
+                showPoseDoneAnimation {
+                    viewModel.nextPose(requireContext())
+                }
+                viewModel.clearTriggers()
+            }
+        }
     }
 
     @SuppressLint("ClickableViewAccessibility")
@@ -165,14 +181,18 @@ class MultiModeYogaFragment : BaseFragment<FragmentMultiModeYogaBinding, MultiMo
             startYogaTutorial()
         }
         binding.ivYogaSample.singleClick {
-            val imageUrl = viewModel.currentPose.value?.photoUrl
-                ?: args.detailSequence?.poses?.firstOrNull()?.photoUrl
-            if (!imageUrl.isNullOrEmpty()) {
-                DialogZoom.newInstance(imageUrl)
+            val poseId = viewModel.currentPose.value?.id
+                ?: args.detailSequence?.poses?.firstOrNull()?.id
+                ?: -1
+            if (poseId in 0..81) {
+                DialogZoom.newInstance(getYogaPoseGithubRawImageUrl(poseId))
                     .show(parentFragmentManager, "DialogZoom")
             }
         }
-        binding.ivBack.singleClick { popBackStack() }
+        binding.ivBack.singleClick {
+            viewModel.resetData()
+            popBackStack()
+        }
         binding.ivPhoto.singleClick { viewModel.toggleCaptureWait() }
         binding.ivVoice.singleClick {
             isMuted = !isMuted
@@ -191,7 +211,7 @@ class MultiModeYogaFragment : BaseFragment<FragmentMultiModeYogaBinding, MultiMo
             }
             bindCameraUseCases()
         }
-        binding.btnNextPose.singleClick { viewModel.moveToNextPose(requireContext()) }
+        binding.btnNextPose.singleClick { viewModel.nextPose(requireContext()) }
 
         binding.progressAround.apply {
             progressMax = 100f
@@ -240,7 +260,25 @@ class MultiModeYogaFragment : BaseFragment<FragmentMultiModeYogaBinding, MultiMo
         registerForActivityResult(ActivityResultContracts.RequestPermission()) {
             if (it) setUpCamera()
         }
+    private fun showPoseDoneAnimation(onAnimationFinished: () -> Unit) {
+        binding.lottiePoseDone.apply {
+            visibility = View.VISIBLE
+            playAnimation()
 
+            addAnimatorListener(object : android.animation.Animator.AnimatorListener {
+                override fun onAnimationStart(animation: android.animation.Animator) {}
+
+                override fun onAnimationEnd(animation: android.animation.Animator) {
+                    visibility = View.GONE
+                    removeAllAnimatorListeners()
+                    onAnimationFinished()
+                }
+
+                override fun onAnimationCancel(animation: android.animation.Animator) {}
+                override fun onAnimationRepeat(animation: android.animation.Animator) {}
+            })
+        }
+    }
     private fun setUpCamera() {
         val cameraProviderFuture = ProcessCameraProvider.getInstance(requireContext())
         cameraProviderFuture.addListener({
@@ -291,26 +329,28 @@ class MultiModeYogaFragment : BaseFragment<FragmentMultiModeYogaBinding, MultiMo
     }
 
     override fun onResults(resultBundle: PoseLandmarkerHelper.ResultBundle) {
-        activity?.runOnUiThread {
-            if (view == null) return@runOnUiThread
-            val result = resultBundle.results.first()
+        val result = resultBundle.results.firstOrNull() ?: return
+        binding.overlayView.post {
+            if (view == null) return@post
             binding.overlayView.setResults(
                 result,
                 resultBundle.inputImageHeight,
                 resultBundle.inputImageWidth,
                 RunningMode.LIVE_STREAM
             )
-            viewModel.currentPose.value?.id?.let { poseId ->
-                val rays = YogaCoachUtils.getCorrectionRays(poseId, result)
-                binding.overlayView.setCorrectionRays(rays)
-            }
+        }
+        backgroundExecutor.execute {
+            val currentPoseId = viewModel.currentPose.value?.id ?: -1
+            val errors = if (currentPoseId != -1) {
+                YogaCoachUtils.getBoneErrors(currentPoseId, result)
+            } else emptyMap()
 
-            binding.overlayView.invalidate()
-
-            val now = System.currentTimeMillis()
-            if (now - lastCoachTime >= coachInterval) {
-                viewModel.processCoachLogic(requireContext(), result)
-                lastCoachTime = now
+            viewModel.processCoachLogic(requireContext(), result)
+            activity?.runOnUiThread {
+                if (view != null) {
+                    binding.overlayView.setWrongBones(errors)
+                    binding.overlayView.invalidate()
+                }
             }
         }
     }
@@ -400,12 +440,18 @@ class MultiModeYogaFragment : BaseFragment<FragmentMultiModeYogaBinding, MultiMo
             .withEndAction { binding.viewFlash.visibility = View.GONE }
             .start()
     }
-
     private fun navigateToResult() {
-        val userId = AppPreferences.getUserId(requireContext()) ?: "guest"
-        val results = viewModel.buildResultList(userId)
-        val capturedImagesList = ArrayList(viewModel.getCapturedImages()).toTypedArray()
+        val results = viewModel.getFinalWorkoutResults()
 
+        val capturedImagesList = viewModel.getCapturedImages().toTypedArray()
+
+        if (results.isEmpty()) {
+            if (isAdded) {
+                Toast.makeText(requireContext(), getString(R.string.no_image_to_share), Toast.LENGTH_SHORT).show()
+            }
+            popBackStack()
+            return
+        }
         val bundle = Bundle().apply {
             putParcelableArray("workout_result_list", results)
             putStringArray("captured_images_list", capturedImagesList)

@@ -16,7 +16,6 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModelProvider
 import androidx.viewbinding.ViewBinding
 import hoang.dqm.codebase.base.viewmodel.BaseViewModel
-import hoang.dqm.codebase.service.network.NetworkStatusReceiver
 import hoang.dqm.codebase.utils.BindingReflex
 import java.lang.reflect.ParameterizedType
 
@@ -42,39 +41,11 @@ abstract class BaseActivity<VB: ViewBinding, VM: BaseViewModel>: AppCompatActivi
         return baseType[position] as Class<KClass>
     }
 
-    private var networkStatusReceiver: NetworkStatusReceiver? = null
 
-    private fun registerNetwork() {
-        try {
-            if (null == networkStatusReceiver) {
-                networkStatusReceiver = NetworkStatusReceiver()
-            }
-            networkStatusReceiver?.let { networkStatusReceiver ->
-                if (networkStatusReceiver.isOrderedBroadcast.not()) {
-                    val filter = IntentFilter("android.net.conn.CONNECTIVITY_CHANGE")
-                    registerReceiver(networkStatusReceiver, filter)
-                }
-            }
-        } catch (e: Exception) {
-            e.printStackTrace()
-        }
-    }
 
-    override fun onStop() {
-        super.onStop()
-        try {
-            networkStatusReceiver?.let {
-                unregisterReceiver(networkStatusReceiver)
-                networkStatusReceiver = null
-            }
-        } catch (e: Exception) {
-            e.printStackTrace()
-        }
-    }
 
     override fun onStart() {
         super.onStart()
-        registerNetwork()
     }
 
     abstract fun initView()

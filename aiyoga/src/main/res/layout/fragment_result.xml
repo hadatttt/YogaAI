@@ -5,15 +5,15 @@
         xmlns:tools="http://schemas.android.com/tools"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:padding="16dp"
-        android:background="#F7F7FB">
+        android:background="#F7F7FB"
+        android:padding="@dimen/_16sdp">
 
     <androidx.appcompat.widget.AppCompatImageView
             android:id="@+id/iv_back"
             android:layout_width="@dimen/_30sdp"
             android:layout_height="@dimen/_30sdp"
-            android:layout_marginStart="@dimen/_15sdp"
-            android:layout_marginTop="@dimen/_15sdp"
+            android:layout_marginStart="@dimen/_8sdp"
+            android:layout_marginTop="@dimen/_10sdp"
             android:background="@drawable/shape_circle"
             android:padding="@dimen/_4sdp"
             android:src="@drawable/ic_back"
@@ -37,95 +37,120 @@
             android:id="@+id/scroll"
             android:layout_width="0dp"
             android:layout_height="0dp"
-            android:layout_marginTop="@dimen/_10sdp"
+            android:layout_marginTop="@dimen/_12sdp"
             android:clipToPadding="false"
-            android:paddingBottom="@dimen/_120sdp"
-            app:layout_constraintTop_toBottomOf="@id/iv_back"
-            app:layout_constraintBottom_toBottomOf="parent"
+            android:fillViewport="false"
+            android:paddingBottom="@dimen/_90sdp"
+            app:layout_constraintBottom_toTopOf="@id/btn_share_place"
+            app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent">
+            app:layout_constraintTop_toBottomOf="@id/iv_back">
 
         <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
 
-            <androidx.constraintlayout.widget.ConstraintLayout
-                    android:id="@+id/containerCalories"
-                    android:layout_width="220dp"
+            <com.airbnb.lottie.LottieAnimationView
+                    android:id="@+id/lottie_result_ai"
+                    android:layout_width="0dp"
                     android:layout_height="220dp"
-                    android:layout_marginTop="10dp"
+                    android:layout_marginTop="@dimen/_6sdp"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent">
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:lottie_autoPlay="true"
+                    app:lottie_loop="true"
+                    app:lottie_rawRes="@raw/celebrate" />
 
-                <com.mikhaellopez.circularprogressbar.CircularProgressBar
-                        android:id="@+id/progressCalories"
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        app:cpb_background_progressbar_color="#EEEEEE"
-                        app:cpb_background_progressbar_width="10dp"
-                        app:cpb_progress="0"
-                        app:cpb_progress_max="100"
-                        app:cpb_progressbar_color="#FF6A00"
-                        app:cpb_progressbar_width="25dp"
-                        app:cpb_round_border="true" />
+            <androidx.constraintlayout.widget.ConstraintLayout
+                    android:id="@+id/layout_stats"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/_14sdp"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/lottie_result_ai">
 
-                <LinearLayout
-                        android:layout_width="wrap_content"
+                <androidx.constraintlayout.widget.ConstraintLayout
+                        android:id="@+id/layout_calories"
+                        android:layout_width="@dimen/_95sdp"
                         android:layout_height="wrap_content"
-                        android:gravity="center"
-                        android:orientation="vertical"
-                        app:layout_constraintBottom_toBottomOf="parent"
-                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintEnd_toStartOf="@id/layout_time"
+                        app:layout_constraintHorizontal_chainStyle="packed"
                         app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintTop_toTopOf="parent">
 
-                    <ImageView
-                            android:layout_width="45dp"
-                            android:layout_height="45dp"
-                            android:src="@drawable/ic_calo" />
+                    <com.mikhaellopez.circularprogressbar.CircularProgressBar
+                            android:id="@+id/progressCalories"
+                            android:layout_width="@dimen/_90sdp"
+                            android:layout_height="@dimen/_90sdp"
+                            app:cpb_background_progressbar_color="#EEEEEE"
+                            app:cpb_background_progressbar_width="@dimen/_5sdp"
+                            app:cpb_progress="0"
+                            app:cpb_progress_max="100"
+                            app:cpb_progressbar_color="#FF6A00"
+                            app:cpb_progressbar_width="@dimen/_10sdp"
+                            app:cpb_round_border="true"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toTopOf="parent" />
 
-                    <TextView
-                            android:id="@+id/tvCaloriesValue"
+                    <LinearLayout
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:textColor="#000000"
-                            android:textSize="28sp"
-                            android:textStyle="bold" />
+                            android:gravity="center"
+                            android:orientation="vertical"
+                            app:layout_constraintBottom_toBottomOf="@id/progressCalories"
+                            app:layout_constraintEnd_toEndOf="@id/progressCalories"
+                            app:layout_constraintStart_toStartOf="@id/progressCalories"
+                            app:layout_constraintTop_toTopOf="@id/progressCalories">
+
+                        <ImageView
+                                android:layout_width="@dimen/_24sdp"
+                                android:layout_height="@dimen/_24sdp"
+                                android:src="@drawable/ic_calo" />
+
+                        <TextView
+                                android:id="@+id/tvCaloriesValue"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:textColor="#222222"
+                                android:textSize="@dimen/_13sdp"
+                                android:textStyle="bold"
+                                tools:text="120" />
+                    </LinearLayout>
 
                     <TextView
                             android:id="@+id/tvCaloriesLabel"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:textColor="#888888"
-                            android:textSize="12sp" />
-                </LinearLayout>
-            </androidx.constraintlayout.widget.ConstraintLayout>
-
-            <LinearLayout
-                    android:id="@+id/layoutBottom"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="24dp"
-                    android:orientation="horizontal"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@id/containerCalories">
+                            android:layout_marginTop="@dimen/_6sdp"
+                            android:text="@string/chart_title_calories"
+                            android:textColor="#777777"
+                            android:textSize="@dimen/_11sdp"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toBottomOf="@id/progressCalories" />
+                </androidx.constraintlayout.widget.ConstraintLayout>
 
                 <androidx.constraintlayout.widget.ConstraintLayout
-                        android:layout_width="0dp"
+                        android:id="@+id/layout_time"
+                        android:layout_width="@dimen/_95sdp"
                         android:layout_height="wrap_content"
-                        android:layout_weight="1">
+                        android:layout_marginHorizontal="@dimen/_8sdp"
+                        app:layout_constraintEnd_toStartOf="@id/layout_accuracy"
+                        app:layout_constraintStart_toEndOf="@id/layout_calories"
+                        app:layout_constraintTop_toTopOf="parent">
 
                     <com.mikhaellopez.circularprogressbar.CircularProgressBar
                             android:id="@+id/progressTime"
-                            android:layout_width="130dp"
-                            android:layout_height="130dp"
-                            app:cpb_background_progressbar_color="#E0E0E0"
-                            app:cpb_background_progressbar_width="6dp"
+                            android:layout_width="@dimen/_90sdp"
+                            android:layout_height="@dimen/_90sdp"
+                            app:cpb_background_progressbar_color="#EEEEEE"
+                            app:cpb_background_progressbar_width="@dimen/_5sdp"
                             app:cpb_progress="0"
                             app:cpb_progressbar_color="#4A90E2"
-                            app:cpb_progressbar_width="15dp"
+                            app:cpb_progressbar_width="@dimen/_10sdp"
                             app:cpb_round_border="true"
                             app:layout_constraintEnd_toEndOf="parent"
                             app:layout_constraintStart_toStartOf="parent"
@@ -142,8 +167,8 @@
                             app:layout_constraintTop_toTopOf="@id/progressTime">
 
                         <ImageView
-                                android:layout_width="32dp"
-                                android:layout_height="32dp"
+                                android:layout_width="@dimen/_24sdp"
+                                android:layout_height="@dimen/_24sdp"
                                 android:src="@drawable/ic_time"
                                 app:tint="#4A90E2" />
 
@@ -151,35 +176,42 @@
                                 android:id="@+id/tvTimeValue"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:textColor="#333333"
-                                android:textSize="16sp"
-                                android:textStyle="bold" />
+                                android:textColor="#222222"
+                                android:textSize="@dimen/_13sdp"
+                                android:textStyle="bold"
+                                tools:text="15m" />
                     </LinearLayout>
 
                     <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="8dp"
+                            android:layout_marginTop="@dimen/_6sdp"
                             android:text="@string/time"
+                            android:textColor="#777777"
+                            android:textSize="@dimen/_11sdp"
                             app:layout_constraintEnd_toEndOf="parent"
                             app:layout_constraintStart_toStartOf="parent"
                             app:layout_constraintTop_toBottomOf="@id/progressTime" />
                 </androidx.constraintlayout.widget.ConstraintLayout>
 
                 <androidx.constraintlayout.widget.ConstraintLayout
-                        android:layout_width="0dp"
+                        android:id="@+id/layout_accuracy"
+                        android:layout_width="@dimen/_95sdp"
                         android:layout_height="wrap_content"
-                        android:layout_weight="1">
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintStart_toEndOf="@id/layout_time"
+                        app:layout_constraintTop_toTopOf="parent"
+                        tools:visibility="visible">
 
                     <com.mikhaellopez.circularprogressbar.CircularProgressBar
                             android:id="@+id/progressAccuracy"
-                            android:layout_width="130dp"
-                            android:layout_height="130dp"
-                            app:cpb_background_progressbar_color="#E0E0E0"
-                            app:cpb_background_progressbar_width="6dp"
+                            android:layout_width="@dimen/_90sdp"
+                            android:layout_height="@dimen/_90sdp"
+                            app:cpb_background_progressbar_color="#EEEEEE"
+                            app:cpb_background_progressbar_width="@dimen/_5sdp"
                             app:cpb_progress="0"
                             app:cpb_progressbar_color="#00C853"
-                            app:cpb_progressbar_width="15dp"
+                            app:cpb_progressbar_width="@dimen/_10sdp"
                             app:cpb_round_border="true"
                             app:layout_constraintEnd_toEndOf="parent"
                             app:layout_constraintStart_toStartOf="parent"
@@ -196,54 +228,58 @@
                             app:layout_constraintTop_toTopOf="@id/progressAccuracy">
 
                         <ImageView
-                                android:layout_width="32dp"
-                                android:layout_height="32dp"
+                                android:layout_width="@dimen/_24sdp"
+                                android:layout_height="@dimen/_24sdp"
                                 android:src="@drawable/ic_accuracy" />
 
                         <TextView
                                 android:id="@+id/tvAccuracyValue"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:textColor="#333333"
-                                android:textSize="16sp"
-                                android:textStyle="bold" />
+                                android:textColor="#222222"
+                                android:textSize="@dimen/_13sdp"
+                                android:textStyle="bold"
+                                tools:text="95%" />
                     </LinearLayout>
 
                     <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="8dp"
+                            android:layout_marginTop="@dimen/_6sdp"
                             android:text="@string/accuracy"
+                            android:textColor="#777777"
+                            android:textSize="@dimen/_11sdp"
                             app:layout_constraintEnd_toEndOf="parent"
                             app:layout_constraintStart_toStartOf="parent"
                             app:layout_constraintTop_toBottomOf="@id/progressAccuracy" />
                 </androidx.constraintlayout.widget.ConstraintLayout>
-            </LinearLayout>
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
 
             <TextView
                     android:id="@+id/tv_workouts_title"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="@dimen/_20sdp"
                     android:layout_marginStart="@dimen/_6sdp"
+                    android:layout_marginTop="@dimen/_22sdp"
+                    android:fontFamily="@font/font_bold"
                     android:text="@string/recent_workouts"
                     android:textColor="@color/primary"
                     android:textSize="@dimen/_16sdp"
-                    android:fontFamily="@font/font_bold"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@id/layoutBottom" />
+                    app:layout_constraintTop_toBottomOf="@id/layout_stats" />
 
             <androidx.recyclerview.widget.RecyclerView
                     android:id="@+id/rv_workout_history"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="@dimen/_10sdp"
-                    android:paddingStart="@dimen/_6sdp"
                     android:clipToPadding="false"
                     android:orientation="horizontal"
+                    android:paddingStart="@dimen/_6sdp"
                     app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-                    app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toBottomOf="@id/tv_workouts_title"
                     tools:listitem="@layout/item_workout_history" />
 
@@ -251,12 +287,12 @@
                     android:id="@+id/tv_photos_title"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="@dimen/_18sdp"
                     android:layout_marginStart="@dimen/_6sdp"
+                    android:layout_marginTop="@dimen/_18sdp"
+                    android:fontFamily="@font/font_bold"
                     android:text="@string/captured_photos"
                     android:textColor="@color/primary"
                     android:textSize="@dimen/_16sdp"
-                    android:fontFamily="@font/font_bold"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toBottomOf="@id/rv_workout_history" />
 
@@ -265,12 +301,13 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="@dimen/_10sdp"
-                    android:paddingStart="@dimen/_6sdp"
                     android:clipToPadding="false"
                     android:orientation="horizontal"
+                    android:paddingBottom="@dimen/_16sdp"
+                    android:paddingStart="@dimen/_6sdp"
                     app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-                    app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toBottomOf="@id/tv_photos_title"
                     tools:listitem="@layout/item_image_thumb" />
 
@@ -282,7 +319,7 @@
             android:layout_width="0dp"
             android:layout_height="@dimen/_48sdp"
             android:layout_marginHorizontal="@dimen/_20sdp"
-            android:layout_marginBottom="@dimen/_16sdp"
+            android:layout_marginBottom="@dimen/_12sdp"
             android:background="@drawable/bg_btn_create"
             android:fontFamily="@font/font_bold"
             android:text="@string/share_practice_spot"
@@ -294,6 +331,7 @@
             app:iconGravity="textStart"
             app:iconPadding="@dimen/_8sdp"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent" />
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>

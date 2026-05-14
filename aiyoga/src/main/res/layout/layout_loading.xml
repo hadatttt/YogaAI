@@ -1,33 +1,37 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:lottie="http://schemas.android.com/apk/res-auto"
-        xmlns:app="http://schemas.android.com/tools"
         android:id="@+id/loadingRoot"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="#80000000"
+        android:background="#66000000"
         android:clickable="true"
-        android:elevation="10dp"
         android:focusable="true">
+
+    <View
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@drawable/bg_blur_overlay" />
 
     <LinearLayout
             android:id="@+id/loadingContainer"
-            android:layout_width="wrap_content"
+            android:layout_width="260dp"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:orientation="vertical"
             android:gravity="center"
             android:padding="24dp"
->
+            android:background="@drawable/bg_loading_card"
+            android:elevation="12dp">
 
         <com.airbnb.lottie.LottieAnimationView
                 android:id="@+id/lottieLoading"
-                android:layout_width="@dimen/_140sdp"
-                android:layout_height="@dimen/_140sdp"
+                android:layout_width="120dp"
+                android:layout_height="120dp"
                 lottie:lottie_rawRes="@raw/loading"
-                app:lottie_renderMode="software"
                 lottie:lottie_autoPlay="true"
                 lottie:lottie_loop="true" />
+
         <TextView
                 android:id="@+id/tvLoading"
                 android:layout_width="wrap_content"
@@ -37,6 +41,14 @@
                 android:textStyle="bold"
                 android:textColor="@color/white"
                 android:layout_marginTop="12dp" />
+
+        <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/ai_analyzing"
+                android:textSize="13sp"
+                android:textColor="#CCFFFFFF"
+                android:layout_marginTop="4dp" />
 
     </LinearLayout>
 
