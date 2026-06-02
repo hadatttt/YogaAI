@@ -265,4 +265,5 @@
     <string name="hold_to_finish">Giữ để kết thúc</string>
     <string name="normal_mode_hint">Làm theo ảnh mẫu và giữ nút giữa để hoàn thành.</string>
     <string name="no_ai_accuracy">--</string>
+    <string name="ai_camera_guide_text">Hãy đặt điện thoại ở nơi có thể xem hết cơ thể bạn.</string>
 </resources>

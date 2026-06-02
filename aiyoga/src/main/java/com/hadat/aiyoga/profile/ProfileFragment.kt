@@ -4,8 +4,6 @@ import android.net.Uri
 import android.os.Build
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.appcompat.app.AppCompatDelegate
-import androidx.core.os.LocaleListCompat
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.timepicker.MaterialTimePicker
 import com.google.android.material.timepicker.TimeFormat
@@ -170,21 +168,14 @@ class ProfileFragment : BaseFragment<FragmentProfileBinding, ProfileViewModel>()
             .setTitle(getString(R.string.select_language))
             .setSingleChoiceItems(languageLabels, checkedIndex) { dialog, which ->
                 val selectedCode = languageCodes[which]
-                AppPreferences.setLanguageCode(requireContext(), selectedCode)
-                dialog.dismiss()
-                YogaDataUtils.prefetchData(requireContext(), forceRefresh = true) {
-                    if (!isAdded) return@prefetchData
-                    requireActivity().runOnUiThread {
-                        AppCompatDelegate.setApplicationLocales(
-                            LocaleListCompat.forLanguageTags(selectedCode)
-                        )
-                        renderLanguage()
-                        val userId = AppPreferences.getUserId(requireContext()) ?: return@runOnUiThread
-                        viewModel.loadUser(userId)
-                        viewModel.loadHealthProfile(userId)
-                        requireActivity().recreate()
-                    }
+                if (selectedCode == currentLanguage) {
+                    dialog.dismiss()
+                    return@setSingleChoiceItems
                 }
+                dialog.dismiss()
+                AppPreferences.applyLanguage(requireContext(), selectedCode)
+                renderLanguage()
+                YogaDataUtils.prefetchData(requireContext(), forceRefresh = true) {}
             }
             .setNegativeButton(getString(R.string.title_cancel), null)
             .show()

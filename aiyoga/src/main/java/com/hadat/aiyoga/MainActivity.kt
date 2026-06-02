@@ -6,17 +6,13 @@ import android.view.View
 import android.view.WindowManager
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-import androidx.core.os.LocaleListCompat
 import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
 import com.google.firebase.FirebaseApp
 import com.qamar.curvedbottomnaviagtion.CurvedBottomNavigation
 import com.hadat.aiyoga.utils.service.AppPreferences
-import com.hadat.aiyoga.manager_ai.AIManager
-import com.hadat.aiyoga.data.download.ModelDownloader
 import hoang.dqm.codebase.base.activity.navigate
 import android.net.ConnectivityManager
 import android.net.Network
@@ -24,7 +20,6 @@ import android.net.NetworkCapabilities
 import android.net.NetworkRequest
 import com.airbnb.lottie.LottieAnimationView
 import com.hadat.aiyoga.data.remoteconfig.YogaDataUtils
-import java.io.File
 
 class MainActivity : AppCompatActivity() {
 
@@ -43,8 +38,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        val currentLang = AppPreferences.getLanguageCode(this)
-        AppCompatDelegate.setApplicationLocales(LocaleListCompat.forLanguageTags(currentLang))
+        AppPreferences.syncLanguageFromPreferences(this)
         window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
 
         super.onCreate(savedInstanceState)
@@ -65,38 +59,10 @@ class MainActivity : AppCompatActivity() {
             setupNetworkListener()
             YogaDataUtils.prefetchData(this) { success ->
                 Log.d("YogaData", "Prefetch: $success")
-                manageAIResources()
+                runOnUiThread { loadingView.visibility = View.GONE }
             }
         }, 800)
         setupNavigation(savedInstanceState)
-    }
-
-    private fun manageAIResources() {
-        val isLoggedIn = AppPreferences.isLoggedIn(this)
-        val modelsExist = ModelDownloader.YOGA_MODELS.all { File(filesDir, it).exists() }
-
-        if (modelsExist) {
-            startAIEngine(isLoggedIn)
-        } else {
-            ModelDownloader.downloadAllModels(applicationContext,
-                onProgress = { Log.d("AI_Model", "Progress: $it%") },
-                onComplete = { success ->
-                    if (success) startAIEngine(isLoggedIn)
-                    else runOnUiThread { loadingView.visibility = View.GONE }
-                }
-            )
-        }
-    }
-
-    private fun startAIEngine(shouldHideLoading: Boolean) {
-        AIManager.initialize(applicationContext) {
-            if (shouldHideLoading) {
-                runOnUiThread {
-                    loadingView.visibility = View.GONE
-                    Log.d("AI_Model", "AI Engine Ready")
-                }
-            }
-        }
     }
 
     private fun setupNavigation(savedInstanceState: Bundle?) {
@@ -152,6 +118,7 @@ class MainActivity : AppCompatActivity() {
                 R.id.multiModeYogaFragment,
                 R.id.multiNormalYogaFragment,
                 R.id.yogaFragment,
+                R.id.aiCameraGuideFragment,
                 R.id.chooseModeFragment,
                 R.id.singleNormalYogaFragment,
             )

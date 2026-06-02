@@ -79,29 +79,36 @@ class SingleYogaViewModel : BaseViewModel() {
         return errorCount
     }
     fun startSinglePoseTracking(context: android.content.Context, poseId: Int) {
-        captureStartTime = 0L
-        handler.removeCallbacks(timerRunnable)
-        totalSecondsAccumulated = 0
-        errorCount = 0
-        isCurrentlyCorrect = false
-        hasStartedCorrectPose = false
-        isPreviousFrameCorrect = true
-        sessionImagePaths.clear()
-        _timerText.value = "00:00"
+        resetData()
         _isTrackingStarted.value = true
         _currentGuideText.value = context.getString(com.hadat.aiyoga.R.string.guide_get_ready)
         _speakCommand.value = context.getString(com.hadat.aiyoga.R.string.start_command)
         startLogicalTimer()
     }
-    fun stopTracking() {
-        handler.removeCallbacks(timerRunnable)
-        isCurrentlyCorrect = false
-        _isTrackingStarted.postValue(false)
-    }
 
     override fun onCleared() {
-        handler.removeCallbacks(timerRunnable)
+        resetData()
         super.onCleared()
+    }
+
+    fun resetData() {
+        handler.removeCallbacks(timerRunnable)
+        sessionImagePaths.clear()
+        captureStartTime = 0L
+        totalSecondsAccumulated = 0
+        errorCount = 0
+        isCurrentlyCorrect = false
+        hasCaptured = false
+        hasStartedCorrectPose = false
+        isPreviousFrameCorrect = true
+        lastFeedback = ""
+        lastFeedbackTime = 0L
+
+        _timerText.value = "00:00"
+        _currentGuideText.value = ""
+        _speakCommand.value = ""
+        _isWaitingForCapture.value = false
+        _isTrackingStarted.value = false
     }
     fun processCoachLogic(context: android.content.Context, result: PoseLandmarkerResult, poseId: Int) {
         if (poseId == -1 || _isTrackingStarted.value != true) {

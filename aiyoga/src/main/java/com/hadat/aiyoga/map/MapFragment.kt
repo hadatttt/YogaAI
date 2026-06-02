@@ -9,6 +9,7 @@ import android.net.Uri
 import android.view.View
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.CameraUpdateFactory
@@ -24,12 +25,21 @@ import com.hadat.aiyoga.databinding.LayoutCustomMarkerBinding
 import com.hadat.aiyoga.databinding.LayoutMapPostsBottomSheetBinding
 import hoang.dqm.codebase.base.activity.BaseFragment
 import hoang.dqm.codebase.utils.singleClick
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 class MapFragment : BaseFragment<FragmentMapBinding, MapViewModel>(), OnMapReadyCallback {
 
     private var mMap: GoogleMap? = null
     private var currentMarker: Marker? = null
     private var selectedLatLng: LatLng? = null
+    private var loadVisiblePostsJob: Job? = null
+
+    private companion object {
+        const val MAP_POSTS_DEBOUNCE_MS = 500L
+        const val MIN_POSTS_ZOOM = 10f
+    }
 
     private val requestLocationPermission =
         registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { result ->
@@ -58,7 +68,6 @@ class MapFragment : BaseFragment<FragmentMapBinding, MapViewModel>(), OnMapReady
         setupMapSettings()
         setupMapListeners()
         ensureLocationPermissionAndEnable()
-        viewModel.fetchLatestPosts()
     }
 
     private fun setupMapSettings() {
@@ -87,7 +96,35 @@ class MapFragment : BaseFragment<FragmentMapBinding, MapViewModel>(), OnMapReady
             setOnMapClickListener { latLng ->
                 setupNewLocationSelection(latLng)
             }
+
+            setOnCameraIdleListener {
+                scheduleVisiblePostsFetch()
+            }
         }
+    }
+
+    private fun scheduleVisiblePostsFetch() {
+        loadVisiblePostsJob?.cancel()
+        loadVisiblePostsJob = viewLifecycleOwner.lifecycleScope.launch {
+            delay(MAP_POSTS_DEBOUNCE_MS)
+            fetchPostsForVisibleRegion()
+        }
+    }
+
+    private fun fetchPostsForVisibleRegion() {
+        val map = mMap ?: return
+        if (map.cameraPosition.zoom < MIN_POSTS_ZOOM) {
+            viewModel.clearPosts()
+            return
+        }
+
+        val bounds = map.projection.visibleRegion.latLngBounds
+        viewModel.fetchPostsInBounds(
+            southLat = bounds.southwest.latitude,
+            northLat = bounds.northeast.latitude,
+            westLng = bounds.southwest.longitude,
+            eastLng = bounds.northeast.longitude
+        )
     }
 
     private fun showPostsBottomSheet(posts: List<MapPostModel>, location: LatLng) {
@@ -170,22 +207,26 @@ class MapFragment : BaseFragment<FragmentMapBinding, MapViewModel>(), OnMapReady
     }
 
     private fun moveToCurrentLocation() {
-        if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) return
+        val fine = ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
+        val coarse = ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED
+        if (!fine && !coarse) return
 
-        LocationServices.getFusedLocationProviderClient(requireActivity()).lastLocation.addOnSuccessListener { location ->
-            location?.let {
-                val latLng = LatLng(it.latitude, it.longitude)
+        try {
+            LocationServices.getFusedLocationProviderClient(requireActivity()).lastLocation.addOnSuccessListener { location ->
+                location?.let {
+                    val latLng = LatLng(it.latitude, it.longitude)
 
-                val cameraPosition = CameraPosition.Builder()
-                    .target(latLng)
-                    .zoom(16f)
-                    .tilt(45f)
-                    .bearing(30f)
-                    .build()
+                    val cameraPosition = CameraPosition.Builder()
+                        .target(latLng)
+                        .zoom(16f)
+                        .tilt(45f)
+                        .bearing(30f)
+                        .build()
 
-                mMap?.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition))
+                    mMap?.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition))
+                }
             }
-        }
+        } catch (_: SecurityException) { }
     }
 
     private fun clusterPosts(posts: List<MapPostModel>): Map<LatLng, List<MapPostModel>> {
@@ -215,4 +256,10 @@ class MapFragment : BaseFragment<FragmentMapBinding, MapViewModel>(), OnMapReady
     }
 
     override fun initListener() {}
+
+    override fun onDestroyView() {
+        loadVisiblePostsJob?.cancel()
+        loadVisiblePostsJob = null
+        super.onDestroyView()
+    }
 }

@@ -6,6 +6,7 @@ import android.os.Handler
 import android.os.Looper
 import android.util.Log
 import com.google.mediapipe.tasks.vision.core.RunningMode
+import com.hadat.aiyoga.data.download.ModelDownloader
 import com.hadat.aiyoga.utils.yogautils.PoseLandmarkerHelper
 import org.tensorflow.lite.Interpreter
 import java.io.File
@@ -19,9 +20,63 @@ object AIManager {
     private var poseLandmarkerHelper: PoseLandmarkerHelper? = null
 
     private var isInitialized = false
+    private var isInitializing = false
+    private var aiConfig: AIConfig = AIDeviceProfile.defaultConfig()
+    private val pendingCallbacks = mutableListOf<(Boolean) -> Unit>()
 
     private val executor = Executors.newSingleThreadExecutor()
     private val mainHandler = Handler(Looper.getMainLooper())
+
+    fun ensureInitialized(context: Context, onComplete: (Boolean) -> Unit) {
+        if (isInitialized) {
+            onComplete(true)
+            return
+        }
+
+        synchronized(this) {
+            pendingCallbacks.add(onComplete)
+            if (isInitializing) return
+            isInitializing = true
+        }
+
+        val appContext = context.applicationContext
+        val modelsExist = ModelDownloader.YOGA_MODELS.all {
+            val file = File(appContext.filesDir, it)
+            file.exists() && file.length() > 0
+        }
+
+        if (modelsExist) {
+            initialize(appContext) {
+                notifyInitializationFinished(isInitialized)
+            }
+        } else {
+            ModelDownloader.downloadAllModels(
+                appContext,
+                onProgress = { progress -> Log.d("AI_Model", "Progress: $progress%") },
+                onComplete = { success ->
+                    if (success) {
+                        initialize(appContext) {
+                            notifyInitializationFinished(isInitialized)
+                        }
+                    } else {
+                        notifyInitializationFinished(false)
+                    }
+                }
+            )
+        }
+    }
+
+    private fun notifyInitializationFinished(success: Boolean) {
+        val callbacks = synchronized(this) {
+            isInitializing = false
+            val callbacks = pendingCallbacks.toList()
+            pendingCallbacks.clear()
+            callbacks
+        }
+        mainHandler.post {
+            callbacks.forEach { it(success) }
+        }
+    }
 
     fun initialize(context: Context, onComplete: () -> Unit) {
         if (isInitialized) {
@@ -31,6 +86,7 @@ object AIManager {
 
         executor.execute {
             try {
+                aiConfig = AIDeviceProfile.detect(context)
                 initClassifier(context)
                 initPoseLandmarker(context)
                 isInitialized = true
@@ -47,22 +103,17 @@ object AIManager {
         if (!file.exists()) return
 
         val options = Interpreter.Options().apply {
-            setNumThreads(4) // 2–4 tuỳ máy, 4 là ổn
+            setNumThreads(aiConfig.classifierThreads)
         }
 
-        Log.d("AIManager", "Classifier using CPU")
+        Log.d("AIManager", "Classifier using CPU threads=${aiConfig.classifierThreads}")
 
         classifierInterpreter = Interpreter(file, options)
     }
 
     private fun initPoseLandmarker(context: Context) {
-        val delegate = try {
-            PoseLandmarkerHelper.DELEGATE_GPU
-            Log.d("AIManager", "PoseLandmarker using GPU")
-        } catch (e: Exception) {
-            PoseLandmarkerHelper.DELEGATE_CPU
-            Log.d("AIManager", "PoseLandmarker using CPU")
-        }
+        val delegate = PoseLandmarkerHelper.DELEGATE_GPU
+        Log.d("AIManager", "PoseLandmarker delegate selected: GPU model=FULL")
 
         poseLandmarkerHelper = PoseLandmarkerHelper(
             context = context.applicationContext,
@@ -79,6 +130,8 @@ object AIManager {
     fun getLandmarker() = poseLandmarkerHelper
 
     fun getClassifier() = classifierInterpreter
+
+    fun getConfig() = aiConfig
 
     fun setListener(listener: PoseLandmarkerHelper.LandmarkerListener?) {
         poseLandmarkerHelper?.poseLandmarkerHelperListener = listener

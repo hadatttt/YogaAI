@@ -9,6 +9,24 @@
             android:name="com.hadat.aiyoga.yoga_ai.YogaFragment"
             android:label="YogaFragment" />
     <fragment
+            android:id="@+id/aiCameraGuideFragment"
+            android:name="com.hadat.aiyoga.ai_camera_guide.AiCameraGuideFragment"
+            android:label="AiCameraGuideFragment">
+        <argument
+                android:name="target_destination"
+                app:argType="integer" />
+        <argument
+                android:name="yogaPoseItem"
+                app:argType="com.hadat.aiyoga.yoga_ai.YogaPoseModel"
+                app:nullable="true"
+                android:defaultValue="@null" />
+        <argument
+                android:name="detail_sequence"
+                app:argType="com.hadat.aiyoga.sequence.WorkoutSequenceModel"
+                app:nullable="true"
+                android:defaultValue="@null" />
+    </fragment>
+    <fragment
             android:id="@+id/loginFragment"
             android:name="com.hadat.aiyoga.login.LoginFragment"
             android:label="LoginFragment" />

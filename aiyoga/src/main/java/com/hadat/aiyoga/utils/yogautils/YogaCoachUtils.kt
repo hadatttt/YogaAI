@@ -7,7 +7,6 @@ import com.google.mediapipe.tasks.components.containers.NormalizedLandmark
 import com.hadat.aiyoga.R
 import com.hadat.aiyoga.data.remoteconfig.YogaDataUtils
 import com.hadat.aiyoga.detailyoga.YogaPoseAngleModel
-import com.hadat.aiyoga.yoga_ai.CorrectionRay
 import kotlin.math.*
 
 object YogaCoachUtils {
@@ -151,11 +150,26 @@ object YogaCoachUtils {
         smoothedAngles[key] = smooth
         return smooth
     }
-    private fun isBodyClearlyVisible(lm: List<NormalizedLandmark>): Boolean {
-        val criticalPoints = listOf(L_SHOULDER, R_SHOULDER, L_HIP, R_HIP, L_KNEE, R_KNEE, L_ANKLE, R_ANKLE)
+    fun isFullBodyVisible(lm: List<NormalizedLandmark>): Boolean {
+        val criticalPoints = listOf(
+            L_SHOULDER, R_SHOULDER,
+            L_ELBOW, R_ELBOW,
+            L_WRIST, R_WRIST,
+            L_HIP, R_HIP,
+            L_KNEE, R_KNEE,
+            L_ANKLE, R_ANKLE
+        )
+        if (lm.size <= criticalPoints.maxOrNull()!!) return false
+
         for (idx in criticalPoints) {
             val point = lm[idx]
-            if (point.presence().orElse(0f) < 0.5f || point.y() !in 0f..1f || point.x() !in 0f..1f) {
+            val presenceOk = !point.presence().isPresent || point.presence().get() >= 0.35f
+            val visibilityOk = !point.visibility().isPresent || point.visibility().get() >= 0.35f
+            if (!presenceOk ||
+                !visibilityOk ||
+                point.y() !in -0.05f..1.05f ||
+                point.x() !in -0.05f..1.05f
+            ) {
                 return false
             }
         }
@@ -169,7 +183,7 @@ object YogaCoachUtils {
         }
         val lm = landmarks[0]
 
-        if (!isBodyClearlyVisible(lm)) {
+        if (!isFullBodyVisible(lm)) {
             return false to context.getString(R.string.stand_back_full_body)
         }
         val rawRefModel = referenceData?.get(poseId) ?: return true to context.getString(R.string.guide_analyzing)

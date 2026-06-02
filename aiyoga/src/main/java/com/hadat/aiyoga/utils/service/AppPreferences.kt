@@ -3,8 +3,10 @@ package com.hadat.aiyoga.utils.service
 import android.content.Context
 import android.content.SharedPreferences
 import android.os.Build
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.annotation.RequiresApi
 import androidx.core.content.edit
+import androidx.core.os.LocaleListCompat
 import java.time.LocalDate
 import java.util.Locale
 
@@ -16,6 +18,7 @@ object AppPreferences {
     private const val KEY_NOTIFICATION_TIME = "notification_time"
     private const val KEY_LANGUAGE_CODE = "language_code"
     private const val KEY_IS_HEALTH_PROFILE_COMPLETED = "is_health_profile_completed"
+    private const val KEY_AI_CAMERA_GUIDE_SHOWN = "ai_camera_guide_shown"
     fun setHealthProfileCompleted(context: Context, isCompleted: Boolean) {
         getPrefs(context).edit {
             putBoolean(KEY_IS_HEALTH_PROFILE_COMPLETED, isCompleted)
@@ -82,6 +85,22 @@ object AppPreferences {
         getPrefs(context).edit { putString(KEY_LANGUAGE_CODE, languageCode) }
     }
 
+    fun applyLanguage(context: Context, languageCode: String) {
+        setLanguageCode(context.applicationContext, languageCode)
+        val currentTags = AppCompatDelegate.getApplicationLocales().toLanguageTags()
+        if (currentTags != languageCode) {
+            AppCompatDelegate.setApplicationLocales(LocaleListCompat.forLanguageTags(languageCode))
+        }
+    }
+
+    fun syncLanguageFromPreferences(context: Context) {
+        val languageCode = getLanguageCode(context.applicationContext)
+        val currentTags = AppCompatDelegate.getApplicationLocales().toLanguageTags()
+        if (currentTags != languageCode) {
+            AppCompatDelegate.setApplicationLocales(LocaleListCompat.forLanguageTags(languageCode))
+        }
+    }
+
     fun getLanguageCode(context: Context): String {
         val prefs = getPrefs(context)
         if (!prefs.contains(KEY_LANGUAGE_CODE)) {
@@ -91,5 +110,13 @@ object AppPreferences {
             return defaultLang
         }
         return prefs.getString(KEY_LANGUAGE_CODE, "en") ?: "en"
+    }
+
+    fun hasSeenAiCameraGuide(context: Context): Boolean {
+        return getPrefs(context).getBoolean(KEY_AI_CAMERA_GUIDE_SHOWN, false)
+    }
+
+    fun setAiCameraGuideShown(context: Context, shown: Boolean = true) {
+        getPrefs(context).edit { putBoolean(KEY_AI_CAMERA_GUIDE_SHOWN, shown) }
     }
 }

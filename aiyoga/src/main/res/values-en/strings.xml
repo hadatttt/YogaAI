@@ -265,4 +265,5 @@
     <string name="hold_to_finish">Hold to finish</string>
     <string name="normal_mode_hint">Follow the sample image and hold the center button to finish.</string>
     <string name="no_ai_accuracy">--</string>
+    <string name="ai_camera_guide_text">Place your phone where it can see your whole body.</string>
 </resources>

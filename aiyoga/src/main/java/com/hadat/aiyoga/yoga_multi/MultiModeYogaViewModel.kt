@@ -224,20 +224,38 @@ class MultiModeYogaViewModel : BaseViewModel() {
         _isTrackingStarted.postValue(false)
     }
 
+    fun showBodyNotReadyGuide(context: Context) {
+        isCurrentlyCorrect = false
+        captureStartTime = 0L
+        _currentGuideText.postValue(context.getString(R.string.stand_back_full_body))
+    }
+
 
     fun resetData() {
         stopTracking()
         handler.removeCallbacks(timerRunnable)
         sessionImagePaths.clear()
         workoutSessionTracker.clear()
+        sequencePoses = emptyList()
         currentPoseIndex = 0
+        currentTargetSeconds = 0
         isAdvancingPose = false
+        isCurrentlyCorrect = false
+        hasStartedCorrectPose = false
+        isPreviousFrameCorrect = true
         hasCapturedCurrentPose = false
         captureStartTime = 0L
+        lastFeedback = ""
+        lastFeedbackTime = 0L
+
         _currentPose.value = null
+        _currentGuideText.value = ""
+        _speakCommand.value = ""
         _timerText.value = "00:00"
         _poseCountText.value = "1/1"
+        _isWaitingForCapture.value = false
         _isTrackingStarted.value = false
+        clearTriggers()
     }
 
     fun toggleCaptureWait() {

@@ -1,5 +1,6 @@
 package com.hadat.aiyoga.data.firestore.repository
 
+import com.google.firebase.firestore.CollectionReference
 import com.google.firebase.firestore.FirebaseFirestore
 import com.hadat.aiyoga.data.firestore.model.MapPostModel
 import kotlinx.coroutines.Dispatchers
@@ -43,22 +44,78 @@ class MapRepository {
     }
 
     suspend fun getPostsNear(lat: Double, lng: Double, latDelta: Double = 0.03, lngDelta: Double = 0.03): List<MapPostModel> =
+        getPostsInBounds(
+            southLat = lat - latDelta,
+            northLat = lat + latDelta,
+            westLng = lng - lngDelta,
+            eastLng = lng + lngDelta
+        )
+
+    suspend fun getPostsInBounds(
+        southLat: Double,
+        northLat: Double,
+        westLng: Double,
+        eastLng: Double,
+        limit: Long = 200
+    ): List<MapPostModel> =
         withContext(Dispatchers.IO) {
             return@withContext try {
-                val minLat = lat - latDelta
-                val maxLat = lat + latDelta
+                val minLat = minOf(southLat, northLat).coerceAtLeast(-90.0)
+                val maxLat = maxOf(southLat, northLat).coerceAtMost(90.0)
+                val normalizedWestLng = westLng.coerceIn(-180.0, 180.0)
+                val normalizedEastLng = eastLng.coerceIn(-180.0, 180.0)
 
-                postsCollection
-                    .whereGreaterThanOrEqualTo("lat", minLat)
-                    .whereLessThanOrEqualTo("lat", maxLat)
-                    .get()
-                    .await()
-                    .toObjects(MapPostModel::class.java)
-                    .filter { it.lng in (lng - lngDelta)..(lng + lngDelta) }
-                    .sortedByDescending { it.createdAt }
+                val latest = getPostsInBoundsFromCollection(
+                    postsCollection,
+                    minLat,
+                    maxLat,
+                    normalizedWestLng,
+                    normalizedEastLng,
+                    limit
+                )
+                val legacy = getPostsInBoundsFromCollection(
+                    legacyPostsCollection,
+                    minLat,
+                    maxLat,
+                    normalizedWestLng,
+                    normalizedEastLng,
+                    limit
+                )
+
+                (latest + legacy)
+                    .distinctBy { it.id + it.userId + it.lat + it.lng + (it.createdAt?.time ?: 0L) }
+                    .sortedByDescending { it.createdAt?.time ?: 0L }
+                    .take(limit.toInt())
             } catch (_: Exception) {
                 emptyList()
             }
         }
+
+    private suspend fun getPostsInBoundsFromCollection(
+        collection: CollectionReference,
+        minLat: Double,
+        maxLat: Double,
+        westLng: Double,
+        eastLng: Double,
+        limit: Long
+    ): List<MapPostModel> {
+        // Firestore only supports the range query on latitude here; longitude is filtered locally.
+        return collection
+            .whereGreaterThanOrEqualTo("lat", minLat)
+            .whereLessThanOrEqualTo("lat", maxLat)
+            .limit(limit)
+            .get()
+            .await()
+            .toObjects(MapPostModel::class.java)
+            .filter { isLngInBounds(it.lng, westLng, eastLng) }
+    }
+
+    private fun isLngInBounds(lng: Double, westLng: Double, eastLng: Double): Boolean {
+        return if (westLng <= eastLng) {
+            lng in westLng..eastLng
+        } else {
+            lng >= westLng || lng <= eastLng
+        }
+    }
 }
 
