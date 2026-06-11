@@ -1,12 +1,17 @@
 package com.hadat.aiyoga.map
 
 import android.Manifest
+import android.app.Dialog
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.Canvas
+import android.graphics.Color
+import android.graphics.drawable.ColorDrawable
 import android.net.Uri
 import android.view.View
+import android.view.ViewGroup
+import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
@@ -20,9 +25,11 @@ import com.google.android.gms.maps.model.*
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.hadat.aiyoga.R
 import com.hadat.aiyoga.data.firestore.model.MapPostModel
+import com.hadat.aiyoga.databinding.DialogDeleteBinding
 import com.hadat.aiyoga.databinding.FragmentMapBinding
 import com.hadat.aiyoga.databinding.LayoutCustomMarkerBinding
 import com.hadat.aiyoga.databinding.LayoutMapPostsBottomSheetBinding
+import com.hadat.aiyoga.utils.service.AppPreferences
 import hoang.dqm.codebase.base.activity.BaseFragment
 import hoang.dqm.codebase.utils.singleClick
 import kotlinx.coroutines.Job
@@ -35,6 +42,16 @@ class MapFragment : BaseFragment<FragmentMapBinding, MapViewModel>(), OnMapReady
     private var currentMarker: Marker? = null
     private var selectedLatLng: LatLng? = null
     private var loadVisiblePostsJob: Job? = null
+    private var shouldOpenMyReviewsSheet = false
+    private var myReviewsSheet: BottomSheetDialog? = null
+
+    private val myReviewsAdapter by lazy {
+        MapPostsAdapter(
+            showDelete = true,
+            onDeleteClick = { post -> showDeleteDialog(post) },
+            onItemClick = { post -> showPostOnMap(post) }
+        )
+    }
 
     private companion object {
         const val MAP_POSTS_DEBOUNCE_MS = 500L
@@ -179,6 +196,31 @@ class MapFragment : BaseFragment<FragmentMapBinding, MapViewModel>(), OnMapReady
                 marker?.tag = posts
             }
         }
+
+        viewModel.myPosts.observe(viewLifecycleOwner) { posts ->
+            myReviewsAdapter.setList(posts)
+            if (shouldOpenMyReviewsSheet) {
+                shouldOpenMyReviewsSheet = false
+                if (posts.isEmpty()) {
+                    Toast.makeText(requireContext(), getString(R.string.no_map_reviews), Toast.LENGTH_SHORT).show()
+                } else {
+                    showMyReviewsBottomSheet(posts)
+                }
+            } else if (myReviewsSheet?.isShowing == true && posts.isEmpty()) {
+                myReviewsSheet?.dismiss()
+            }
+        }
+
+        viewModel.deleteStatus.observe(viewLifecycleOwner) { ok ->
+            if (ok == null) return@observe
+            Toast.makeText(
+                requireContext(),
+                getString(if (ok) R.string.delete_map_review_success else R.string.delete_map_review_failed),
+                Toast.LENGTH_SHORT
+            ).show()
+            viewModel.resetDeleteStatus()
+            fetchPostsForVisibleRegion()
+        }
     }
 
     private fun setupNewLocationSelection(latLng: LatLng) {
@@ -255,7 +297,67 @@ class MapFragment : BaseFragment<FragmentMapBinding, MapViewModel>(), OnMapReady
         }
     }
 
-    override fun initListener() {}
+    override fun initListener() {
+        binding.btnMyReviews.singleClick {
+            shouldOpenMyReviewsSheet = true
+            fetchMyReviews()
+        }
+    }
+
+    private fun fetchMyReviews() {
+        val userId = AppPreferences.getUserId(requireContext()) ?: "guest"
+        viewModel.fetchMyPosts(userId)
+    }
+
+    private fun showMyReviewsBottomSheet(posts: List<MapPostModel>) {
+        myReviewsSheet?.dismiss()
+        val dialog = BottomSheetDialog(requireContext(), R.style.BottomSheetDialogTheme)
+        val sheetBinding = LayoutMapPostsBottomSheetBinding.inflate(layoutInflater)
+        dialog.setContentView(sheetBinding.root)
+        myReviewsSheet = dialog
+
+        sheetBinding.tvLocationTitle.text = getString(R.string.my_map_reviews)
+        sheetBinding.rvMarkerPosts.apply {
+            layoutManager = LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
+            adapter = myReviewsAdapter
+        }
+        myReviewsAdapter.setList(posts)
+        sheetBinding.layoutActions.visibility = View.GONE
+
+        dialog.setOnDismissListener {
+            if (myReviewsSheet == dialog) myReviewsSheet = null
+        }
+        dialog.show()
+    }
+
+    private fun showPostOnMap(post: MapPostModel) {
+        myReviewsSheet?.dismiss()
+        val latLng = LatLng(post.lat, post.lng)
+        mMap?.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 17f))
+        showPostsBottomSheet(listOf(post), latLng)
+    }
+
+    private fun showDeleteDialog(post: MapPostModel) {
+        val dialog = Dialog(requireContext())
+        val dialogBinding = DialogDeleteBinding.inflate(layoutInflater)
+
+        dialog.apply {
+            setContentView(dialogBinding.root)
+            window?.apply {
+                setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+                setLayout((resources.displayMetrics.widthPixels * 0.86).toInt(), ViewGroup.LayoutParams.WRAP_CONTENT)
+            }
+        }
+
+        dialogBinding.ivClose.singleClick { dialog.dismiss() }
+        dialogBinding.btnConfirm.singleClick {
+            val userId = AppPreferences.getUserId(requireContext()) ?: "guest"
+            viewModel.deleteMyPost(post, userId)
+            dialog.dismiss()
+        }
+
+        dialog.show()
+    }
 
     override fun onDestroyView() {
         loadVisiblePostsJob?.cancel()

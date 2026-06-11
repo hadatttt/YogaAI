@@ -24,7 +24,7 @@
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintDimensionRatio="1:1"
-                app:shapeAppearanceOverlay="@style/TopRoundedImage" />
+                />
 
         <View
                 android:id="@+id/viewGradient"
@@ -34,6 +34,22 @@
                 app:layout_constraintBottom_toBottomOf="@id/img_background"
                 app:layout_constraintStart_toStartOf="@id/img_background"
                 app:layout_constraintEnd_toEndOf="@id/img_background" />
+
+        <androidx.appcompat.widget.AppCompatImageView
+                android:id="@+id/btn_delete"
+                android:layout_width="@dimen/_34sdp"
+                android:layout_height="@dimen/_34sdp"
+                android:layout_marginTop="@dimen/_10sdp"
+                android:layout_marginEnd="@dimen/_10sdp"
+                android:background="@drawable/shape_circle"
+                android:backgroundTint="#EEFFFFFF"
+                android:padding="@dimen/_8sdp"
+                android:src="@drawable/ic_delete"
+                android:visibility="gone"
+                app:layout_constraintEnd_toEndOf="@id/img_background"
+                app:layout_constraintTop_toTopOf="@id/img_background"
+                app:tint="#FF1744"
+                tools:visibility="visible" />
 
         <LinearLayout
                 android:id="@+id/llUserInfo"

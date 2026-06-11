@@ -14,3 +14,12 @@ data class ChatResponse(
     val answer: String = "",
     val data: AiSequencePlan? = null
 )
+
+data class RecommendRequest(
+    val ids: List<Int>,
+    val pose_ids: List<Int> = ids
+)
+
+data class RecommendResponse(
+    val ids: List<Int> = emptyList()
+)

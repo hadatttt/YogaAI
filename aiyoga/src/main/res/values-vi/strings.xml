@@ -26,7 +26,6 @@
     <string name="get_started">Bắt đầu</string>
     <string name="choose_your_login_method">Chọn đăng nhập</string>
     <string name="continue_with_google">Tiếp tục với Google</string>
-    <string name="continue_with_facebook">Tiếp tục với Facebook</string>
     <string name="by_continuing_you_agree_to_our_nterms_of_service_and_privacy_policy">Bằng cách tiếp tục, bạn đồng ý với\nĐiều khoản và Chính sách của chúng tôi</string>
     <string name="health_is_wealth_peace_of_mind_is_happiness">Sức khỏe là tài sản, an nhiên là hạnh phúc</string>
     <string name="default_web_client_id">425633611370-5n8a0hc5r8o65q8uv9933kbe83dsgo2q.apps.googleusercontent.com</string>
@@ -174,6 +173,10 @@
     <string name="btn_calculating">Đang tính...</string>
     <string name="btn_save">Lưu thông tin</string>
     <string name="map">Bản đồ</string>
+    <string name="my_map_reviews">Bài của tôi</string>
+    <string name="no_map_reviews">Bạn chưa chia sẻ địa điểm Yoga nào.</string>
+    <string name="delete_map_review_success">Đã xóa bài chia sẻ.</string>
+    <string name="delete_map_review_failed">Không thể xóa bài chia sẻ này.</string>
     <string name="format_minutes">%1$d phút</string>
     <string name="format_poses_count">%1$d tư thế</string>
     <string name="find_your_pose">Tìm tư thế của bạn…</string>

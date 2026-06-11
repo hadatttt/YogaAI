@@ -17,6 +17,8 @@ class MapViewModel : BaseViewModel() {
     private var fetchPostsJob: Job? = null
 
     val posts = MutableLiveData<List<MapPostModel>>(emptyList())
+    val myPosts = MutableLiveData<List<MapPostModel>>(emptyList())
+    val deleteStatus = MutableLiveData<Boolean?>(null)
 
     fun fetchLatestPosts() {
         fetchPostsJob?.cancel()
@@ -45,6 +47,27 @@ class MapViewModel : BaseViewModel() {
     fun clearPosts() {
         fetchPostsJob?.cancel()
         posts.value = emptyList()
+    }
+
+    fun fetchMyPosts(userId: String) {
+        viewModelScope.launch {
+            myPosts.postValue(enrichPosts(mapRepository.getMyPosts(userId)))
+        }
+    }
+
+    fun deleteMyPost(post: MapPostModel, userId: String) {
+        viewModelScope.launch {
+            val ok = mapRepository.deletePost(post.id)
+            deleteStatus.postValue(ok)
+            if (ok) {
+                fetchMyPosts(userId)
+                posts.value = posts.value.orEmpty().filterNot { it.id == post.id }
+            }
+        }
+    }
+
+    fun resetDeleteStatus() {
+        deleteStatus.value = null
     }
 
     private suspend fun enrichPosts(input: List<MapPostModel>): List<MapPostModel> {

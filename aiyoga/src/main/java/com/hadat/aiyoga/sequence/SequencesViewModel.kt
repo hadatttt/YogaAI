@@ -9,6 +9,7 @@ import com.hadat.aiyoga.data.remoteconfig.YogaDataUtils
 import com.hadat.aiyoga.utils.yogautils.YogaRecommender
 import com.hadat.aiyoga.yoga_ai.YogaPoseModel
 import hoang.dqm.codebase.base.viewmodel.BaseViewModel
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 
 class SequencesViewModel : BaseViewModel() {
@@ -18,10 +19,13 @@ class SequencesViewModel : BaseViewModel() {
     private val userRepository = UserRepository()
     val sequenceList = MutableLiveData<MutableList<SequenceModel>>(mutableListOf())
     val recommendationList = MutableLiveData<List<YogaPoseModel>>()
+    val recommendationLoading = MutableLiveData(false)
     val saveStatus = MutableLiveData<Boolean?>()
 
     private var allPoses = listOf<YogaPoseModel>()
     private var loadedDataVersion = -1
+    private var recommendationJob: Job? = null
+    private var recommendationRequestId = 0
     fun resetSaveStatus() {
         saveStatus.value = null
     }
@@ -38,8 +42,19 @@ class SequencesViewModel : BaseViewModel() {
     private fun getRecommendations() {
         val currentList = sequenceList.value ?: return
         if (allPoses.isEmpty()) return
-        val suggested = recommender.getRecommendations(currentList, allPoses)
-        recommendationList.postValue(suggested)
+        recommendationJob?.cancel()
+        val requestId = ++recommendationRequestId
+        recommendationJob = viewModelScope.launch {
+            recommendationLoading.postValue(true)
+            try {
+                val suggested = recommender.getRecommendations(currentList, allPoses)
+                recommendationList.postValue(suggested)
+            } finally {
+                if (requestId == recommendationRequestId) {
+                    recommendationLoading.postValue(false)
+                }
+            }
+        }
     }
 
     fun updateList(newList: List<SequenceModel>) {

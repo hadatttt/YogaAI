@@ -14,10 +14,6 @@ import com.google.firebase.FirebaseApp
 import com.qamar.curvedbottomnaviagtion.CurvedBottomNavigation
 import com.hadat.aiyoga.utils.service.AppPreferences
 import hoang.dqm.codebase.base.activity.navigate
-import android.net.ConnectivityManager
-import android.net.Network
-import android.net.NetworkCapabilities
-import android.net.NetworkRequest
 import com.airbnb.lottie.LottieAnimationView
 import com.hadat.aiyoga.data.remoteconfig.YogaDataUtils
 
@@ -25,8 +21,6 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var navController: NavController
     private lateinit var bottomNavigation: CurvedBottomNavigation
-    private lateinit var connectivityManager: ConnectivityManager
-    private lateinit var networkCallback: ConnectivityManager.NetworkCallback
     private lateinit var loadingView: View
     private var currentSelectedBottomItem = HOME_ITEM
     companion object {
@@ -56,7 +50,6 @@ class MainActivity : AppCompatActivity() {
             (loadingView as? LottieAnimationView)?.playAnimation()
         }
         loadingView.postDelayed({
-            setupNetworkListener()
             YogaDataUtils.prefetchData(this) { success ->
                 Log.d("YogaData", "Prefetch: $success")
                 runOnUiThread { loadingView.visibility = View.GONE }
@@ -138,28 +131,4 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun setupNetworkListener() {
-        val layoutNoInternet = findViewById<View>(R.id.layoutNoInternet)
-        val buttonSetting = findViewById<View>(R.id.buttonSetting)
-        connectivityManager = getSystemService(CONNECTIVITY_SERVICE) as ConnectivityManager
-
-        networkCallback = object : ConnectivityManager.NetworkCallback() {
-            override fun onAvailable(network: Network) { runOnUiThread { layoutNoInternet.visibility = View.GONE } }
-            override fun onLost(network: Network) { runOnUiThread { layoutNoInternet.visibility = View.VISIBLE } }
-        }
-
-        connectivityManager.registerNetworkCallback(NetworkRequest.Builder().addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET).build(), networkCallback)
-
-        val activeNet = connectivityManager.activeNetwork
-        val caps = connectivityManager.getNetworkCapabilities(activeNet)
-        layoutNoInternet.visibility = if (caps?.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) == true) View.GONE else View.VISIBLE
-        buttonSetting.setOnClickListener { startActivity(android.content.Intent(android.provider.Settings.ACTION_WIFI_SETTINGS)) }
-    }
-
-    override fun onDestroy() {
-        if (::networkCallback.isInitialized) {
-            connectivityManager.unregisterNetworkCallback(networkCallback)
-        }
-        super.onDestroy()
-    }
 }

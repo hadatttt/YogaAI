@@ -159,21 +159,7 @@ object YogaCoachUtils {
             L_KNEE, R_KNEE,
             L_ANKLE, R_ANKLE
         )
-        if (lm.size <= criticalPoints.maxOrNull()!!) return false
-
-        for (idx in criticalPoints) {
-            val point = lm[idx]
-            val presenceOk = !point.presence().isPresent || point.presence().get() >= 0.35f
-            val visibilityOk = !point.visibility().isPresent || point.visibility().get() >= 0.35f
-            if (!presenceOk ||
-                !visibilityOk ||
-                point.y() !in -0.05f..1.05f ||
-                point.x() !in -0.05f..1.05f
-            ) {
-                return false
-            }
-        }
-        return true
+        return criticalPoints.all { idx -> idx in lm.indices }
     }
     fun getCoachFeedback(context: Context, poseId: Int, result: PoseLandmarkerResult): Pair<Boolean, String> {
         val landmarks = result.landmarks()

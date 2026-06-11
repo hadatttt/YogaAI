@@ -17,7 +17,7 @@
 
     <TextView
             android:id="@+id/tv_guide"
-            android:layout_width="@dimen/_260sdp"
+            android:layout_width="@dimen/_240sdp"
             android:layout_height="wrap_content"
             android:layout_marginEnd="@dimen/_24sdp"
             android:layout_marginBottom="@dimen/_24sdp"

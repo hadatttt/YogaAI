@@ -8,7 +8,8 @@
 
     <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
+            android:layout_height="match_parent"
+            android:background="#F4F6FA">
 
         <fragment
                 android:id="@+id/map"
@@ -16,6 +17,28 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent" />
 
+        <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_my_reviews"
+                android:layout_width="wrap_content"
+                android:layout_height="@dimen/_46sdp"
+                android:layout_marginBottom="@dimen/_38sdp"
+                android:layout_marginStart="@dimen/_16sdp"
+                android:background="@drawable/bg_tab_selected"
+                android:fontFamily="@font/font_bold"
+                android:paddingHorizontal="@dimen/_16sdp"
+                android:text="@string/my_map_reviews"
+                android:textAllCaps="false"
+                android:textColor="@android:color/white"
+                android:textSize="@dimen/_13ssp"
+                app:backgroundTint="@null"
+                app:cornerRadius="@dimen/_14sdp"
+                app:icon="@drawable/ic_history"
+                app:iconGravity="textStart"
+                app:iconPadding="@dimen/_6sdp"
+                app:iconSize="@dimen/_16sdp"
+                app:iconTint="@android:color/white"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"/>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

@@ -43,6 +43,42 @@ class MapRepository {
         }
     }
 
+    suspend fun getMyPosts(userId: String, limit: Long = 100): List<MapPostModel> = withContext(Dispatchers.IO) {
+        if (userId.isBlank() || userId == "guest") return@withContext emptyList()
+        return@withContext try {
+            val latest = postsCollection
+                .whereEqualTo("userId", userId)
+                .limit(limit)
+                .get()
+                .await()
+                .toObjects(MapPostModel::class.java)
+
+            val legacy = legacyPostsCollection
+                .whereEqualTo("userId", userId)
+                .limit(limit)
+                .get()
+                .await()
+                .toObjects(MapPostModel::class.java)
+
+            (latest + legacy)
+                .distinctBy { it.id + it.userId + it.lat + it.lng + (it.createdAt?.time ?: 0L) }
+                .sortedByDescending { it.createdAt?.time ?: 0L }
+        } catch (_: Exception) {
+            emptyList()
+        }
+    }
+
+    suspend fun deletePost(postId: String): Boolean = withContext(Dispatchers.IO) {
+        if (postId.isBlank()) return@withContext false
+        return@withContext try {
+            postsCollection.document(postId).delete().await()
+            legacyPostsCollection.document(postId).delete().await()
+            true
+        } catch (_: Exception) {
+            false
+        }
+    }
+
     suspend fun getPostsNear(lat: Double, lng: Double, latDelta: Double = 0.03, lngDelta: Double = 0.03): List<MapPostModel> =
         getPostsInBounds(
             southLat = lat - latDelta,
