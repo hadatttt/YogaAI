@@ -46,10 +46,6 @@ object HealthCalculatorUtils {
         return bmr * multiplier
     }
 
-    /**
-     * Tính Calo tiêu thụ cho một bài tập (Dựa trên MET)
-     * Công thức: (MET * 3.5 * Weight * DurationMinutes) / 200
-     */
     fun calculateDailyGoalCalories(tdee: Float): Int {
         return tdee.toInt()
     }
@@ -78,9 +74,6 @@ object HealthCalculatorUtils {
             ).toDouble()
         }.toFloat()
     }
-    /**
-     * Tính Accuracy (%)
-     */
     fun calculateAccuracy(
         expectedTimeSec: Int,
         wrongCount: Int

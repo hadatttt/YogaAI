@@ -150,9 +150,6 @@
     <string name="common_title_confirm_exit">Do you want to exit app?</string>
     <string name="comon_visit_site">Visit site</string>
     <string name="content_update_app">New feature available, Open play store and update now.</string>
-    <string name="facebook_app_id" />
-    <string name="facebook_client_token" />
-    <string name="fb_login_protocol_scheme" />
     <string name="later">Later</string>
     <string name="message_load_error">Load ads failed...</string>
     <string name="new_update_available">New Update Available</string>

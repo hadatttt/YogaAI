@@ -50,14 +50,10 @@ class LoginFragment : BaseFragment<FragmentLoginBinding, LoginViewModel>() {
             val currentLang = AppPreferences.getLanguageCode(requireContext())
             val newLang = if (currentLang == "en") "vi" else "en"
 
-            AppPreferences.setLanguageCode(requireContext(), newLang)
             updateLanguageUI(newLang, isAnim = true)
 
             binding.root.postDelayed({
-                androidx.appcompat.app.AppCompatDelegate.setApplicationLocales(
-                    androidx.core.os.LocaleListCompat.forLanguageTags(newLang)
-                )
-                requireActivity().recreate()
+                AppPreferences.applyLanguage(requireContext(), newLang)
             }, 250)
         }
     }

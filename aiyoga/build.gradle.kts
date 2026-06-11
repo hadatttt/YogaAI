@@ -86,9 +86,6 @@ dependencies {
     // UI Helpers
     implementation("com.github.bumptech.glide:glide:4.16.0")
 
-    // Auth & Social
-    implementation("com.facebook.android:facebook-login:16.2.0")
-
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.7.3")
     // Firebase
     implementation(platform("com.google.firebase:firebase-bom:32.3.1"))

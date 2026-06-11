@@ -28,6 +28,7 @@ import hoang.dqm.codebase.utils.singleClick
 class SequencesFragment : BaseFragment<FragmentSequencesBinding, SequencesViewModel>(), OnStartDragListener {
 
     private val recommendAdapter by lazy { RecommendPoseAdapter() }
+    private val levelAdapter by lazy { SequenceLevelAdapter() }
     private val args by navArgs<SequencesFragmentArgs>()
     private val poseAdapter by lazy {
         PoseSequenceAdapter(
@@ -42,7 +43,13 @@ class SequencesFragment : BaseFragment<FragmentSequencesBinding, SequencesViewMo
     }
     private lateinit var itemTouchHelper: ItemTouchHelper
     private var selectedImageUri: Uri? = null
+    private var selectedLevel = 1
     private val defaultImageUrl = "https://plus.unsplash.com/premium_photo-1676815865390-8e3a9336f64b?fm=jpg&q=60&w=3000&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8eW9nYSUyMGJhY2tncm91bmR8ZW58MHx8MHx8fDA%3D"
+    private val levelOptions = listOf(
+        SequenceLevelModel(1, R.string.beginner),
+        SequenceLevelModel(2, R.string.intermediate),
+        SequenceLevelModel(3, R.string.advanced)
+    )
 
     private val pickImageLauncher = registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
         uri?.let {
@@ -64,6 +71,11 @@ class SequencesFragment : BaseFragment<FragmentSequencesBinding, SequencesViewMo
             layoutManager = LinearLayoutManager(context)
             adapter = poseAdapter
         }
+        binding.rvLevel.apply {
+            layoutManager = LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
+            adapter = levelAdapter
+        }
+        levelAdapter.setList(levelOptions)
         binding.rcvRecommendations.apply {
             layoutManager = LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
             adapter = recommendAdapter
@@ -91,6 +103,15 @@ class SequencesFragment : BaseFragment<FragmentSequencesBinding, SequencesViewMo
         itemTouchHelper = ItemTouchHelper(callback).apply { attachToRecyclerView(binding.rcvPeakOptions) }
 
         viewModel.recommendationList.observe(viewLifecycleOwner) { recommendAdapter.setList(it) }
+        viewModel.recommendationLoading.observe(viewLifecycleOwner) { isLoading ->
+            binding.rcvRecommendations.visibility = if (isLoading) View.GONE else View.VISIBLE
+            binding.lottieRecommendLoading.visibility = if (isLoading) View.VISIBLE else View.GONE
+            if (isLoading) {
+                binding.lottieRecommendLoading.playAnimation()
+            } else {
+                binding.lottieRecommendLoading.cancelAnimation()
+            }
+        }
 
         viewModel.saveStatus.observe(viewLifecycleOwner) { isSuccess ->
             if (isSuccess == null) return@observe
@@ -121,6 +142,11 @@ class SequencesFragment : BaseFragment<FragmentSequencesBinding, SequencesViewMo
         binding.ivBack.singleClick { popBackStack() }
         binding.cardSelectImage.singleClick { pickImageLauncher.launch("image/*") }
 
+        levelAdapter.setOnClickItemListener = { level, position ->
+            selectedLevel = level.value
+            levelAdapter.setSelectedPosition(position)
+        }
+
         recommendAdapter.setOnClickItemRecyclerView { pose, _ ->
             val newPose = SequenceModel(
                 id = pose.id,
@@ -147,12 +173,7 @@ class SequencesFragment : BaseFragment<FragmentSequencesBinding, SequencesViewMo
 
         binding.btnCreate.isEnabled = false
         val userId = AppPreferences.getUserId(requireContext()) ?: "guest"
-        val level = when (binding.cgLevel.checkedChipId) {
-            com.hadat.aiyoga.R.id.chip_beginner -> 1
-            com.hadat.aiyoga.R.id.chip_intermediate -> 2
-            com.hadat.aiyoga.R.id.chip_advanced -> 3
-            else -> 1
-        }
+        val level = selectedLevel
 
         val onProcessComplete: (String) -> Unit = { url ->
             if (args.isEdit && args.detailSequence != null) {
@@ -200,11 +221,7 @@ class SequencesFragment : BaseFragment<FragmentSequencesBinding, SequencesViewMo
 
             binding.apply {
                 edtSequenceName.setText(data.title)
-                when (data.level) {
-                    1 -> cgLevel.check(R.id.chip_beginner)
-                    2 -> cgLevel.check(R.id.chip_intermediate)
-                    3 -> cgLevel.check(R.id.chip_advanced)
-                }
+                setSelectedLevel(data.level)
                 if (selectedImageUri == null) {
                     ivSequenceBackground.loadImageFromNetwork(data.coverImageUrl)
                 }
@@ -228,6 +245,12 @@ class SequencesFragment : BaseFragment<FragmentSequencesBinding, SequencesViewMo
                 viewModel.updateList(sequenceData)
             }
         }
+    }
+
+    private fun setSelectedLevel(level: Int) {
+        val position = levelOptions.indexOfFirst { it.value == level }.takeIf { it >= 0 } ?: 0
+        selectedLevel = levelOptions[position].value
+        levelAdapter.setSelectedPosition(position)
     }
 
     override fun onStartDrag(viewHolder: RecyclerView.ViewHolder) {

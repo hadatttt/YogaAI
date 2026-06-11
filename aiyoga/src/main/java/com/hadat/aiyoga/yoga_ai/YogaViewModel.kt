@@ -149,6 +149,11 @@ class YogaViewModel : BaseViewModel() {
         }
     }
 
+    fun showBodyNotReadyGuide(context: Context) {
+        isCurrentlyCorrect = false
+        _currentGuideText.postValue(context.getString(R.string.stand_back_full_body))
+    }
+
     fun handlePoseInference(context: Context, poseId: Int) {
         val allPoses = _yogaPoseDataList.value ?: return
         val poseData = allPoses.find { it.id == poseId } ?: return
@@ -229,6 +234,7 @@ class YogaViewModel : BaseViewModel() {
 
         _currentPoseName.value = "..."
         _currentGuideText.value = ""
+        _speakCommand.value = ""
         _timerText.value = "00:00"
         _detectedPoseId.value = -1
         _previewPoseId.value = -1
@@ -237,6 +243,10 @@ class YogaViewModel : BaseViewModel() {
         isTrackingStarted = false
         isCurrentlyCorrect = false
         hasCapturedCurrentPose = false
+        hasStartedCorrectPose = false
+        isPreviousFrameCorrect = true
+        lastFeedback = ""
+        lastFeedbackTime = 0L
         captureStartTime = 0L
     }
 

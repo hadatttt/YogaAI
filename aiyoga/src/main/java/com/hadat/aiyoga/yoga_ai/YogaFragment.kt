@@ -6,8 +6,8 @@ import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.Matrix
 import android.os.Bundle
+import android.os.SystemClock
 import android.speech.tts.TextToSpeech
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
@@ -38,6 +38,7 @@ import java.nio.ByteOrder
 import java.util.*
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
+import java.util.concurrent.atomic.AtomicBoolean
 import com.takusemba.spotlight.Spotlight
 import com.takusemba.spotlight.shape.Circle
 import com.takusemba.spotlight.shape.RoundedRectangle
@@ -57,17 +58,17 @@ class YogaFragment : BaseFragment<FragmentSingleYogaBinding, YogaViewModel>(),
     private var poseLandmarkerHelper: PoseLandmarkerHelper? = null
     private var tts: TextToSpeech? = null
     private val tfliteLock = Any()
+    private val classifierRunning = AtomicBoolean(false)
 
     private var lensFacing = CameraSelector.LENS_FACING_FRONT
-    private var frameCounter = 0
-    private var lastCoachTime = 0L
-    private val COACH_INTERVAL = 2000L
+    private var lastClassifierTimeMs = 0L
 
     private var progressAnimator: ObjectAnimator? = null
     private var isMuted = false
     private var lastPendingPoseId = -1
     private var poseCounter = 0
     private val STABLE_THRESHOLD = 7
+    private var aiReady = false
 
     override fun initView() {
         backgroundExecutor = Executors.newSingleThreadExecutor()
@@ -78,22 +79,26 @@ class YogaFragment : BaseFragment<FragmentSingleYogaBinding, YogaViewModel>(),
     private fun initializeAiResources() {
         binding.loadingView.root.visibility = View.VISIBLE
 
-        poseLandmarkerHelper = AIManager.getLandmarker()
-        classifierInterpreter = AIManager.getClassifier()
-        AIManager.setListener(this)
+        AIManager.ensureInitialized(requireContext()) { success ->
+            if (!isAdded || view == null) return@ensureInitialized
 
-        val isSuccess = YogaCoachUtils.loadReferenceData()
+            poseLandmarkerHelper = AIManager.getLandmarker()
+            classifierInterpreter = AIManager.getClassifier()
+            AIManager.setListener(this)
 
-        if (isSuccess && isAdded) {
-            viewModel.fetchYogaPoses()
-            binding.loadingView.root.visibility = View.GONE
-        } else if (isAdded) {
+            val isSuccess = success && YogaCoachUtils.loadReferenceData()
+            aiReady = isSuccess
+
+            if (isSuccess) {
+                viewModel.fetchYogaPoses()
+                checkAndStartCamera()
+            }
             binding.loadingView.root.visibility = View.GONE
         }
     }
     override fun onResume() {
         super.onResume()
-        checkAndStartCamera()
+        if (aiReady) checkAndStartCamera()
         val landmarker = AIManager.getLandmarker()
         if (landmarker != null) {
             AIManager.setListener(this)
@@ -106,6 +111,7 @@ class YogaFragment : BaseFragment<FragmentSingleYogaBinding, YogaViewModel>(),
     }
     override fun onPause() {
         super.onPause()
+        setKeepScreenOn(false)
         try {
             cameraProvider?.unbindAll()
         } catch (e: Exception) {
@@ -163,18 +169,28 @@ class YogaFragment : BaseFragment<FragmentSingleYogaBinding, YogaViewModel>(),
                 cameraProvider.unbindAll()
                 cameraProvider.bindToLifecycle(viewLifecycleOwner,
                     CameraSelector.Builder().requireLensFacing(lensFacing).build(), preview, analysis)
+                setKeepScreenOn(true)
             } catch (e: Exception) { }
         }, ContextCompat.getMainExecutor(requireContext()))
     }
 
     private fun processFrame(imageProxy: ImageProxy) {
         try {
-            frameCounter++
-            if (frameCounter % 5 == 0 && classifierInterpreter != null) {
+            val now = SystemClock.elapsedRealtime()
+            val classifierIntervalMs = AIManager.getConfig().classifierIntervalMs
+            if (now - lastClassifierTimeMs >= classifierIntervalMs &&
+                classifierInterpreter != null &&
+                classifierRunning.compareAndSet(false, true)
+            ) {
+                lastClassifierTimeMs = now
                 val bitmap = imageProxy.toBitmap()
                 val rotationDegrees = imageProxy.imageInfo.rotationDegrees
                 classifierExecutor.execute {
-                    runPoseClassifier(bitmap, rotationDegrees)
+                    try {
+                        runPoseClassifier(bitmap, rotationDegrees)
+                    } finally {
+                        classifierRunning.set(false)
+                    }
                 }
             }
             val currentLandmarker = AIManager.getLandmarker()
@@ -190,6 +206,7 @@ class YogaFragment : BaseFragment<FragmentSingleYogaBinding, YogaViewModel>(),
             imageProxy.close()
         }
     }
+
     private fun runPoseClassifier(bitmap: Bitmap, rotationDegrees: Int) {
         try {
             val interpreter = classifierInterpreter ?: return
@@ -378,8 +395,16 @@ class YogaFragment : BaseFragment<FragmentSingleYogaBinding, YogaViewModel>(),
 
     private val requestPermissionLauncher = registerForActivityResult(ActivityResultContracts.RequestPermission()) { if (it) startCamera() }
 
+    private fun setKeepScreenOn(enabled: Boolean) {
+        if (view != null) {
+            binding.root.keepScreenOn = enabled
+        }
+    }
+
     override fun onDestroyView() {
-        viewModel.stopExerciseTimer()
+        setKeepScreenOn(false)
+        viewModel.resetData()
+        resetLocalAiState()
         classifierExecutor.shutdownNow()
         backgroundExecutor.shutdownNow()
         AIManager.getLandmarker()?.poseLandmarkerHelperListener = null
@@ -396,6 +421,7 @@ class YogaFragment : BaseFragment<FragmentSingleYogaBinding, YogaViewModel>(),
 
         if (results.isEmpty()) {
             Toast.makeText(requireContext(), getString(com.hadat.aiyoga.R.string.no_image_to_share), Toast.LENGTH_SHORT).show()
+            viewModel.resetData()
             popBackStack()
             return
         }
@@ -407,6 +433,13 @@ class YogaFragment : BaseFragment<FragmentSingleYogaBinding, YogaViewModel>(),
 
         navigate(com.hadat.aiyoga.R.id.resultFragment, bundle, isPop = true)
         viewModel.resetData()
+    }
+
+    private fun resetLocalAiState() {
+        poseCounter = 0
+        lastPendingPoseId = -1
+        lastClassifierTimeMs = 0L
+        classifierRunning.set(false)
     }
 
     private fun animatePhotoCapture() {

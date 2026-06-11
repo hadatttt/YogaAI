@@ -4,6 +4,7 @@ import android.os.Bundle
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.hadat.aiyoga.R
 import com.hadat.aiyoga.databinding.FragmentHomeBinding
+import com.hadat.aiyoga.utils.service.AppPreferences
 import com.hadat.aiyoga.utils.view.ViewUtils.getGreeting
 import com.hadat.aiyoga.utils.view.ViewUtils.removeVietnameseAccents
 import com.hadat.aiyoga.utils.view.loadImageFromNetwork
@@ -70,7 +71,7 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
         }
 
         binding.cvYoai.singleClick {
-            navigate(R.id.yogaFragment)
+            navigateToAiCamera(R.id.yogaFragment)
         }
         binding.ivProfileEdit.singleClick {
             navigate(R.id.profileFragment)
@@ -82,5 +83,17 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
     }
 
     override fun initData() {
+    }
+
+    private fun navigateToAiCamera(targetDestination: Int) {
+        if (AppPreferences.hasSeenAiCameraGuide(requireContext())) {
+            navigate(targetDestination)
+            return
+        }
+
+        val bundle = Bundle().apply {
+            putInt("target_destination", targetDestination)
+        }
+        navigate(R.id.aiCameraGuideFragment, bundle)
     }
 }

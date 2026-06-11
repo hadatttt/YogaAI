@@ -61,10 +61,9 @@ class MultiModeYogaFragment : BaseFragment<FragmentMultiModeYogaBinding, MultiMo
     private var cameraProvider: ProcessCameraProvider? = null
 
     private var lastSpeakTime = 0L
-    private var lastCoachTime = 0L
-    private val coachInterval = 2000L
     private var progressAnimator: ObjectAnimator? = null
     private var isMuted = false
+    private var aiReady = false
 
     override fun initView() {
         backgroundExecutor = Executors.newSingleThreadExecutor()
@@ -75,19 +74,25 @@ class MultiModeYogaFragment : BaseFragment<FragmentMultiModeYogaBinding, MultiMo
     private fun initializePoseLandmarkerHelper() {
         binding.loadingView.root.visibility = View.VISIBLE
 
-        poseLandmarkerHelper = AIManager.getLandmarker()
-        AIManager.setListener(this)
+        AIManager.ensureInitialized(requireContext()) { success ->
+            if (!isAdded || view == null) return@ensureInitialized
 
-        if (YogaCoachUtils.loadReferenceData() && isAdded) {
-            args.detailSequence?.let { viewModel.startWorkout( requireContext(),it) }
-            binding.loadingView.root.visibility = View.GONE
-        } else if (isAdded) {
+            poseLandmarkerHelper = AIManager.getLandmarker()
+            AIManager.setListener(this)
+
+            val isSuccess = success && YogaCoachUtils.loadReferenceData()
+            aiReady = isSuccess
+
+            if (isSuccess) {
+                args.detailSequence?.let { viewModel.startWorkout(requireContext(), it) }
+                checkAndStartCamera()
+            }
             binding.loadingView.root.visibility = View.GONE
         }
     }
     override fun onResume() {
         super.onResume()
-        checkAndStartCamera()
+        if (aiReady) checkAndStartCamera()
         AIManager.setListener(this)
         backgroundExecutor.execute {
             val landmarker = AIManager.getLandmarker()
@@ -99,13 +104,15 @@ class MultiModeYogaFragment : BaseFragment<FragmentMultiModeYogaBinding, MultiMo
 
     override fun onPause() {
         super.onPause()
+        setKeepScreenOn(false)
         cameraProvider?.unbindAll()
         cameraProvider = null
     }
 
 
     override fun onDestroyView() {
-        viewModel.stopTracking()
+        setKeepScreenOn(false)
+        viewModel.resetData()
         progressAnimator?.cancel()
         progressAnimator = null
         tts?.stop()
@@ -317,7 +324,14 @@ class MultiModeYogaFragment : BaseFragment<FragmentMultiModeYogaBinding, MultiMo
         try {
             cameraProvider.bindToLifecycle(viewLifecycleOwner, cameraSelector, preview, imageAnalyzer)
             preview?.setSurfaceProvider(binding.viewFinder.surfaceProvider)
+            setKeepScreenOn(true)
         } catch (_: Exception) {
+        }
+    }
+
+    private fun setKeepScreenOn(enabled: Boolean) {
+        if (view != null) {
+            binding.root.keepScreenOn = enabled
         }
     }
 
@@ -449,6 +463,7 @@ class MultiModeYogaFragment : BaseFragment<FragmentMultiModeYogaBinding, MultiMo
             if (isAdded) {
                 Toast.makeText(requireContext(), getString(R.string.no_image_to_share), Toast.LENGTH_SHORT).show()
             }
+            viewModel.resetData()
             popBackStack()
             return
         }
@@ -457,6 +472,7 @@ class MultiModeYogaFragment : BaseFragment<FragmentMultiModeYogaBinding, MultiMo
             putStringArray("captured_images_list", capturedImagesList)
         }
         navigate(R.id.resultFragment, bundle, isPop = true)
+        viewModel.resetData()
     }
     private fun startYogaTutorial() {
         val targets = ArrayList<SpotlightTarget>()

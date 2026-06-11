@@ -58,6 +58,7 @@ class SingleYogaFragment : BaseFragment<FragmentSingleYogaBinding, SingleYogaVie
     private var lastSpeakTime = 0L
     private var progressAnimator: ObjectAnimator? = null
     private var isMuted = false
+    private var aiReady = false
 
     override fun initView() {
         backgroundExecutor = Executors.newSingleThreadExecutor()
@@ -66,20 +67,27 @@ class SingleYogaFragment : BaseFragment<FragmentSingleYogaBinding, SingleYogaVie
     }
     private fun initializePoseLandmarkerHelper() {
         binding.loadingView.root.visibility = View.VISIBLE
-        poseLandmarkerHelper = AIManager.getLandmarker()
-        AIManager.setListener(this)
 
-        if (YogaCoachUtils.loadReferenceData() && isAdded) {
-            viewModel.fetchYogaPoses()
-            viewModel.startSinglePoseTracking(requireContext(),args.yogaPoseItem.id)
-            binding.loadingView.root.visibility = View.GONE
-        } else if (isAdded) {
+        AIManager.ensureInitialized(requireContext()) { success ->
+            if (!isAdded || view == null) return@ensureInitialized
+
+            poseLandmarkerHelper = AIManager.getLandmarker()
+            AIManager.setListener(this)
+
+            val isSuccess = success && YogaCoachUtils.loadReferenceData()
+            aiReady = isSuccess
+
+            if (isSuccess) {
+                viewModel.fetchYogaPoses()
+                viewModel.startSinglePoseTracking(requireContext(), args.yogaPoseItem.id)
+                checkAndStartCamera()
+            }
             binding.loadingView.root.visibility = View.GONE
         }
     }
     override fun onResume() {
         super.onResume()
-        checkAndStartCamera()
+        if (aiReady) checkAndStartCamera()
         val landmarker = AIManager.getLandmarker()
         if (landmarker != null) {
             AIManager.setListener(this)
@@ -92,12 +100,14 @@ class SingleYogaFragment : BaseFragment<FragmentSingleYogaBinding, SingleYogaVie
     }
     override fun onPause() {
         super.onPause()
+        setKeepScreenOn(false)
         cameraProvider?.unbindAll()
         cameraProvider = null
     }
 
     override fun onDestroyView() {
-        viewModel.stopTracking()
+        setKeepScreenOn(false)
+        viewModel.resetData()
         progressAnimator?.cancel()
         progressAnimator = null
         tts?.stop()
@@ -173,7 +183,14 @@ class SingleYogaFragment : BaseFragment<FragmentSingleYogaBinding, SingleYogaVie
                 viewLifecycleOwner, cameraSelector, preview, imageAnalyzer
             )
             preview?.setSurfaceProvider(binding.viewFinder.surfaceProvider)
+            setKeepScreenOn(true)
         } catch (e: Exception) { }
+    }
+
+    private fun setKeepScreenOn(enabled: Boolean) {
+        if (view != null) {
+            binding.root.keepScreenOn = enabled
+        }
     }
 
     private fun detectPose(imageProxy: ImageProxy) {
@@ -256,7 +273,10 @@ class SingleYogaFragment : BaseFragment<FragmentSingleYogaBinding, SingleYogaVie
             startYogaTutorial()
 
         }
-        binding.ivBack.singleClick { popBackStack() }
+        binding.ivBack.singleClick {
+            viewModel.resetData()
+            popBackStack()
+        }
         binding.ivPhoto.singleClick { viewModel.toggleCaptureWait() }
         binding.progressAround.apply {
             progressMax = 100f
@@ -404,6 +424,7 @@ class SingleYogaFragment : BaseFragment<FragmentSingleYogaBinding, SingleYogaVie
         }
 
         navigate(com.hadat.aiyoga.R.id.resultFragment, bundle, isPop = true)
+        viewModel.resetData()
     }
     private fun startYogaTutorial() {
         val targets = ArrayList<SpotlightTarget>()

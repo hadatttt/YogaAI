@@ -7,7 +7,9 @@ interface YogaApiService {
     @POST("chat")
     suspend fun sendMessage(@Body request: ChatRequest): ChatResponse
 
-    // Nếu sau này Đạt muốn gửi thêm dữ liệu tập luyện vào hệ thống RAG
+    @POST("recommend")
+    suspend fun recommend(@Body request: RecommendRequest): RecommendResponse
+
     @POST("ingest")
     suspend fun ingestData(@Body data: Any): Any
 }
